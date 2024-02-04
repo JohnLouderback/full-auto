@@ -36,3 +36,5 @@
 #include "composition.interop.h"
 #include "d3dHelpers.h"
 #include "direct3d11.interop.h"
+#include "macro-utils.h"
+#include "PixelCoords.h"

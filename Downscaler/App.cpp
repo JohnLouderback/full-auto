@@ -14,6 +14,8 @@
 
 #include "pch.h"
 #include "App.h"
+
+#include "AppState.h"
 #include "SimpleCapture.h"
 
 using namespace winrt;
@@ -26,6 +28,7 @@ using namespace Windows::Graphics::Capture;
 void App::Initialize(
   const ContainerVisual& root
 ) {
+  const auto appState = AppState::GetInstance();
   auto queue = DispatcherQueue::GetForCurrentThread();
 
   this->compositor = root.Compositor();
@@ -43,14 +46,23 @@ void App::Initialize(
   this->content.Brush(this->brush);
   this->brush.HorizontalAlignmentRatio(0.5f);
   this->brush.VerticalAlignmentRatio(0.5f);
-  this->brush.Stretch(CompositionStretch::Fill);
+
+  switch (appState.GetAspectRatio()) {
+    case AspectRatio::Maintain:
+      this->brush.Stretch(CompositionStretch::Uniform);
+      break;
+    case AspectRatio::Stretch:
+      this->brush.Stretch(CompositionStretch::Fill);
+      break;
+  }
+
   // auto shadow = this->compositor.CreateDropShadow();
   // shadow.Mask(this->brush);
   // this->content.Shadow(shadow);
   this->root.Children().InsertAtTop(this->content);
 
-  auto d3dDevice = CreateD3DDevice();
-  auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
+  const auto d3dDevice = CreateD3DDevice();
+  const auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
   this->device = CreateDirect3DDevice(dxgiDevice.get());
 }
 
@@ -60,12 +72,20 @@ void App::StartCapture(HWND hwnd) {
     this->capture = nullptr;
   }
 
-  auto item = CreateCaptureItemForWindow(hwnd);
+  const auto item = CreateCaptureItemForWindow(hwnd);
 
   this->capture = std::make_unique<SimpleCapture>(this->device, item);
 
-  auto surface = this->capture->CreateSurface(this->compositor);
+  const auto surface = this->capture->CreateSurface(this->compositor);
   this->brush.Surface(surface);
 
   this->capture->StartCapture();
+}
+
+void App::StartCapture() {
+  // Get the window to capture from the application state.
+  const auto appState = AppState::GetInstance();
+  const auto windowToScale = appState.GetWindowToScale();
+  const auto hwnd = windowToScale.Hwnd();
+  this->StartCapture(hwnd);
 }

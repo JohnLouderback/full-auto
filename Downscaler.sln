@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27729.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32811.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Downscaler", "Downscaler\Downscaler.vcxproj", "{045FFB0E-D0D4-404D-8C33-13C7074B3236}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DiagnosticWindow", "DiagnosticWindow\DiagnosticWindow.vcxproj", "{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{045FFB0E-D0D4-404D-8C33-13C7074B3236}.Release|x64.Build.0 = Release|x64
 		{045FFB0E-D0D4-404D-8C33-13C7074B3236}.Release|x86.ActiveCfg = Release|Win32
 		{045FFB0E-D0D4-404D-8C33-13C7074B3236}.Release|x86.Build.0 = Release|Win32
+		{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}.Debug|x64.ActiveCfg = Debug|x64
+		{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}.Debug|x64.Build.0 = Debug|x64
+		{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}.Debug|x86.ActiveCfg = Debug|Win32
+		{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}.Debug|x86.Build.0 = Debug|Win32
+		{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}.Release|x64.ActiveCfg = Release|x64
+		{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}.Release|x64.Build.0 = Release|x64
+		{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}.Release|x86.ActiveCfg = Release|Win32
+		{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
