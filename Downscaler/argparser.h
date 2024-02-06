@@ -31,8 +31,18 @@ inline void ArgParser(int argc, char* argv[]) {
     // The first positional argument is the title of the window or name of the process to mirror.
     TCLAP::UnlabeledValueArg<std::string> appArg(
       "app",
-      "Title of the window or name of the process to mirror",
+      "Title of the window or name of the process to mirror. Titles are case-sensitive, and process names are not.",
       true,
+      "",
+      "string"
+    );
+
+    // The second positional argument is optional and specifies the class name of the window to mirror. This is useful
+    // for filtering down to the correct window when a given window title or process would yield multiple windows.
+    TCLAP::UnlabeledValueArg<std::string> classArg(
+      "class",
+      "Class name of the window to mirror. You can use a tool like \"Spy++\", \"Window Detective\", or similar to find the class name of a window. Class names are case-sensitive.",
+      nullptr,
       "",
       "string"
     );
@@ -80,8 +90,11 @@ inline void ArgParser(int argc, char* argv[]) {
     aspectRatio.add(maintainArg);
     aspectRatio.add(stretchArg);
 
-    // The positional argument must be added to the command line parser first.
+    // The positional argument must be added to the command line parser first and in order.
     cmd.add(appArg);
+    cmd.add(classArg);
+
+    // Named arguments can be added in any order.
     cmd.add(widthArg);
     cmd.add(heightArg);
     cmd.add(scale);
@@ -96,6 +109,7 @@ inline void ArgParser(int argc, char* argv[]) {
     const auto parsedDownscaleWidth = downscaleWidthArg.getValue();
     const auto parsedDownscaleHeight = downscaleHeightArg.getValue();
     const auto parsedAspectRatio = maintainArg.getValue() ? AspectRatio::Maintain : AspectRatio::Stretch;
+    const auto parsedClass = classArg.isSet() ? std::make_optional(StringToWString(classArg.getValue())) : std::nullopt;
 
     // Set the application state based on the parsed arguments.
     auto& appState = AppState::GetInstance();
@@ -111,23 +125,66 @@ inline void ArgParser(int argc, char* argv[]) {
     // is a title or a process name.
     switch (IsStringTitleOrProcessName(StringToWString(appArg.getValue()))) {
       case WindowSearchType::Title: {
-        const auto windowByTitle = GetWindowForWindowTitle(StringToWString(appArg.getValue()));
+        const auto windowByTitle = GetWindowForWindowTitle(StringToWString(appArg.getValue()), parsedClass);
         if (windowByTitle.has_value())
           appState.SetWindowToScale(windowByTitle.value());
+        else if (parsedClass.has_value())
+          FatalError(
+            std::format(
+              "No window found for the given title and class name. Title: \"{}\", class name: \"{}\"",
+              appArg.getValue(),
+              classArg.getValue()
+            )
+          );
         else
           FatalError(std::format("No window found for the given title. Title: \"{}\"", appArg.getValue()));
         break;
       }
       case WindowSearchType::ProcessName: {
-        const auto windowByProcessName = GetWindowForProcessName(StringToWString(appArg.getValue()));
+        const auto windowByProcessName = GetWindowForProcessName(StringToWString(appArg.getValue()), parsedClass);
         if (windowByProcessName.has_value())
           appState.SetWindowToScale(windowByProcessName.value());
+        else if (parsedClass.has_value())
+          FatalError(
+            std::format(
+              "No window found for the given process name and class name. Process name: \"{}\", class name: \"{}\"",
+              appArg.getValue(),
+              classArg.getValue()
+            )
+          );
         else
           FatalError(
             std::format("No window found for the given process name. Process name: \"{}\"", appArg.getValue())
           );
         break;
       }
+    }
+
+    // Log the selected window to scale for debugging purposes.
+    const auto selectedSourceWindow = appState.GetWindowToScale();
+
+    std::wcout << L"Selected window to scale with process name: \"" << selectedSourceWindow.ProcessName()
+      << L"\", title: \"" << selectedSourceWindow.Title() << L"\", class name: \"" << selectedSourceWindow.ClassName()
+      << L"\", width: \"" << selectedSourceWindow.Width() << L"\", height: \"" << selectedSourceWindow.Height()
+      << L"\"" << std::endl;
+
+    // Focus the source window.
+    selectedSourceWindow.Focus();
+
+    auto hOwner = GetWindow(selectedSourceWindow.Hwnd(), GW_OWNER);
+    if (hOwner != nullptr) {
+      SetWindowLongPtr(selectedSourceWindow.Hwnd(), GWLP_HWNDPARENT, NULL);
+
+      // Update the window's position to reflect the change in ownership
+      SetWindowPos(
+        selectedSourceWindow.Hwnd(),
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOACTIVATE
+      );
     }
   }
   catch (TCLAP::ArgException& e) {

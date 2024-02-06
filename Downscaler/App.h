@@ -7,7 +7,7 @@ class SimpleCapture;
  */
 class App {
   public:
-    App() = default;
+    App()  = default;
     ~App() = default;
 
     /**
@@ -48,4 +48,6 @@ class App {
 
     /** The capture object used as the mechanism to capture the content of a window. */
     std::unique_ptr<SimpleCapture> capture{nullptr};
+
+    void InitializeFPSCounter();
 };

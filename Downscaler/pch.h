@@ -17,6 +17,8 @@
 #include <winrt/Windows.UI.Composition.h>
 #include <winrt/Windows.UI.h>
 #include <winrt/Windows.UI.Popups.h>
+#include <winrt/Microsoft.UI.Composition.h>
+#include <winrt/Microsoft.UI.h>
 
 #include <DispatcherQueue.h>
 #include <windows.ui.composition.interop.h>

@@ -4,6 +4,15 @@
 #include <vector>
 #include <array>
 
+// Declare the Window struct here so that it can be used in the EnumerateChildWindows function.
+struct Window;
+
+// Declare the `EnumerateChildWindows` function here so that it can be used in the `Window` struct.
+inline const std::vector<Window> EnumerateChildWindows(HWND hwnd);
+
+// Declare the `GetSystemBaseDpi` function here so that it can be used in the `Window` struct.
+inline const int GetSystemBaseDpi();
+
 struct Window {
   public:
     Window(nullptr_t) {}
@@ -19,6 +28,17 @@ struct Window {
     std::wstring Title() const noexcept { return this->title; }
     std::wstring ClassName() const noexcept { return this->className; }
     std::wstring ProcessName() const noexcept { return this->processName; }
+
+    /**
+     * @brief Brings the window to the foreground and activates it.
+     */
+    void Focus() const noexcept {
+      SetForegroundWindow(this->hwnd);
+    }
+
+    bool HasFocus() const noexcept {
+      return GetFocus() == this->hwnd;
+    }
 
     /**
      * @brief Retrieves the rectangle that defines the window's size and position.
@@ -42,23 +62,75 @@ struct Window {
      * @brief Retrieves the client area of the window relative to the window. This is useful if we need to crop the
      *        captured content to the client area of the window.
      */
-    bool GetClientRectRelativeToWindow(RECT* rect) const noexcept {
+    RECT GetClientRectRelativeToWindow() const {
+      const auto hWnd = this->hwnd;
       RECT clientRect;
-      if (!GetClientRect(&clientRect)) {
-        return false;
+      ::GetClientRect(hWnd, &clientRect);
+
+      // Convert the clientRect to screen coordinates.
+      POINT topLeft = {clientRect.left, clientRect.top}; // Top-left
+      ClientToScreen(hWnd, &topLeft);
+
+      RECT extendedFrameBounds;
+      HRESULT hr = DwmGetWindowAttribute(
+        hWnd,
+        DWMWA_EXTENDED_FRAME_BOUNDS,
+        &extendedFrameBounds,
+        sizeof(extendedFrameBounds)
+      );
+
+      const static int baseDPI = GetSystemBaseDpi();
+      const int dpi = GetDpiForWindow(hWnd);
+      const float dpiScale = static_cast<float>(dpi) / static_cast<float>(baseDPI);
+
+
+      if (SUCCEEDED(hr)) {
+        // Calculate the offset of the client area within the extended frame bounds.
+        // Scale down the extended frame bounds by the DPI scale to get the correct client area. The extended frame
+        // bounds are in physical pixels, so we need to scale them down to logical pixels.
+        clientRect.left = topLeft.x - (extendedFrameBounds.left / dpiScale);
+        clientRect.top = topLeft.y - (extendedFrameBounds.top / dpiScale);
+
+        // Scale the client area to account for DPI scaling. The client side is not initially scaled by DPI, so we need
+        // to do this manually.
+        clientRect.right = (clientRect.left + (clientRect.right - clientRect.left)) * dpiScale;
+        clientRect.bottom = (clientRect.top + (clientRect.bottom - clientRect.top)) * dpiScale;
+      }
+      else {
+        // Handle the error case where DwmGetWindowAttribute might fail on non-DWM platforms.
+        // Fallback to using GetWindowRect for non-composited desktops.
+        RECT windowRect;
+        GetWindowRect(hWnd, &windowRect);
+
+        clientRect.left = topLeft.x - windowRect.left;
+        clientRect.top = topLeft.y - windowRect.top;
+        clientRect.right = clientRect.left + (clientRect.right - clientRect.left);
+        clientRect.bottom = clientRect.top + (clientRect.bottom - clientRect.top);
       }
 
-      POINT point = {0, 0};
-      if (!ClientToScreen(this->hwnd, &point)) {
-        return false;
-      }
+      return clientRect;
+    }
 
-      rect->left = point.x;
-      rect->top = point.y;
-      rect->right = point.x + clientRect.right - clientRect.left;
-      rect->bottom = point.y + clientRect.bottom - clientRect.top;
+    /**
+     * @brief Retrieves the absolute position of the client area of the window. This is useful if we need get the delta
+     *        between a parent window and a child window.
+     */
+    RECT GetAbsoluteClientRect() const {
+      // Get the position of the window.
+      RECT windowRect;
+      GetWindowRect(this->hwnd, &windowRect);
 
-      return true;
+      // Then get the position of the client area of the window relative to the window.
+      auto clientRect = this->GetClientRectRelativeToWindow();
+
+      // Add the position of the window to the position of the client area of the window to get the absolute position of
+      // the client area of the window.
+      clientRect.left += windowRect.left;
+      clientRect.right += windowRect.left;
+      clientRect.top += windowRect.top;
+      clientRect.bottom += windowRect.top;
+
+      return clientRect;
     }
 
     /**
@@ -141,6 +213,10 @@ struct Window {
       RECT rect;
       GetClientRect(&rect);
       return rect.top;
+    }
+
+    std::vector<Window> Children() const noexcept {
+      return EnumerateChildWindows(this->hwnd);
     }
 
   private:
@@ -261,9 +337,9 @@ inline Window WindowFromHWND(HWND hwnd) {
 inline BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
   const auto window = WindowFromHWND(hwnd);
 
-  if (!IsAltTabWindow(window)) {
-    return TRUE;
-  }
+  // if (!IsAltTabWindow(window)) {
+  //   return TRUE;
+  // }
 
   auto& windows = *reinterpret_cast<std::vector<Window>*>(lParam);
   windows.push_back(window);
@@ -276,4 +352,40 @@ inline const std::vector<Window> EnumerateWindows() {
   EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&windows));
 
   return windows;
+}
+
+/**
+ * @brief Enumerates the child windows of the given window.
+ * @param hwnd The handle to the window.
+ * @returns A vector of windows that are children of the given window.
+ */
+inline const std::vector<Window> EnumerateChildWindows(HWND hwnd) {
+  std::vector<Window> windows;
+  EnumChildWindows(hwnd, EnumWindowsProc, reinterpret_cast<LPARAM>(&windows));
+
+  return windows;
+}
+
+/**
+ * @brief Retrieves the base-DPI of the system.
+ * @returns The DPI of the system.
+ */
+
+inline const int GetSystemBaseDpi() {
+  static int baseDPI = -1;
+
+  // If the base DPI has already been retrieved, return it.
+  if (baseDPI != -1) {
+    return baseDPI;
+  }
+
+  // Get the system's base DPI (usually 96 DPI on standard setups)
+  // First, get the screen's device context.
+  auto screen = GetDC(nullptr);
+  // Then, get the DPI of the screen.
+  baseDPI = GetDeviceCaps(screen, LOGPIXELSX);
+  // Release the device context.
+  ReleaseDC(nullptr, screen);
+
+  return baseDPI;
 }

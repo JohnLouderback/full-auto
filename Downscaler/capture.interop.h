@@ -21,11 +21,15 @@ inline auto CreateCaptureItemForWindow(HWND hwnd) {
 
   winrt::Windows::Graphics::Capture::GraphicsCaptureItem item = {nullptr};
 
-  interopFactory->CreateForWindow(
+  const auto itemCreationResult = interopFactory->CreateForWindow(
     hwnd,
     winrt::guid_of<ABI::Windows::Graphics::Capture::IGraphicsCaptureItem>(),
     winrt::put_abi(item)
   );
-  
+
+  if (FAILED(itemCreationResult)) {
+    throw winrt::hresult_error(itemCreationResult);
+  }
+
   return item;
 }

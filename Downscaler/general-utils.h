@@ -10,3 +10,8 @@ inline void FatalError(std::string message) {
   std::cerr << "Error: " << message << '\n';
   exit(EXIT_FAILURE);
 }
+
+inline void FatalError(const std::ostringstream& stream) {
+  std::cerr << "Error: " << stream.str() << '\n';
+  exit(EXIT_FAILURE);
+}
