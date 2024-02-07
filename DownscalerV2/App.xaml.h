@@ -2,15 +2,13 @@
 
 #include "App.xaml.g.h"
 
-namespace winrt::DownscalerV2::implementation
-{
-    struct App : AppT<App>
-    {
-        App();
+namespace winrt::DownscalerV2::implementation {
+  struct App : AppT<App> {
+    App();
 
-        void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
+    void OnLaunched(const Microsoft::UI::Xaml::LaunchActivatedEventArgs&);
 
     private:
-        winrt::Microsoft::UI::Xaml::Window window{ nullptr };
-    };
+      Microsoft::UI::Xaml::Window window{nullptr};
+  };
 }

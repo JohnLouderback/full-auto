@@ -15,7 +15,11 @@ namespace winrt::DownscalerV2::implementation
         int32_t MyProperty();
         void MyProperty(int32_t value);
 
-        void myButton_Click(IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void window_SizeChanged(IInspectable const& sender, Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args);
+        void fps_Loaded(IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        
+        /** Updates the positions of UI elements that require programmatic positioning */
+        void UpdatePositions();
     };
 }
 
