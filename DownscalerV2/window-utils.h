@@ -2,8 +2,10 @@
 
 #include <string>
 #include <dwmapi.h>
+#include <optional>
 
 #include "AppState.h"
+#include "string-utils.h"
 
 /// Utility Functions ///
 

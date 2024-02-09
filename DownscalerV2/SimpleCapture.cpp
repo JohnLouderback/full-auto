@@ -1,0 +1,159 @@
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THE SOFTWARE IS PROVIDED �AS IS�, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+// THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+//*********************************************************
+
+#include "pch.h"
+#include "SimpleCapture.h"
+
+#include "AppState.h"
+
+using namespace winrt;
+using namespace Windows;
+using namespace Windows::Foundation;
+using namespace Windows::System;
+using namespace Windows::Graphics;
+using namespace Windows::Graphics::Capture;
+using namespace Windows::Graphics::DirectX;
+using namespace Windows::Graphics::DirectX::Direct3D11;
+using namespace Windows::Foundation::Numerics;
+using namespace Windows::UI;
+using namespace Windows::UI::Composition;
+
+SimpleCapture::SimpleCapture(
+  const IDirect3DDevice& device,
+  const GraphicsCaptureItem& item
+): appState(AppState::GetInstance()) {
+  this->item   = item;
+  this->device = device;
+
+  // Set up 
+  auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(this->device);
+  d3dDevice->GetImmediateContext(this->d3dContext.put());
+
+  auto size = this->item.Size();
+
+  this->swapChain = CreateDXGISwapChain(
+    d3dDevice,
+    static_cast<uint32_t>(size.Width),
+    static_cast<uint32_t>(size.Height),
+    static_cast<DXGI_FORMAT>(DirectXPixelFormat::B8G8R8A8UIntNormalized),
+    2
+  );
+
+  // Create framepool, define pixel format (DXGI_FORMAT_B8G8R8A8_UNORM), and frame size. 
+  this->framePool = Direct3D11CaptureFramePool::Create(
+    this->device,
+    DirectXPixelFormat::B8G8R8A8UIntNormalized,
+    2,
+    size
+  );
+  this->session = this->framePool.CreateCaptureSession(this->item);
+
+  // Disable capturing of the cursor.
+  session.IsCursorCaptureEnabled(false);
+  // Hides the normal yellow border that would appear around the window being captured.
+  session.IsBorderRequired(false);
+
+  this->lastSize     = size;
+  this->frameArrived = this->framePool.FrameArrived(auto_revoke, {this, &SimpleCapture::OnFrameArrived});
+
+  this->sourceWindowClientRect = appState.GetWindowToScale().GetClientRectRelativeToWindow();
+
+  // Define the region to copy based on the client rectangle
+  sourceBox.left   = sourceWindowClientRect.left;
+  sourceBox.right  = sourceWindowClientRect.right;
+  sourceBox.top    = sourceWindowClientRect.top;
+  sourceBox.bottom = sourceWindowClientRect.bottom;
+  sourceBox.front  = 0;
+  sourceBox.back   = 1;
+}
+
+// Start sending capture frames
+void SimpleCapture::StartCapture() {
+  CheckClosed();
+  this->session.StartCapture();
+}
+
+ICompositionSurface SimpleCapture::CreateSurface(
+  const Compositor& compositor
+) {
+  CheckClosed();
+  return CreateCompositionSurfaceForSwapChain(compositor, this->swapChain.get());
+}
+
+// Process captured frames
+void SimpleCapture::Close() {
+  auto expected = false;
+  if (this->closed.compare_exchange_strong(expected, true)) {
+    this->frameArrived.revoke();
+    this->framePool.Close();
+    this->session.Close();
+
+    this->swapChain = nullptr;
+    this->framePool = nullptr;
+    this->session   = nullptr;
+    this->item      = nullptr;
+  }
+}
+
+void SimpleCapture::OnFrameArrived(
+  const Direct3D11CaptureFramePool& sender,
+  const Foundation::IInspectable& args
+) {
+  // Indicates whether the size of captured texture has changed.
+  auto newSize = false;
+
+  {
+    auto frame            = sender.TryGetNextFrame();
+    auto frameContentSize = frame.ContentSize();
+
+    if (frameContentSize.Width != this->lastSize.Width ||
+        frameContentSize.Height != this->lastSize.Height
+    ) {
+      newSize        = true;
+      this->lastSize = frameContentSize;
+      this->swapChain->ResizeBuffers(
+        2,
+        static_cast<uint32_t>(sourceWindowClientRect.right - sourceWindowClientRect.left),
+        static_cast<uint32_t>(sourceWindowClientRect.bottom - sourceWindowClientRect.top),
+        static_cast<DXGI_FORMAT>(DirectXPixelFormat::B8G8R8A8UIntNormalized),
+        0
+      );
+    }
+
+    {
+      auto frameSurface = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
+
+      com_ptr<ID3D11Texture2D> backBuffer;
+      check_hresult(this->swapChain->GetBuffer(0, guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
+
+      // Copy only the client area from the source texture to the back buffer
+      this->d3dContext->CopySubresourceRegion(backBuffer.get(), 0, 0, 0, 0, frameSurface.get(), 0, &sourceBox);
+    }
+  }
+
+  DXGI_PRESENT_PARAMETERS presentParameters = {0};
+  this->swapChain->Present1(1, 0, &presentParameters);
+
+  if (newSize) {
+    this->framePool.Recreate(
+      this->device,
+      DirectXPixelFormat::B8G8R8A8UIntNormalized,
+      2,
+      {
+        sourceWindowClientRect.right - sourceWindowClientRect.left,
+        sourceWindowClientRect.bottom - sourceWindowClientRect.top
+      }
+    );
+  }
+}

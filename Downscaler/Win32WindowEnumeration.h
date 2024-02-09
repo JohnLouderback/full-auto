@@ -5,19 +5,19 @@
 #include <array>
 
 // Declare the Window struct here so that it can be used in the EnumerateChildWindows function.
-struct Window;
+struct Win32Window;
 
 // Declare the `EnumerateChildWindows` function here so that it can be used in the `Window` struct.
-inline const std::vector<Window> EnumerateChildWindows(HWND hwnd);
+inline const std::vector<Win32Window> EnumerateChildWindows(HWND hwnd);
 
 // Declare the `GetSystemBaseDpi` function here so that it can be used in the `Window` struct.
 inline const int GetSystemBaseDpi();
 
-struct Window {
+struct Win32Window {
   public:
-    Window(nullptr_t) {}
+    Win32Window(nullptr_t) {}
 
-    Window(HWND hwnd, const std::wstring& title, std::wstring& className, std::wstring& processName) {
+    Win32Window(HWND hwnd, const std::wstring& title, std::wstring& className, std::wstring& processName) {
       this->hwnd = hwnd;
       this->title = title;
       this->className = className;
@@ -215,7 +215,7 @@ struct Window {
       return rect.top;
     }
 
-    std::vector<Window> Children() const noexcept {
+    std::vector<Win32Window> Children() const noexcept {
       return EnumerateChildWindows(this->hwnd);
     }
 
@@ -251,7 +251,7 @@ inline std::wstring GetWindowText(HWND hwnd) {
   return title;
 }
 
-inline bool IsAltTabWindow(const Window& window) {
+inline bool IsAltTabWindow(const Win32Window& window) {
   auto hwnd = window.Hwnd();
   auto shellWindow = GetShellWindow();
 
@@ -324,12 +324,12 @@ inline std::wstring GetProcessName(HWND hwnd) {
   return name;
 }
 
-inline Window WindowFromHWND(HWND hwnd) {
+inline Win32Window WindowFromHWND(HWND hwnd) {
   auto className = GetClassName(hwnd);
   const auto title = GetWindowText(hwnd);
 
   auto procName = GetProcessName(hwnd);
-  auto window = Window(hwnd, title, className, procName);
+  auto window = Win32Window(hwnd, title, className, procName);
 
   return window;
 }
@@ -341,14 +341,14 @@ inline BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
   //   return TRUE;
   // }
 
-  auto& windows = *reinterpret_cast<std::vector<Window>*>(lParam);
+  auto& windows = *reinterpret_cast<std::vector<Win32Window>*>(lParam);
   windows.push_back(window);
 
   return TRUE;
 }
 
-inline const std::vector<Window> EnumerateWindows() {
-  std::vector<Window> windows;
+inline const std::vector<Win32Window> EnumerateWindows() {
+  std::vector<Win32Window> windows;
   EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&windows));
 
   return windows;
@@ -359,8 +359,8 @@ inline const std::vector<Window> EnumerateWindows() {
  * @param hwnd The handle to the window.
  * @returns A vector of windows that are children of the given window.
  */
-inline const std::vector<Window> EnumerateChildWindows(HWND hwnd) {
-  std::vector<Window> windows;
+inline const std::vector<Win32Window> EnumerateChildWindows(HWND hwnd) {
+  std::vector<Win32Window> windows;
   EnumChildWindows(hwnd, EnumWindowsProc, reinterpret_cast<LPARAM>(&windows));
 
   return windows;

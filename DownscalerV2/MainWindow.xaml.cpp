@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "MainWindow.xaml.h"
+
+#include "App.xaml.h"
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
@@ -12,16 +14,19 @@ using namespace Microsoft::UI::Xaml;
 
 namespace winrt::DownscalerV2::implementation
 {
-    int32_t MainWindow::MyProperty()
-    {
-        throw hresult_not_implemented();
-    }
+  void MainWindow::OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs args) override
+  {
+    // Ensure the SwapChainPanel has been loaded
+    auto compositor = swapChainPanel();
+    auto root = compositor->CreateContainerVisual();
+    auto content = compositor->CreateSpriteVisual();
+    auto brush = compositor->CreateSurfaceBrush();
 
-    void MainWindow::MyProperty(int32_t /* value */)
-    {
-        throw hresult_not_implemented();
-    }
+    // ... rest of your composition code ...
 
+    swapChainPanel()->Children->InsertAtTop(root);
+  }
+  
     void MainWindow::window_SizeChanged(IInspectable const&, WindowSizeChangedEventArgs const&)
     {
       this->UpdatePositions();

@@ -13,11 +13,14 @@
 
   <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <Canvas x:Name="canvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+      <SwapChainPanel x:Name="swapChainPanel">
+        <!-- Other XAML UI elements can be declared here if needed -->
+      </SwapChainPanel>
       <Button x:Name="debugButton" CornerRadius="22.5" Width="45" Height="45" Canvas.Left="5" Canvas.Top="5">
         <FontIcon Glyph="&#xEBE8;" />
       </Button>
       <TextBlock x:Name="fps" FontFamily="Courier New" Canvas.Left="5" Canvas.Top="0" Loaded="fps_Loaded"> fps! </TextBlock>
 
     </Canvas>
-  </Grid>
+  </Grid> 
 </Window>

@@ -46,7 +46,7 @@ void MouseEventService::ForwardScaledMouseEvent(UINT eventName, LPARAM lparam, W
 }
 
 void MouseEventService::ForwardScaledMouseEventForChildrenAtMouseCoords(
-  Win32Window parentWindow,
+  Window parentWindow,
   UINT eventName,
   LPARAM lparam,
   WPARAM wparam

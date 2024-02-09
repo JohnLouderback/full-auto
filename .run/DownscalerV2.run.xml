@@ -1,9 +1,9 @@
 ﻿<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Downscaler" type="CppProject" factoryName="C++ Project">
+  <configuration default="false" name="DownscalerV2" type="CppProject" factoryName="C++ Project">
     <configuration_1>
-      <option name="CONFIGURATION" value="Debug" />
+      <option name="CONFIGURATION" value="Release" />
       <option name="PLATFORM" value="x64" />
-      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Downscaler/Downscaler.vcxproj" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/DownscalerV2/DownscalerV2.vcxproj" />
       <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
       <option name="EXE_PATH" value="$(TargetPath)" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -13,9 +13,9 @@
       <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
     </configuration_1>
     <configuration_2>
-      <option name="CONFIGURATION" value="Release" />
+      <option name="CONFIGURATION" value="Debug" />
       <option name="PLATFORM" value="x64" />
-      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/DiagnosticWindow/DiagnosticWindow.vcxproj" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/DownscalerV2/DownscalerV2.vcxproj" />
       <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
       <option name="EXE_PATH" value="$(TargetPath)" />
       <option name="PROGRAM_PARAMETERS" value="" />

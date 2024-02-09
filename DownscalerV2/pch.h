@@ -23,3 +23,24 @@
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <wil/cppwinrt_helpers.h>
+
+#include <DispatcherQueue.h>
+#include <windows.ui.composition.interop.h>
+
+// STL
+#include <atomic>
+#include <memory>
+
+// D3D
+#include <d2d1_3.h>
+#include <d3d11_4.h>
+#include <dxgi1_6.h>
+#include <wincodec.h>
+
+// Helpers
+#include "capture.interop.h"
+#include "composition.interop.h"
+#include "d3dHelpers.h"
+#include "direct3d11.interop.h"
+#include "macro-utils.h"
+#include "PixelCoords.h"

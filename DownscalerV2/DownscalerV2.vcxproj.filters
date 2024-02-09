@@ -16,6 +16,20 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="args-parser.h" />
+    <ClInclude Include="AppState.h" />
+    <ClInclude Include="capture.interop.h" />
+    <ClInclude Include="composition.interop.h" />
+    <ClInclude Include="d3dHelpers.h" />
+    <ClInclude Include="direct3d11.interop.h" />
+    <ClInclude Include="general-utils.h" />
+    <ClInclude Include="macro-utils.h" />
+    <ClInclude Include="MouseCoordsService.h" />
+    <ClInclude Include="MouseEventService.h" />
+    <ClInclude Include="PixelCoords.h" />
+    <ClInclude Include="SimpleCapture.h" />
+    <ClInclude Include="string-utils.h" />
+    <ClInclude Include="Win32WindowEnumeration.h" />
+    <ClInclude Include="window-utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
