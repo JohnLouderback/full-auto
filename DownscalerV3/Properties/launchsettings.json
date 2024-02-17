@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "DownscalerV3 (Unpackaged)": {
+        "commandName": "Project"
+      },
+      "DownscalerV3 (Package)": {
+        "commandName": "MsixPackage"
+      }
+    }
+}
