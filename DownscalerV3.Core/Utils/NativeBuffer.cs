@@ -134,11 +134,28 @@ public class NativeBuffer<T> : IDisposable where T : struct {
   ///   var str = buffer.ToManagedString(Encoding.Unicode); // "Hello"
   ///   </code>
   /// </example>
-  public string ToManagedString(Encoding? encoding = null) {
-    // If no encoding is provided, default to UTF-8.
-    encoding ??= Encoding.UTF8;
-
-    return encoding.GetString(Buffer.Select(b => (byte)(object)b).ToArray());
+  public unsafe string ToManagedString(Encoding? encoding = null) {
+    if (typeof(T) == typeof(byte))
+    {
+      // If T is byte and encoding is provided, use the encoding to convert the buffer to string.
+      encoding ??= Encoding.UTF8; // Default to UTF-8 if no encoding is provided.
+      byte[] byteArray = new byte[Length];
+      Marshal.Copy(GCHandle.AddrOfPinnedObject(), byteArray, 0, Length);
+      return encoding.GetString(byteArray);
+    }
+    else if (typeof(T) == typeof(char))
+    {
+      // If T is char, we assume it's UTF-16 and create a string directly.
+      char[] charArray = new char[Length];
+      Marshal.Copy(GCHandle.AddrOfPinnedObject(), charArray, 0, Length);
+      return new string(charArray);
+    }
+    else
+    {
+      // If T is neither byte nor char, throw an exception.
+      var typeName = typeof(T).Name;
+      throw new InvalidOperationException($"Unsupported type \"{typeName}\" for ToManagedString method.");
+    }
   }
 
 
