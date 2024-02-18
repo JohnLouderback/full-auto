@@ -6,6 +6,7 @@ using DownscalerV3.Contracts.Services;
 using DownscalerV3.Core.Utils;
 using static Windows.Win32.PInvoke;
 using static DownscalerV3.Core.Utils.Macros;
+using static DownscalerV3.Core.Utils.NativeUtils;
 
 namespace DownscalerV3.Core.Services;
 
@@ -64,7 +65,17 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
 
 
   private void InstallEventHandlers() {
-    subclassProc = WndProc;
+    // Install the event handlers into the main window.
+    InstallWindowSubclass(hwnd);
+
+    // Get all child windows of the main window and install the event handlers into them.
+    foreach (var child in EnumerateChildWindowsRecursively(hwnd)) {
+      InstallWindowSubclass(child.Hwnd);
+    }
+  }
+
+
+  private void InstallWindowSubclass(HWND hwnd) {
     if (!SetWindowSubclass(hwnd, WndProc, 1, nuint.Zero)) {
       throw new Win32Exception(Marshal.GetLastWin32Error());
     }

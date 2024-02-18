@@ -13,10 +13,14 @@ ReleaseDC
 DestroyWindow
 RegisterHotKey
 UnregisterHotKey
-SetWindowLongPtr
-GetWindowLongPtr
+SetWindowLongPtrW
+SetWindowLongW
+GetWindowLongPtrW
+GetWindowLongW
 DefWindowProc
 CallWindowProc
 SetWindowSubclass
 RemoveWindowSubclass
 DefSubclassProc
+EnumWindows
+EnumChildWindows
