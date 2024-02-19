@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0-windows10.0.22624.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.22624.0</TargetFramework>
     <RootNamespace>DownscalerV3.Tests.MSTest</RootNamespace>
     <Platforms>x86;x64;arm64</Platforms>
     <IsPackable>false</IsPackable>
@@ -9,6 +9,7 @@
     <UseWinUI>true</UseWinUI>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <ProjectPriFileName>resources.pri</ProjectPriFileName>
+    <UseRidGraph>true</UseRidGraph>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.1.2" />

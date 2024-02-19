@@ -1,10 +1,13 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.Shell;
+using Windows.Win32.UI.WindowsAndMessaging;
 using DownscalerV3.Contracts.Services;
 using DownscalerV3.Core.Utils;
 using static Windows.Win32.PInvoke;
+using static DownscalerV3.Core.Utils.Win32Ex;
 using static DownscalerV3.Core.Utils.Macros;
 using static DownscalerV3.Core.Utils.NativeUtils;
 
@@ -34,11 +37,39 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
 
     this.hwnd     = hwnd;
     isInitialized = true;
+    // InstallHostWindow(hwnd);
     InstallEventHandlers();
   }
 
 
-  private static LRESULT WndProc(
+  private static LRESULT HostWndProc(
+    HWND hWnd,
+    uint msg,
+    WPARAM wParam,
+    LPARAM lParam
+  ) {
+    var message = (Msg)msg;
+    // Handle messages
+    // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+    switch (message) {
+      case Msg.WM_QUIT:
+        Console.WriteLine("WM_QUIT received.");
+        break;
+      case Msg.WM_MOUSEMOVE:
+        Console.WriteLine($"Mouse moved to: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})");
+        break;
+      case Msg.WM_NCMOUSEMOVE:
+        Console.WriteLine(
+          $"Mouse moved to non-client area: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})"
+        );
+        break;
+    }
+
+    return DefWindowProc(hWnd, msg, wParam, lParam);
+  }
+
+
+  private static LRESULT SubclassWndProc(
     HWND hWnd,
     uint msg,
     WPARAM wParam,
@@ -58,9 +89,59 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
           $"Mouse moved to non-client area: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})"
         );
         break;
+      default:
+        Console.WriteLine(
+          $"{Enum.GetName(typeof(Msg), message)} received on class: {hWnd.GetClassName()}"
+        );
+        break;
     }
 
     return DefSubclassProc(hWnd, msg, wParam, lParam);
+  }
+
+
+  private unsafe HWND CreateHostForWindow() {
+    const string className = "DownscalerHost";
+    var wc = new WNDCLASSEXW {
+      cbSize        = (uint)Marshal.SizeOf(typeof(WNDCLASSEXW)),
+      style         = 0,
+      lpfnWndProc   = HostWndProc,
+      cbClsExtra    = 0,
+      cbWndExtra    = 0,
+      hInstance     = GetModuleHandle(0),
+      hIcon         = new HICON(nint.Zero),
+      hCursor       = new HCURSOR(nint.Zero),
+      hbrBackground = new HBRUSH(5), // BACKGROUND_WHITE,
+      lpszMenuName  = null,
+      lpszClassName = className.ToPWSTR(),
+      hIconSm       = new HICON(nint.Zero)
+    };
+
+    var classAtom = RegisterClassEx(in wc);
+    if (classAtom == 0) {
+      throw new Win32Exception();
+    }
+
+    var host = CreateWindowEx(
+      0,
+      className,
+      "Downscaler Host Window",
+      WINDOW_STYLE.WS_OVERLAPPEDWINDOW,
+      0,
+      0,
+      640,
+      480,
+      new HWND(nint.Zero),
+      null,
+      GetModuleHandle(),
+      (void*)nint.Zero
+    );
+
+    if (host == nint.Zero) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
+
+    return host;
   }
 
 
@@ -75,8 +156,26 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   }
 
 
+  /// <summary>
+  ///   For a given window, creates a host window that will be used to host that window by way of
+  ///   making it a child of the host window.
+  /// </summary>
+  /// <param name="hwnd"> The window handle of the window to be hosted. </param>
+  /// <returns> The window handle of the host window. </returns>
+  private HWND InstallHostWindow(HWND hwnd) {
+    var host = CreateHostForWindow();
+    host.Show().Update().SetWindowPosition(0, 0, 640, 480);
+    hwnd.SetWindowStyle(
+        WINDOW_STYLE.WS_CHILD | WINDOW_STYLE.WS_POPUP | WINDOW_STYLE.WS_VISIBLE
+      )
+      .SetParent(host)
+      .SetWindowPosition(0, 0, 640, 480);
+    return host;
+  }
+
+
   private void InstallWindowSubclass(HWND hwnd) {
-    if (!SetWindowSubclass(hwnd, WndProc, 1, nuint.Zero)) {
+    if (!SetWindowSubclass(hwnd, SubclassWndProc, 1, nuint.Zero)) {
       throw new Win32Exception(Marshal.GetLastWin32Error());
     }
   }

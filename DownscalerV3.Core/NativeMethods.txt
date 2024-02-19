@@ -1,6 +1,8 @@
-﻿CreateWindow
+﻿CreateWindowEx
+GetModuleHandle
 HWND
-WCHAR
+WNDCLASSEXW
+RegisterClassExW
 GetClassNameW
 GetWindowText
 GetWindowThreadProcessId
@@ -24,3 +26,7 @@ RemoveWindowSubclass
 DefSubclassProc
 EnumWindows
 EnumChildWindows
+SetParent
+ShowWindow
+UpdateWindow
+SetWindowPos

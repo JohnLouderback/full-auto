@@ -1,4 +1,7 @@
-﻿using Windows.Win32.Foundation;
+﻿using System.ComponentModel;
+using System.Runtime.InteropServices;
+using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
 using DownscalerV3.Core.Models;
 using static Windows.Win32.PInvoke;
@@ -64,6 +67,62 @@ public static class NativeUtils {
     }
 
     destination[length] = '\0'; // Null-terminate the string
+  }
+
+
+  public static unsafe HWND CreateNewWindow(
+    string className,
+    string windowName,
+    WINDOW_STYLE style,
+    WNDPROC windowProcedure,
+    int x,
+    int y,
+    int width,
+    int height,
+    HWND? parent,
+    HINSTANCE? instance,
+    LPARAM? param
+  ) {
+    var windowClass = new WNDCLASSEXW {
+      cbSize        = (uint)Marshal.SizeOf(typeof(WNDCLASSEXW)),
+      style         = 0,
+      lpfnWndProc   = windowProcedure,
+      cbClsExtra    = 0,
+      cbWndExtra    = 0,
+      hInstance     = Win32Ex.GetModuleHandle(0),
+      hIcon         = new HICON(nint.Zero),
+      hCursor       = new HCURSOR(nint.Zero),
+      hbrBackground = new HBRUSH(5), // BACKGROUND_WHITE,
+      lpszMenuName  = null,
+      lpszClassName = className.ToPWSTR(),
+      hIconSm       = new HICON(nint.Zero)
+    };
+
+    var classAtom = RegisterClassEx(in windowClass);
+    if (classAtom == 0) {
+      throw new Win32Exception();
+    }
+
+    var hwnd = CreateWindowEx(
+      0,
+      className,
+      windowName,
+      style,
+      x,
+      y,
+      width,
+      height,
+      new HWND(nint.Zero),
+      null,
+      Win32Ex.GetModuleHandle(),
+      (void*)nint.Zero
+    );
+
+    if (hwnd == nint.Zero) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
+
+    return hwnd;
   }
 
 
