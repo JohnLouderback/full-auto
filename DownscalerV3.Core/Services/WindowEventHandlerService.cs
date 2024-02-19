@@ -15,6 +15,7 @@ namespace DownscalerV3.Core.Services;
 
 /// <inheritdoc />
 public class WindowEventHandlerService : IWindowEventHandlerService {
+  private static readonly HOOKPROC MouseHookProcInstance = MouseHookProc;
   private HWND hwnd;
   private bool isInitialized;
   private SUBCLASSPROC? subclassProc;
@@ -38,7 +39,8 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
     this.hwnd     = hwnd;
     isInitialized = true;
     // InstallHostWindow(hwnd);
-    InstallChildWindow(hwnd);
+    // InstallChildWindow(hwnd);
+    InstallMouseHook();
     InstallEventHandlers();
   }
 
@@ -84,6 +86,20 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
     }
 
     return DefWindowProc(hWnd, msg, wParam, lParam);
+  }
+
+
+  private static LRESULT MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode >= 0) {
+      Console.WriteLine($"Mouse hook called with nCode: {nCode}");
+      // Log the mouse coordinates.
+      var mouseHookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
+      Console.WriteLine(
+        $"Mouse coordinates: ({mouseHookStruct.pt.X}, {mouseHookStruct.pt.Y})"
+      );
+    }
+
+    return CallNextHookEx(null, nCode, wParam, lParam);
   }
 
 
@@ -211,6 +227,20 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
       .SetParent(host)
       .SetWindowPosition(0, 0, 640, 480);
     return host;
+  }
+
+
+  private void InstallMouseHook() {
+    var mouseHook = SetWindowsHookEx(
+      WINDOWS_HOOK_ID.WH_MOUSE_LL,
+      MouseHookProcInstance,
+      null,
+      0
+    );
+
+    if (mouseHook == null) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
   }
 
 

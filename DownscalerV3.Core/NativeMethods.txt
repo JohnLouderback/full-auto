@@ -33,3 +33,10 @@ SetWindowPos
 GetMessage
 TranslateMessage
 DispatchMessage
+GetCurrentThreadId
+SetWindowsHookEx
+CallNextHookEx
+UnhookWindowsHookEx
+MOUSEHOOKSTRUCT
+MSLLHOOKSTRUCT
+LoadLibrary
