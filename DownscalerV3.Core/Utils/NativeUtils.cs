@@ -79,9 +79,9 @@ public static class NativeUtils {
     int y,
     int width,
     int height,
-    HWND? parent,
-    HINSTANCE? instance,
-    LPARAM? param
+    HWND? parent = null,
+    HINSTANCE? instance = null,
+    LPARAM? param = null
   ) {
     var windowClass = new WNDCLASSEXW {
       cbSize        = (uint)Marshal.SizeOf(typeof(WNDCLASSEXW)),
@@ -102,6 +102,8 @@ public static class NativeUtils {
     if (classAtom == 0) {
       throw new Win32Exception();
     }
+    
+    var parentHwnd = parent ?? new HWND(nint.Zero);
 
     var hwnd = CreateWindowEx(
       0,
@@ -112,7 +114,7 @@ public static class NativeUtils {
       y,
       width,
       height,
-      new HWND(nint.Zero),
+      parentHwnd,
       null,
       Win32Ex.GetModuleHandle(),
       (void*)nint.Zero

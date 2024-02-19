@@ -38,7 +38,25 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
     this.hwnd     = hwnd;
     isInitialized = true;
     // InstallHostWindow(hwnd);
+    InstallChildWindow(hwnd);
     InstallEventHandlers();
+  }
+
+
+  public void MessageLoop() {
+    var thread = new Thread(
+      () => {
+        MSG msg;
+        while (GetMessage(out msg, hwnd, 0, 0)) {
+          Console.WriteLine($"Message received: {Enum.GetName(typeof(Msg), msg.message)}");
+          TranslateMessage(ref msg);
+          DispatchMessage(ref msg);
+        }
+      }
+    );
+
+    thread.SetApartmentState(ApartmentState.STA);
+    thread.Start();
   }
 
 
@@ -142,6 +160,28 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
     }
 
     return host;
+  }
+
+
+  private HWND InstallChildWindow(HWND hwnd) {
+    var child = CreateNewWindow(
+      "test",
+      "test",
+      WINDOW_STYLE.WS_CHILD,
+      (hwnd, msg, wParam, lParam) => {
+        Console.WriteLine(
+          $"{Enum.GetName(typeof(Msg), (Msg)msg)} received on class: {hwnd.GetClassName()}"
+        );
+        return DefWindowProc(hwnd, msg, wParam, lParam);
+      },
+      25,
+      25,
+      640,
+      480,
+      hwnd
+    );
+    child.Show().Update().SetWindowPosition(25, 25, 640, 480, WindowZOrder.HWND_TOPMOST);
+    return child;
   }
 
 

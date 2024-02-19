@@ -30,3 +30,6 @@ SetParent
 ShowWindow
 UpdateWindow
 SetWindowPos
+GetMessage
+TranslateMessage
+DispatchMessage
