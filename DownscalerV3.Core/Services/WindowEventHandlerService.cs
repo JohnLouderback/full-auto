@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel;
+using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.Input;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using DownscalerV3.Contracts.Services;
@@ -19,6 +22,17 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   private HWND hwnd;
   private bool isInitialized;
   private SUBCLASSPROC? subclassProc;
+
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public static Point GetMousePosition() {
+    Point lpPoint;
+    if (GetCursorPos(out lpPoint) == 0) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
+
+    return lpPoint;
+  }
 
 
   /// <inheritdoc />
@@ -40,7 +54,7 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
     isInitialized = true;
     // InstallHostWindow(hwnd);
     // InstallChildWindow(hwnd);
-    InstallMouseHook();
+    // InstallMouseHook();
     InstallEventHandlers();
   }
 
@@ -59,6 +73,26 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
 
     thread.SetApartmentState(ApartmentState.STA);
     thread.Start();
+  }
+
+
+  public unsafe void RegisterForRawInput(HWND hwnd) {
+    var devices = new RAWINPUTDEVICE[1];
+
+    devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+    devices[0].usUsage     = HID_USAGE_GENERIC_MOUSE;
+    devices[0].dwFlags     = RAWINPUTDEVICE_FLAGS.RIDEV_INPUTSINK;
+    devices[0].hwndTarget  = hwnd;
+
+    fixed (RAWINPUTDEVICE* devicePtr = &devices[0]) {
+      if (!RegisterRawInputDevices(
+            devicePtr,
+            (uint)devices.Length,
+            (uint)Marshal.SizeOf<RAWINPUTDEVICE>()
+          )) {
+        throw new Win32Exception(Marshal.GetLastWin32Error());
+      }
+    }
   }
 
 
@@ -103,6 +137,52 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   }
 
 
+  private static unsafe void ProcessRawInput(LPARAM lParam) {
+    uint dwSize = 0;
+
+    // First call to GetRawInputData: retrieves the size of the data.
+    GetRawInputData(
+      new HRAWINPUT(lParam),
+      RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT,
+      (void*)0,
+      ref dwSize,
+      (uint)sizeof(RAWINPUTHEADER)
+    );
+
+    if (dwSize > 0) {
+      // Allocate the memory needed to store the raw input data structure.
+      var buffer = Marshal.AllocHGlobal((int)dwSize);
+      try {
+        // Second call to GetRawInputData: retrieves the data
+        if (GetRawInputData(
+              new HRAWINPUT(lParam),
+              RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT,
+              (void*)buffer,
+              ref dwSize,
+              (uint)sizeof(RAWINPUTHEADER)
+            ) ==
+            dwSize) {
+          var raw = Marshal.PtrToStructure<RAWINPUT>(buffer);
+
+          // Now `raw` contains the raw input data, which you can process
+          // For example, for mouse input:
+          if (raw.header.dwType == (uint)RawInputMethod.RIM_TYPEMOUSE) {
+            var xPosRelative = raw.data.mouse.lLastX;
+            var yPosRelative = raw.data.mouse.lLastY;
+            Console.WriteLine($"Mouse moved by: ({xPosRelative}, {yPosRelative})");
+            var absolutePos = GetMousePosition();
+            Console.WriteLine($"Mouse absolute position: ({absolutePos.X}, {absolutePos.Y})");
+            // Process mouse movement...
+          }
+        }
+      }
+      finally {
+        Marshal.FreeHGlobal(buffer);
+      }
+    }
+  }
+
+
   private static LRESULT SubclassWndProc(
     HWND hWnd,
     uint msg,
@@ -122,6 +202,9 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
         Console.WriteLine(
           $"Mouse moved to non-client area: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})"
         );
+        break;
+      case Msg.WM_INPUT:
+        ProcessRawInput(lParam);
         break;
       default:
         Console.WriteLine(
@@ -204,10 +287,12 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   private void InstallEventHandlers() {
     // Install the event handlers into the main window.
     InstallWindowSubclass(hwnd);
+    RegisterForRawInput(hwnd);
 
     // Get all child windows of the main window and install the event handlers into them.
     foreach (var child in EnumerateChildWindowsRecursively(hwnd)) {
       InstallWindowSubclass(child.Hwnd);
+      RegisterForRawInput(child.Hwnd);
     }
   }
 
