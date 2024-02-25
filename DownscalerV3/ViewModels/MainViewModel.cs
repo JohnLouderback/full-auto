@@ -1,15 +1,24 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using DownscalerV3.Core.Contracts.Services;
 
 namespace DownscalerV3.ViewModels;
 
 public class MainViewModel : ObservableRecipient {
+  private readonly IMouseEventService MouseEventService;
+
   private double frameRate;
   private double frameTime;
-  private bool showDebugInfo = true;
-  private bool showMouseCoords;
-  private bool showFPS;
-  private bool showEventsList;
-  private bool showPassedInArgs;
+  private bool   showDebugInfo = true;
+  private bool   showMouseCoords;
+  private bool   showFPS;
+  private bool   showEventsList;
+  private bool   showPassedInArgs;
+  private string mouseCoordsDetails;
+
+  public string MouseCoordsDetails {
+    get => mouseCoordsDetails;
+    set => SetProperty(ref mouseCoordsDetails, value);
+  }
 
   /// <summary>
   ///   The rate of frames per second that are being processed.
@@ -88,5 +97,34 @@ public class MainViewModel : ObservableRecipient {
   public bool ShowPassedInArgs {
     get => showDebugInfo && showPassedInArgs;
     set => SetProperty(ref showPassedInArgs, value);
+  }
+
+
+  public MainViewModel(IMouseEventService mouseEventService) {
+    MouseEventService = mouseEventService;
+    MouseEventService.MouseMoved += (sender, coords) => {
+      // Update the mouse coordinates if the user has requested to see them.
+      if (ShowMouseCoords) {
+        UpdateMouseCoordsDetails();
+      }
+    };
+  }
+
+
+  private void UpdateMouseCoordsDetails() {
+    MouseCoordsDetails = $"""
+        X: {
+          MouseEventService.CurrentMouseCoords.Absolute.X.ToString(),
+          5}
+        Y: {
+          MouseEventService.CurrentMouseCoords.Absolute.Y.ToString(),
+          5}
+        Relative to downscaled window: {
+          MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow
+        }
+        Relative to source window: {
+          MouseEventService.CurrentMouseCoords.RelativeToSourceWindow
+        }
+      """;
   }
 }

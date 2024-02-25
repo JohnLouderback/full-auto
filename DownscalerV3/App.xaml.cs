@@ -1,6 +1,8 @@
 ﻿using DownscalerV3.Activation;
 using DownscalerV3.Contracts.Services;
+using DownscalerV3.Core.Contracts.Models;
 using DownscalerV3.Core.Contracts.Services;
+using DownscalerV3.Core.Models;
 using DownscalerV3.Core.Services;
 using DownscalerV3.Services;
 using DownscalerV3.ViewModels;
@@ -40,26 +42,39 @@ public partial class App : Application {
 
           // Other Activation Handlers
 
-          // Services
+          // Services //
           services.AddSingleton<IActivationService, ActivationService>();
           services.AddSingleton<IPageService, PageService>();
           services.AddSingleton<INavigationService, NavigationService>();
 
-          // Core Services
+          // Core Services //
+          services.AddSingleton<IAppState, AppState>();
+          services.AddSingleton<IArgsParser, ArgsParser>();
           services.AddSingleton<IFileService, FileService>();
           services.AddSingleton<IWindowEventHandlerService, WindowEventHandlerService>();
+          services.AddSingleton<IMouseEventService, MouseEventService>();
+          services.AddSingleton<IWindowEventHandlerService, WindowEventHandlerService>();
 
-          // Views and ViewModels
+          // Views and ViewModels //
           // The MainViewModel is a singleton so that it may be accessed across multiple views.
           services.AddSingleton<MainViewModel>();
           services.AddTransient<MainPage>();
 
-          // Configuration
+          // Configuration /
         }
       )
       .Build();
 
     UnhandledException += App_UnhandledException;
+
+    // Parse the command line arguments.
+    var argsParser = GetService<IArgsParser>();
+
+    if (!argsParser.ParseArgs(Environment.GetCommandLineArgs())) {
+      // If the arguments were not parsed successfully, then exit the application with a non-zero
+      // exit code.
+      Environment.Exit(1);
+    }
   }
 
 

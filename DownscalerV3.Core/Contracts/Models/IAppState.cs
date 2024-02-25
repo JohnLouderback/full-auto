@@ -13,19 +13,19 @@ public enum AspectRatio {
 }
 
 public interface IAppState {
-  int WindowWidth { get; set; }
+  uint WindowWidth { get; set; }
 
-  int WindowHeight { get; set; }
+  uint WindowHeight { get; set; }
 
   double DownscaleFactor { get; set; }
 
-  int DownscaleWidth { get; set; }
+  uint DownscaleWidth { get; set; }
 
-  int DownscaleHeight { get; set; }
+  uint DownscaleHeight { get; set; }
 
   AspectRatio AspectRatio { get; set; }
 
-  Win32Window WindowToScale { get; set; }
-  Win32Window DownscaleWindow { get; set; }
-  IEnumerable<Win32Window> AllWindows { get; set; }
+  Win32Window              WindowToScale   { get; set; }
+  Win32Window              DownscaleWindow { get; set; }
+  IEnumerable<Win32Window> AllWindows      { get; set; }
 }

@@ -4,7 +4,6 @@ using System.Text;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
-using Cpp.Core;
 
 #pragma warning disable CA1416
 
@@ -21,7 +20,7 @@ public static class HwndExtensions {
 
 
   public static string GetProcessName(this HWND hwnd) {
-    return WindowUtils.GetProcessName((int)hwnd.Value).TrimEnd('\0');
+    return Cpp.Core.WindowUtils.GetProcessName((int)hwnd.Value).TrimEnd('\0');
   }
 
 

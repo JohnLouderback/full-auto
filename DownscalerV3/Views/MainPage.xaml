@@ -54,6 +54,25 @@
           HorizontalTextAlignment="Right"
           Text="{x:Bind ViewModel.FrameTimeString, Mode=OneWay}" />
       </StackPanel>
+      <StackPanel x:Name="MouseCoordsContainer" HorizontalAlignment="Right" MaxWidth="400"
+                  Visibility="{x:Bind ViewModel.ShowMouseCoords, Mode=OneWay}">
+        <animations:Implicit.ShowAnimations>
+          <animations:TranslationAnimation From="200, 0, 0" To="0" Duration="0:0:0.5" />
+          <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:0.5" />
+        </animations:Implicit.ShowAnimations>
+        <animations:Implicit.HideAnimations>
+          <animations:TranslationAnimation From="0" To="200, 0, 0" Duration="0:0:0.5" />
+          <animations:OpacityAnimation From="1.0" To="0" Duration="0:0:0.5" />
+        </animations:Implicit.HideAnimations>
+
+        <TextBlock
+          x:Name="MouseCoords"
+          FontFamily="Courier New"
+          Foreground="Gray"
+          FontSize="14"
+          HorizontalTextAlignment="Right"
+          Text="{x:Bind ViewModel.MouseCoordsDetails, Mode=OneWay}" />
+      </StackPanel>
     </Canvas>
   </SwapChainPanel>
 </Page>

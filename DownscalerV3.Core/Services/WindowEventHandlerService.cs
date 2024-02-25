@@ -3,14 +3,14 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
-using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.Input;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using DownscalerV3.Contracts.Services;
+using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Services;
 using DownscalerV3.Core.Utils;
 using static Windows.Win32.PInvoke;
-using static DownscalerV3.Core.Utils.Win32Ex;
 using static DownscalerV3.Core.Utils.Macros;
 using static DownscalerV3.Core.Utils.NativeUtils;
 
@@ -19,9 +19,33 @@ namespace DownscalerV3.Core.Services;
 /// <inheritdoc />
 public class WindowEventHandlerService : IWindowEventHandlerService {
   private static readonly HOOKPROC MouseHookProcInstance = MouseHookProc;
+
+  /// <summary>
+  ///   The buffer used to store the raw input data. Points to a buffer allocated with
+  ///   <see cref="RAWINPUT" /> structures.
+  /// </summary>
+  private static nint rawInputBuffer = nint.Zero;
+
+  /// <summary>
+  ///   The size of the buffer used to store the raw input data. This is the size of the buffer
+  ///   allocated with <see cref="RAWINPUT" /> structures. If the buffer size needs to be increased,
+  ///   the buffer will be reallocated.
+  /// </summary>
+  private static uint rawInputBufferSize;
+
+  private static IAppState? AppState;
+  private static IMouseEventService? MouseEventService;
+
   private HWND hwnd;
   private bool isInitialized;
   private SUBCLASSPROC? subclassProc;
+
+
+  /// <inheritdoc />
+  public WindowEventHandlerService(IAppState appState, IMouseEventService mouseEventService) {
+    AppState          = appState;
+    MouseEventService = mouseEventService;
+  }
 
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,6 +56,19 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
     }
 
     return lpPoint;
+  }
+
+
+  /// <summary>
+  ///   Performs cleanup operations for the window event handler service. This includes freeing any
+  ///   resources that were allocated during initialization and unregistering any event handlers.
+  /// </summary>
+  public void CleanUp() {
+    if (!isInitialized) return;
+    if (rawInputBuffer != nint.Zero) {
+      Marshal.FreeHGlobal(rawInputBuffer);
+      rawInputBuffer = nint.Zero;
+    }
   }
 
 
@@ -59,23 +96,11 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   }
 
 
-  public void MessageLoop() {
-    var thread = new Thread(
-      () => {
-        MSG msg;
-        while (GetMessage(out msg, hwnd, 0, 0)) {
-          Console.WriteLine($"Message received: {Enum.GetName(typeof(Msg), msg.message)}");
-          TranslateMessage(ref msg);
-          DispatchMessage(ref msg);
-        }
-      }
-    );
-
-    thread.SetApartmentState(ApartmentState.STA);
-    thread.Start();
-  }
-
-
+  /// <summary>
+  ///   Registers the window to receive messages for raw input from a mouse.
+  /// </summary>
+  /// <param name="hwnd"> </param>
+  /// <exception cref="Win32Exception"> </exception>
   public unsafe void RegisterForRawInput(HWND hwnd) {
     var devices = new RAWINPUTDEVICE[1];
 
@@ -96,30 +121,24 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   }
 
 
-  private static LRESULT HostWndProc(
-    HWND hWnd,
-    uint msg,
-    WPARAM wParam,
-    LPARAM lParam
-  ) {
-    var message = (Msg)msg;
-    // Handle messages
-    // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
-    switch (message) {
-      case Msg.WM_QUIT:
-        Console.WriteLine("WM_QUIT received.");
-        break;
-      case Msg.WM_MOUSEMOVE:
-        Console.WriteLine($"Mouse moved to: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})");
-        break;
-      case Msg.WM_NCMOUSEMOVE:
-        Console.WriteLine(
-          $"Mouse moved to non-client area: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})"
-        );
-        break;
-    }
+  /// <summary>
+  ///   Allocates a buffer for raw input data. If the buffer already exists, it will be freed and a
+  ///   new buffer will be allocated if the requested size is larger than the current buffer size.
+  /// </summary>
+  /// <param name="size"> The required size of the buffer. </param>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  private static void EnsureRawInputBufferSize(uint size) {
+    if (rawInputBuffer == nint.Zero ||
+        rawInputBufferSize < size) {
+      if (rawInputBuffer != nint.Zero) {
+        Console.WriteLine("Freeing previous buffer.");
+        Marshal.FreeHGlobal(rawInputBuffer); // Free previous buffer if it exists
+      }
 
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+      Console.WriteLine($"Allocating new buffer of size: {size}");
+      rawInputBuffer     = Marshal.AllocHGlobal((int)size); // Allocate new buffer
+      rawInputBufferSize = size;
+    }
   }
 
 
@@ -137,47 +156,41 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   }
 
 
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
   private static unsafe void ProcessRawInput(LPARAM lParam) {
-    uint dwSize = 0;
+    uint sizeNeeded = 0;
 
     // First call to GetRawInputData: retrieves the size of the data.
     GetRawInputData(
       new HRAWINPUT(lParam),
       RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT,
       (void*)0,
-      ref dwSize,
+      ref sizeNeeded,
       (uint)sizeof(RAWINPUTHEADER)
     );
 
-    if (dwSize > 0) {
-      // Allocate the memory needed to store the raw input data structure.
-      var buffer = Marshal.AllocHGlobal((int)dwSize);
-      try {
-        // Second call to GetRawInputData: retrieves the data
-        if (GetRawInputData(
-              new HRAWINPUT(lParam),
-              RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT,
-              (void*)buffer,
-              ref dwSize,
-              (uint)sizeof(RAWINPUTHEADER)
-            ) ==
-            dwSize) {
-          var raw = Marshal.PtrToStructure<RAWINPUT>(buffer);
+    EnsureRawInputBufferSize(sizeNeeded); // Ensure the buffer is large enough for the data
 
-          // Now `raw` contains the raw input data, which you can process
-          // For example, for mouse input:
-          if (raw.header.dwType == (uint)RawInputMethod.RIM_TYPEMOUSE) {
-            var xPosRelative = raw.data.mouse.lLastX;
-            var yPosRelative = raw.data.mouse.lLastY;
-            Console.WriteLine($"Mouse moved by: ({xPosRelative}, {yPosRelative})");
-            var absolutePos = GetMousePosition();
-            Console.WriteLine($"Mouse absolute position: ({absolutePos.X}, {absolutePos.Y})");
-            // Process mouse movement...
-          }
+    if (sizeNeeded > 0) {
+      // Second call to GetRawInputData: retrieves the data
+      if (GetRawInputData(
+            new HRAWINPUT(lParam),
+            RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT,
+            (void*)rawInputBuffer,
+            ref sizeNeeded,
+            (uint)sizeof(RAWINPUTHEADER)
+          ) ==
+          sizeNeeded) {
+        // Get the raw input data from the buffer as a RAWINPUT struct.
+        var rawInput = (RAWINPUT*)rawInputBuffer.ToPointer();
+
+        if (rawInput -> header.dwType == (uint)RawInputMethod.RIM_TYPEMOUSE) {
+          // var xPosRelative = rawInput -> data.mouse.lLastX;
+          // var yPosRelative = rawInput -> data.mouse.lLastY;
+          var absolutePos = GetMousePosition();
+          // Signal to the mouse event service that the mouse position has been updated.
+          MouseEventService?.UpdateMousePosition(absolutePos.X, absolutePos.Y);
         }
-      }
-      finally {
-        Marshal.FreeHGlobal(buffer);
       }
     }
   }
@@ -217,73 +230,6 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   }
 
 
-  private unsafe HWND CreateHostForWindow() {
-    const string className = "DownscalerHost";
-    var wc = new WNDCLASSEXW {
-      cbSize        = (uint)Marshal.SizeOf(typeof(WNDCLASSEXW)),
-      style         = 0,
-      lpfnWndProc   = HostWndProc,
-      cbClsExtra    = 0,
-      cbWndExtra    = 0,
-      hInstance     = GetModuleHandle(0),
-      hIcon         = new HICON(nint.Zero),
-      hCursor       = new HCURSOR(nint.Zero),
-      hbrBackground = new HBRUSH(5), // BACKGROUND_WHITE,
-      lpszMenuName  = null,
-      lpszClassName = className.ToPWSTR(),
-      hIconSm       = new HICON(nint.Zero)
-    };
-
-    var classAtom = RegisterClassEx(in wc);
-    if (classAtom == 0) {
-      throw new Win32Exception();
-    }
-
-    var host = CreateWindowEx(
-      0,
-      className,
-      "Downscaler Host Window",
-      WINDOW_STYLE.WS_OVERLAPPEDWINDOW,
-      0,
-      0,
-      640,
-      480,
-      new HWND(nint.Zero),
-      null,
-      GetModuleHandle(),
-      (void*)nint.Zero
-    );
-
-    if (host == nint.Zero) {
-      throw new Win32Exception(Marshal.GetLastWin32Error());
-    }
-
-    return host;
-  }
-
-
-  private HWND InstallChildWindow(HWND hwnd) {
-    var child = CreateNewWindow(
-      "test",
-      "test",
-      WINDOW_STYLE.WS_CHILD,
-      (hwnd, msg, wParam, lParam) => {
-        Console.WriteLine(
-          $"{Enum.GetName(typeof(Msg), (Msg)msg)} received on class: {hwnd.GetClassName()}"
-        );
-        return DefWindowProc(hwnd, msg, wParam, lParam);
-      },
-      25,
-      25,
-      640,
-      480,
-      hwnd
-    );
-    child.Show().Update().SetWindowPosition(25, 25, 640, 480, WindowZOrder.HWND_TOPMOST);
-    return child;
-  }
-
-
   private void InstallEventHandlers() {
     // Install the event handlers into the main window.
     InstallWindowSubclass(hwnd);
@@ -292,39 +238,7 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
     // Get all child windows of the main window and install the event handlers into them.
     foreach (var child in EnumerateChildWindowsRecursively(hwnd)) {
       InstallWindowSubclass(child.Hwnd);
-      RegisterForRawInput(child.Hwnd);
-    }
-  }
-
-
-  /// <summary>
-  ///   For a given window, creates a host window that will be used to host that window by way of
-  ///   making it a child of the host window.
-  /// </summary>
-  /// <param name="hwnd"> The window handle of the window to be hosted. </param>
-  /// <returns> The window handle of the host window. </returns>
-  private HWND InstallHostWindow(HWND hwnd) {
-    var host = CreateHostForWindow();
-    host.Show().Update().SetWindowPosition(0, 0, 640, 480);
-    hwnd.SetWindowStyle(
-        WINDOW_STYLE.WS_CHILD | WINDOW_STYLE.WS_POPUP | WINDOW_STYLE.WS_VISIBLE
-      )
-      .SetParent(host)
-      .SetWindowPosition(0, 0, 640, 480);
-    return host;
-  }
-
-
-  private void InstallMouseHook() {
-    var mouseHook = SetWindowsHookEx(
-      WINDOWS_HOOK_ID.WH_MOUSE_LL,
-      MouseHookProcInstance,
-      null,
-      0
-    );
-
-    if (mouseHook == null) {
-      throw new Win32Exception(Marshal.GetLastWin32Error());
+      //RegisterForRawInput(child.Hwnd);
     }
   }
 

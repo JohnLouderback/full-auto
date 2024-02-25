@@ -48,3 +48,10 @@ HID_USAGE_GENERIC_MOUSE
 RegisterRawInputDevices
 GetRawInputData
 GetCursorPos
+SetForegroundWindow
+GetFocus
+GetWindowRect
+GetClientRect
+ClientToScreen
+DwmGetWindowAttribute
+GetDpiForWindow

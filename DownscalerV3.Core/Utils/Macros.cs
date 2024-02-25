@@ -1,4 +1,5 @@
-﻿using Windows.Win32.Foundation;
+﻿using System.Runtime.CompilerServices;
+using Windows.Win32.Foundation;
 
 // ReSharper disable InconsistentNaming
 
@@ -15,6 +16,7 @@ public static class Macros {
   /// </summary>
   /// <param name="lp"> The LPARAM value to extract the x-coordinate from. </param>
   /// <returns> The x-coordinate of the given LPARAM value. </returns>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static int GET_X_LPARAM(LPARAM lp) {
     return LOWORD((int)lp);
   }
@@ -27,6 +29,7 @@ public static class Macros {
   /// </summary>
   /// <param name="lp"> The LPARAM value to extract the y-coordinate from. </param>
   /// <returns> The y-coordinate of the given LPARAM value. </returns>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static int GET_Y_LPARAM(LPARAM lp) {
     return HIWORD((int)lp);
   }
@@ -40,6 +43,7 @@ public static class Macros {
   /// </summary>
   /// <param name="l"> The value to extract the high-order word from. </param>
   /// <returns> The high-order word of the given value. </returns>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static int HIWORD(int l) {
     return l >> 16;
   }
@@ -53,7 +57,23 @@ public static class Macros {
   /// </summary>
   /// <param name="l"> The value to extract the low-order word from. </param>
   /// <returns> The low-order word of the given value. </returns>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static int LOWORD(int l) {
     return l & 0xFFFF;
+  }
+
+
+  /// <summary>
+  ///   Determines whether the given HRESULT value indicates success. An HRESULT value is a 32-bit
+  ///   value that is used to indicate success or failure. If the value is greater than or equal to
+  ///   0, the operation was successful. If the value is less than 0, the operation failed.
+  /// </summary>
+  /// <param name="hr"> The HRESULT value to check. </param>
+  /// <returns>
+  ///   <see langword="true" /> if the operation was successful; otherwise, <see langword="false" />.
+  /// </returns>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public static bool SUCCEEDED(HRESULT hr) {
+    return hr >= 0;
   }
 }

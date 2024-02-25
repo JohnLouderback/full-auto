@@ -16,6 +16,8 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
     <UseRidGraph>true</UseRidGraph>
+    <Company>John Louderback</Company>
+    <Product>Downscaler</Product>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Controls\TextBlockWithShadow.xaml" />
