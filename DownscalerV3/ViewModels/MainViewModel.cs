@@ -102,6 +102,7 @@ public class MainViewModel : ObservableRecipient {
 
   public MainViewModel(IMouseEventService mouseEventService) {
     MouseEventService = mouseEventService;
+    UpdateMouseCoordsDetails();
     MouseEventService.MouseMoved += (sender, coords) => {
       // Update the mouse coordinates if the user has requested to see them.
       if (ShowMouseCoords) {
@@ -113,18 +114,18 @@ public class MainViewModel : ObservableRecipient {
 
   private void UpdateMouseCoordsDetails() {
     MouseCoordsDetails = $"""
-        X: {
-          MouseEventService.CurrentMouseCoords.Absolute.X.ToString(),
-          5}
-        Y: {
-          MouseEventService.CurrentMouseCoords.Absolute.Y.ToString(),
-          5}
-        Relative to downscaled window: {
-          MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow
-        }
-        Relative to source window: {
-          MouseEventService.CurrentMouseCoords.RelativeToSourceWindow
-        }
+      X: {
+        MouseEventService.CurrentMouseCoords.Absolute.X.ToString(),
+        5}
+      Y: {
+        MouseEventService.CurrentMouseCoords.Absolute.Y.ToString(),
+        5}
+      Relative to downscaled window: {
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow
+      }
+      Relative to source window: {
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindow
+      }
       """;
   }
 }

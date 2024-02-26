@@ -174,7 +174,7 @@ public class ArgsParser(IAppState appState) : IArgsParser {
 
           Console.WriteLine(
             $"""
-              Found source window:
+            Found source window:
               Title: {
                 foundSourceWindow.Title
               }

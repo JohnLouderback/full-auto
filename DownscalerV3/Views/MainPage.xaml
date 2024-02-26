@@ -54,7 +54,8 @@
           HorizontalTextAlignment="Right"
           Text="{x:Bind ViewModel.FrameTimeString, Mode=OneWay}" />
       </StackPanel>
-      <StackPanel x:Name="MouseCoordsContainer" HorizontalAlignment="Right" MaxWidth="400"
+      <StackPanel Loaded="MouseCoords_OnLoaded" x:Name="MouseCoordsContainer" HorizontalAlignment="Right"
+                  MinWidth="400"
                   Visibility="{x:Bind ViewModel.ShowMouseCoords, Mode=OneWay}">
         <animations:Implicit.ShowAnimations>
           <animations:TranslationAnimation From="200, 0, 0" To="0" Duration="0:0:0.5" />
