@@ -28,7 +28,7 @@
       </Button>
       <views:DebugSettingsFlyout x:Name="DebugSettingsFlyout" Target="{x:Bind DebugButton}" />
       <StackPanel Loaded="Fps_OnLoaded" x:Name="FpsContainer" HorizontalAlignment="Right" MaxWidth="200"
-                  Visibility="{x:Bind ViewModel.ShowFPS, Mode=OneWay}">
+                  Visibility="{x:Bind ViewModel.CanShowFPS, Mode=OneWay}">
         <animations:Implicit.ShowAnimations>
           <animations:TranslationAnimation From="200, 0, 0" To="0" Duration="0:0:0.5" />
           <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:0.5" />
@@ -56,7 +56,7 @@
       </StackPanel>
       <StackPanel Loaded="MouseCoords_OnLoaded" x:Name="MouseCoordsContainer" HorizontalAlignment="Right"
                   MinWidth="400"
-                  Visibility="{x:Bind ViewModel.ShowMouseCoords, Mode=OneWay}">
+                  Visibility="{x:Bind ViewModel.CanShowMouseCoords, Mode=OneWay}">
         <animations:Implicit.ShowAnimations>
           <animations:TranslationAnimation From="200, 0, 0" To="0" Duration="0:0:0.5" />
           <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:0.5" />

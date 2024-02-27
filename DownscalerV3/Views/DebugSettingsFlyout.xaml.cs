@@ -1,3 +1,6 @@
+using CommunityToolkit.WinUI;
+using DependencyPropertyGenerator;
+using DownscalerV3.Utils;
 using DownscalerV3.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -7,32 +10,13 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace DownscalerV3.Views;
 
+[DependencyProperty<FrameworkElement>(
+  "Target",
+  Description = "The element that the flyout should be positioned relative to."
+)]
+[DependencyProperty<bool>("IsOpen", Description = "Whether or not the flyout is open.")]
 public sealed partial class DebugSettingsFlyout : UserControl {
-  public static readonly DependencyProperty TargetProperty = DependencyProperty.Register(
-    "Target",
-    typeof(FrameworkElement),
-    typeof(DebugSettingsFlyout),
-    new PropertyMetadata(null, OnTargetChanged)
-  );
-
-  public static readonly DependencyProperty IsOpenProperty = DependencyProperty.Register(
-    "IsOpen",
-    typeof(bool),
-    typeof(DebugSettingsFlyout),
-    new PropertyMetadata(null, OnIsOpenChanged)
-  );
-
   public MainViewModel ViewModel { get; }
-
-  public FrameworkElement Target {
-    get => (FrameworkElement)GetValue(TargetProperty);
-    set => SetValue(TargetProperty, value);
-  }
-
-  public bool IsOpen {
-    get => (bool)GetValue(IsOpenProperty);
-    set => SetValue(IsOpenProperty, value);
-  }
 
 
   public DebugSettingsFlyout() {
@@ -41,20 +25,30 @@ public sealed partial class DebugSettingsFlyout : UserControl {
   }
 
 
-  private static void OnIsOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-    var control = d as DebugSettingsFlyout;
-    if (control != null &&
-        control.DebugSubMenu != null) {
-      control.DebugSubMenu.IsOpen = (bool)e.NewValue;
+  partial void OnIsOpenChanged(bool oldValue, bool newValue) {
+    var control = this;
+    if (control.DebugSubMenu == null) return;
+    
+    control.DebugSubMenu.IsOpen = newValue;
+
+    // If the flyout is being opened, then focus the first checkbox.
+    if (newValue) {
+      control.DispatcherQueue.SetTimeout(
+        () => {
+          // Programmatically find first checkbox and focus it.
+          var firstCheckBox = control.DebugSubMenu.FindChild<CheckBox>();
+          firstCheckBox?.Focus(FocusState.Programmatic);
+        },
+        50
+      );
     }
   }
 
 
-  private static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-    var control = d as DebugSettingsFlyout;
-    if (control != null &&
-        control.DebugSubMenu != null) {
-      control.DebugSubMenu.Target = (FrameworkElement)e.NewValue;
+  partial void OnTargetChanged(FrameworkElement oldValue, FrameworkElement newValue) {
+    var control = this;
+    if (control.DebugSubMenu != null) {
+      control.DebugSubMenu.Target = newValue;
     }
   }
 }
