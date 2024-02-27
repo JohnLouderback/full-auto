@@ -4,6 +4,7 @@ HWND
 WNDCLASSEXW
 RegisterClassExW
 GetClassNameW
+GetWindow
 GetWindowText
 GetWindowThreadProcessId
 OpenProcess

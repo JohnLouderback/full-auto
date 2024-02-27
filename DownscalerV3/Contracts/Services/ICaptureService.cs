@@ -1,0 +1,42 @@
+﻿using Windows.Win32.Foundation;
+using Microsoft.UI.Xaml.Controls;
+
+namespace DownscalerV3.Contracts.Services;
+
+/// <summary>
+///   A service that captures the contents of a window and displays them on a
+///   <see cref="SwapChainPanel" />.
+/// </summary>
+public interface ICaptureService {
+  /// <summary>
+  ///   Occurs when the frame rate of the capture session changes. Provides the new frame rate and
+  ///   the time it took to process the last frame.
+  /// </summary>
+  event EventHandler<(double newFrameRate, double newFrameTime)> FrameRateChanged;
+
+
+  /// <summary>
+  ///   Ends the current capture session. If nothing is being captured, then this method does
+  ///   nothing.
+  /// </summary>
+  void EndCapture();
+
+
+  /// <summary>
+  ///   Invokes a window picker and captures the contents of the selected window. The captured
+  ///   contents are then displayed on the provided <see cref="SwapChainPanel" />. If there is a
+  ///   current capture session, then this method will end the current session and start a new one.
+  /// </summary>
+  /// <param name="swapChainPanel"> </param>
+  void PickAndCaptureWindow(SwapChainPanel swapChainPanel);
+
+
+  /// <summary>
+  ///   Starts capturing the contents of a window and uses the provided <see cref="SwapChainPanel" />
+  ///   to display the captured contents. If there is a current capture session, then this method
+  ///   will end the current session and start a new one.
+  /// </summary>
+  /// <param name="window"> </param>
+  /// <param name="swapChainPanel"> </param>
+  void StartCapture(HWND window, SwapChainPanel swapChainPanel);
+}

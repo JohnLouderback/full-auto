@@ -9,6 +9,10 @@ namespace DownscalerV3.Core.Utils;
 ///   A series of utility functions that mimic the behavior of some Win32 macros.
 /// </summary>
 public static class Macros {
+  public const int NULL    = 0;
+  public const int nullptr = 0;
+
+
   /// <summary>
   ///   Extracts the x-coordinate from the given LPARAM value. The x-coordinate is the low-order word
   ///   of the given value. For example, if the hex value is 0x12345678, the x-coordinate is 0x5678
