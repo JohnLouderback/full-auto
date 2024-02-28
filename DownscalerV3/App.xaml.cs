@@ -54,6 +54,7 @@ public partial class App : Application {
           services.AddSingleton<IWindowEventHandlerService, WindowEventHandlerService>();
           services.AddSingleton<IMouseEventService, MouseEventService>();
           services.AddSingleton<IWindowEventHandlerService, WindowEventHandlerService>();
+          services.AddSingleton<ICaptureService, CaptureService>();
 
           // Views and ViewModels //
           // The MainViewModel is a singleton so that it may be accessed across multiple views.

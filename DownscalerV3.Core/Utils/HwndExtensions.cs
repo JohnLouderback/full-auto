@@ -11,6 +11,11 @@ using static DownscalerV3.Core.Utils.Macros;
 namespace DownscalerV3.Core.Utils;
 
 public static class HwndExtensions {
+  public static nint CreateCaptureItem(this HWND hwnd) {
+    return Cpp.Core.WindowUtils.CreateCaptureItemForWindow((int)hwnd);
+  }
+
+
   public static unsafe string GetClassName(this HWND hwnd) {
     var bufferSize = 1024;
     using (var classNameBuffer = new NativeBuffer<char>(bufferSize)) {

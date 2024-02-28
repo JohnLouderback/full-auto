@@ -13,29 +13,37 @@
 
 using namespace winrt::Windows::Graphics::Capture;
 
-/**
- * @brief Creates a capture item for a window. A capture item is used to capture the contents of a window.
- * @param hwnd The window to capture.
- * @return The capture item for the window. 
- */
-auto CreateCaptureItemForWindow(HWND hwnd) {
-  const auto activationFactory = winrt::get_activation_factory<
-    GraphicsCaptureItem
-  >();
+namespace DownscalerV3::Cpp::WinRT {
+  /**
+   * @brief Creates a capture item for a window. A capture item is used to capture the contents of a window.
+   * @param hwnd The window to capture.
+   * @return The pointer to the IGraphicsCaptureItem interface for the window, or nullptr on failure.
+   */
+  void* CreateCaptureItemForWindow(HWND hwnd) {
+    // Obtain the activation factory for the GraphicsCaptureItem class.
+    auto activationFactory = winrt::get_activation_factory<GraphicsCaptureItem>();
 
-  const auto interopFactory = activationFactory.as<IGraphicsCaptureItemInterop>();
+    // Query for the IGraphicsCaptureItemInterop interface.
+    auto interopFactory = activationFactory.as<IGraphicsCaptureItemInterop>();
 
-  GraphicsCaptureItem item = {nullptr};
+    // The pointer to the IGraphicsCaptureItem interface.
+    void* captureItemInterface = nullptr;
 
-  const auto itemCreationResult = interopFactory->CreateForWindow(
-    hwnd,
-    winrt::guid_of<ABI::Windows::Graphics::Capture::IGraphicsCaptureItem>(),
-    winrt::put_abi(item)
-  );
+    // Try to create the capture item for the specified window.
+    HRESULT itemCreationResult = interopFactory->CreateForWindow(
+      hwnd,
+      winrt::guid_of<ABI::Windows::Graphics::Capture::IGraphicsCaptureItem>(),
+      &captureItemInterface // Pass the address of the interface pointer
+    );
 
-  if (FAILED(itemCreationResult)) {
-    throw winrt::hresult_error(itemCreationResult);
+    // Check for failure in creating the capture item.
+    if (FAILED(itemCreationResult)) {
+      // Handle the error as needed, such as logging the HRESULT value.
+      // For now, we'll just return nullptr to indicate failure. 
+      return nullptr;
+    }
+
+    // Return the interface pointer. The caller is responsible for managing the lifetime of this COM object.
+    return captureItemInterface;
   }
-
-  return item;
 }
