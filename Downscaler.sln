@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownscalerV3.Tests.MSTest",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DownscalerV3.Cpp.Core", "DownscalerV3.Cpp.Core\DownscalerV3.Cpp.Core.vcxproj", "{B81789D9-BFF3-4911-A01A-D0AE1F24C9AE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DownscalerV3.Cpp.WinRT", "DownscalerV3.Cpp.WinRT\DownscalerV3.Cpp.WinRT.vcxproj", "{48CDF8C2-4070-4040-A150-30C1B63B39EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -157,6 +159,22 @@ Global
 		{B81789D9-BFF3-4911-A01A-D0AE1F24C9AE}.Release|x64.Build.0 = Release|x64
 		{B81789D9-BFF3-4911-A01A-D0AE1F24C9AE}.Release|x86.ActiveCfg = Release|Win32
 		{B81789D9-BFF3-4911-A01A-D0AE1F24C9AE}.Release|x86.Build.0 = Release|Win32
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Debug|Any CPU.Build.0 = Debug|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Debug|arm64.ActiveCfg = Debug|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Debug|arm64.Build.0 = Debug|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Debug|x64.ActiveCfg = Debug|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Debug|x64.Build.0 = Debug|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Debug|x86.ActiveCfg = Debug|Win32
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Debug|x86.Build.0 = Debug|Win32
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|Any CPU.ActiveCfg = Release|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|Any CPU.Build.0 = Release|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|arm64.ActiveCfg = Release|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|arm64.Build.0 = Release|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|x64.ActiveCfg = Release|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|x64.Build.0 = Release|x64
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|x86.ActiveCfg = Release|Win32
+		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
