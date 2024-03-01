@@ -12,6 +12,11 @@ public enum AspectRatio {
   Maintain
 }
 
+/// <summary>
+///   Represents the overarching global state of the application. Generally this stores the
+///   processed results of parsing the command line arguments and the current state of the
+///   application.
+/// </summary>
 public interface IAppState {
   uint WindowWidth { get; set; }
 

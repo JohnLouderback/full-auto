@@ -50,7 +50,7 @@ public static class HwndExtensions {
   ///   <see cref="PInvoke.SetWindowLongPtr" />
   ///   fails when attempting to remove the owner from the window.
   /// </exception>
-  public static HWND RemoveOwner(HWND window) {
+  public static HWND RemoveOwner(this HWND window) {
     // Get the owner of the window.
     var hOwner = PInvoke.GetWindow(window, GET_WINDOW_CMD.GW_OWNER);
 

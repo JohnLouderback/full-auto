@@ -14,15 +14,15 @@ using DirectXPixelFormat =
 
 namespace DownscalerV3.Helpers.Graphics;
 
-public class SimpleCapturer {
-  private readonly GraphicsCaptureItem item;
-  private readonly SwapChainPanel swapChainPanel;
-  private CanvasSwapChain swapChain;
-  private IDirect3DDevice device;
-  private CanvasDevice canvasDevice;
-  private Direct3D11CaptureFramePool framePool;
-  private GraphicsCaptureSession session;
-  private Stopwatch stopwatch;
+public class SimpleCapturer : ICapturer {
+  private readonly GraphicsCaptureItem        item;
+  private readonly SwapChainPanel             swapChainPanel;
+  private          CanvasSwapChain            swapChain;
+  private          IDirect3DDevice            device;
+  private          CanvasDevice               canvasDevice;
+  private          Direct3D11CaptureFramePool framePool;
+  private          GraphicsCaptureSession     session;
+  private          Stopwatch                  stopwatch;
 
   /// <summary>
   ///   The number of frames that have been processed since the last FPS report.
@@ -51,11 +51,7 @@ public class SimpleCapturer {
 
   public delegate void FrameRateChangedEventHandler(double newFrameRate, double newFrameTime);
 
-  /// <summary>
-  ///   Event that is raised when the frame rate changes. The new frame rate is passed as the
-  ///   argument and is a double in the form of "n" frames per second. The frame time is also
-  ///   passed as a double in the form of "n" milliseconds spent per frame.
-  /// </summary>
+  /// <inheritdoc />
   public event FrameRateChangedEventHandler? FrameRateChanged;
 
 

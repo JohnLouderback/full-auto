@@ -48,7 +48,7 @@ public class CanvasFrameProcessor {
     }
 
     // Present the contents of the swap chain to the screen
-    swapChain.Present();
+    swapChain.Present(1);
   }
 
 

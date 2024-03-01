@@ -75,6 +75,11 @@ public sealed partial class MainPage : Page {
   }
 
 
+  private void MainPage_OnLoaded(object sender, RoutedEventArgs e) {
+    ViewModel.StartCapture(SwapChainPanel);
+  }
+
+
   private void MainPage_OnSizeChanged(object sender, SizeChangedEventArgs e) {
     UpdatePositions();
   }

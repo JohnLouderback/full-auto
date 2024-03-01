@@ -8,6 +8,7 @@
   xmlns:animations="using:CommunityToolkit.WinUI.Animations"
   Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
   mc:Ignorable="d"
+  Loaded="MainPage_OnLoaded"
   SizeChanged="MainPage_OnSizeChanged">
 
   <SwapChainPanel x:Name="SwapChainPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

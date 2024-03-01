@@ -28,7 +28,7 @@ public interface ICaptureService {
   ///   current capture session, then this method will end the current session and start a new one.
   /// </summary>
   /// <param name="swapChainPanel"> </param>
-  void PickAndCaptureWindow(SwapChainPanel swapChainPanel);
+  Task PickAndCaptureWindow(SwapChainPanel swapChainPanel);
 
 
   /// <summary>
@@ -39,4 +39,13 @@ public interface ICaptureService {
   /// <param name="window"> </param>
   /// <param name="swapChainPanel"> </param>
   void StartCapture(HWND window, SwapChainPanel swapChainPanel);
+
+
+  /// <summary>
+  ///   Starts capturing the contents of the source window in the <see cref="AppState" /> and uses
+  ///   the provided <see cref="SwapChainPanel" /> to display the captured contents. If there is a
+  ///   current capture session, then this method will end the current session and start a new one.
+  /// </summary>
+  /// <param name="swapChainPanel"> </param>
+  void StartCapture(SwapChainPanel swapChainPanel);
 }

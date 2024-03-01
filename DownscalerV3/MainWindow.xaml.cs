@@ -1,6 +1,9 @@
 ﻿using Windows.UI.ViewManagement;
 using Windows.Win32.Foundation;
 using DownscalerV3.Contracts.Services;
+using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Models;
+using DownscalerV3.Core.Utils;
 using DownscalerV3.Helpers;
 using DownscalerV3.ViewModels;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -17,6 +20,8 @@ public sealed partial class MainWindow : WindowEx {
   public IWindowEventHandlerService WindowEventHandlerService { get; } =
     App.GetService<IWindowEventHandlerService>();
 
+  public IAppState AppState { get; } = App.GetService<IAppState>();
+
 
   public MainWindow() {
     InitializeComponent();
@@ -30,6 +35,15 @@ public sealed partial class MainWindow : WindowEx {
     settings        = new UISettings();
     settings.ColorValuesChanged +=
       Settings_ColorValuesChanged; // cannot use FrameworkElement.ActualThemeChanged event
+
+    // Set the app state's downscale window to the main window.
+    var hwnd = new HWND(this.GetWindowHandle());
+    AppState.DownscaleWindow = new Win32Window {
+      Hwnd        = hwnd,
+      ClassName   = hwnd.GetClassName(),
+      ProcessName = hwnd.GetProcessName(),
+      Title       = hwnd.GetWindowText()
+    };
 
     // Initialize the window event handler service with this window's handle.
     WindowEventHandlerService.InitializeForWindow(new HWND(this.GetWindowHandle()));

@@ -1,20 +1,11 @@
 ﻿using System.ComponentModel;
+using DownscalerV3.Contracts.Services;
 using DownscalerV3.Core.Contracts.Services;
+using Microsoft.UI.Xaml.Controls;
 
 namespace DownscalerV3.ViewModels;
 
 public partial class MainViewModel : INotifyPropertyChanged {
-  private readonly IMouseEventService MouseEventService;
-
-  private double frameRate;
-  private double frameTime;
-  private bool   showDebugInfo = true;
-  private bool   showMouseCoords;
-  private bool   showFPS;
-  private bool   showEventsList;
-  private bool   showPassedInArgs;
-  private string mouseCoordsDetails;
-
   public string MouseCoordsDetails { get; set; }
 
   /// <summary>
@@ -92,14 +83,38 @@ public partial class MainViewModel : INotifyPropertyChanged {
   public bool CanShowPassedInArgs => ShowDebugInfo && ShouldShowPassedInArgs;
 
 
-  public MainViewModel(IMouseEventService mouseEventService) {
+  public MainViewModel(IMouseEventService mouseEventService, ICaptureService captureService) {
     MouseEventService = mouseEventService;
+    CaptureService    = captureService;
     UpdateMouseCoordsDetails();
     MouseEventService.MouseMoved += (sender, coords) => {
       // Update the mouse coordinates if the user has requested to see them.
       if (ShouldShowMouseCoords) {
         UpdateMouseCoordsDetails();
       }
+    };
+  }
+
+
+  /// <summary>
+  ///   Given a <see cref="SwapChainPanel" />, starts capturing the contents of the source window in
+  ///   the <see cref="AppState" /> and uses the provided <see cref="SwapChainPanel" /> to display
+  ///   the captured contents.
+  /// </summary>
+  /// <param name="swapChainPanel">
+  ///   The <see cref="SwapChainPanel" /> to display the captured contents on.
+  /// </param>
+  public void StartCapture(SwapChainPanel swapChainPanel) {
+    // Start the capture service.
+    // CaptureService.PickAndCaptureWindow(swapChainPanel);
+    CaptureService.StartCapture(swapChainPanel);
+    CaptureService.FrameRateChanged += (_, args) => {
+      swapChainPanel.DispatcherQueue.TryEnqueue(
+        () => {
+          FrameRate = args.newFrameRate;
+          FrameTime = args.newFrameTime;
+        }
+      );
     };
   }
 
@@ -120,4 +135,11 @@ public partial class MainViewModel : INotifyPropertyChanged {
       }
       """;
   }
+
+
+  // ReSharper disable InconsistentNaming
+  private readonly IMouseEventService MouseEventService;
+
+  private readonly ICaptureService CaptureService;
+  // ReSharper restore InconsistentNaming
 }
