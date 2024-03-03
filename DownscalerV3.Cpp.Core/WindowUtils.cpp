@@ -13,8 +13,11 @@ namespace DownscalerV3::Cpp::Core {
        * @param hwnd The window handle.
        * @return The process name for the window as a managed string.
        */
-      static String^ GetProcessName(int hwnd) {
-        auto processName = NativeImpls::GetProcessName(reinterpret_cast<HWND>(hwnd));
+      static String^ GetProcessName(IntPtr hwnd) {
+        // Convert IntPtr to HWND (native handle)
+        auto nativeHwnd = reinterpret_cast<HWND>(hwnd.ToPointer());
+
+        auto processName = NativeImpls::GetProcessName(nativeHwnd);
         return gcnew String(processName.data());
       }
 
@@ -23,9 +26,12 @@ namespace DownscalerV3::Cpp::Core {
        * @param hwnd The window handle to create a capture item for.
        * @returns A pointer to the IGraphicsCaptureItem COM interface for the window.
        */
-      static IntPtr CreateCaptureItemForWindow(int hwnd) {
+      static IntPtr CreateCaptureItemForWindow(IntPtr hwnd) {
+        // Convert IntPtr to HWND (native handle)
+        auto nativeHwnd = reinterpret_cast<HWND>(hwnd.ToPointer());
+
         // Call the function from the Cpp.WinRT static library.
-        auto captureItemInterface = WinRT::CreateCaptureItemForWindow(reinterpret_cast<HWND>(hwnd));
+        auto captureItemInterface = WinRT::CreateCaptureItemForWindow(nativeHwnd);
 
         // Convert the raw pointer to a System::IntPtr.
         return IntPtr(captureItemInterface);

@@ -12,7 +12,7 @@ namespace DownscalerV3.Core.Utils;
 
 public static class HwndExtensions {
   public static nint CreateCaptureItem(this HWND hwnd) {
-    return Cpp.Core.WindowUtils.CreateCaptureItemForWindow((int)hwnd);
+    return Cpp.Core.WindowUtils.CreateCaptureItemForWindow(hwnd.Value);
   }
 
 
@@ -25,8 +25,18 @@ public static class HwndExtensions {
   }
 
 
+  /// <summary>
+  ///   Gets the DPI of the window. For example a 1:1 scaling would return 96.
+  /// </summary>
+  /// <param name="hwnd"> The window to get the DPI of. </param>
+  /// <returns> The DPI of the window. </returns>
+  public static uint GetDpi(this HWND hwnd) {
+    return PInvoke.GetDpiForWindow(hwnd);
+  }
+
+
   public static string GetProcessName(this HWND hwnd) {
-    return Cpp.Core.WindowUtils.GetProcessName((int)hwnd.Value).TrimEnd('\0');
+    return Cpp.Core.WindowUtils.GetProcessName(hwnd.Value).TrimEnd('\0');
   }
 
 
