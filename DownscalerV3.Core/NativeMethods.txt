@@ -56,3 +56,5 @@ GetClientRect
 ClientToScreen
 DwmGetWindowAttribute
 GetDpiForWindow
+MonitorFromWindow
+GetDpiForMonitor

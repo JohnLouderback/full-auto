@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
 using static DownscalerV3.Core.Utils.Macros;
 
@@ -26,12 +27,24 @@ public static class HwndExtensions {
 
 
   /// <summary>
-  ///   Gets the DPI of the window. For example a 1:1 scaling would return 96.
+  ///   Gets the DPI of the window. For example a 1:1 scaling would return 96. Scaling of 150% would
+  ///   return 144. Due to applications not necessarily being DPI aware, it is often more reliable
+  ///   to get the DPI of the monitor the window is on.
   /// </summary>
   /// <param name="hwnd"> The window to get the DPI of. </param>
   /// <returns> The DPI of the window. </returns>
   public static uint GetDpi(this HWND hwnd) {
     return PInvoke.GetDpiForWindow(hwnd);
+  }
+
+
+  /// <summary>
+  ///   Get the monitor handle for the monitor on which this window currently resides.
+  /// </summary>
+  /// <param name="hwnd"> The window to get the monitor of. </param>
+  /// <returns> The monitor handle for the monitor on which this window currently resides. </returns>
+  public static HMONITOR GetMonitor(this HWND hwnd) {
+    return PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
   }
 
 

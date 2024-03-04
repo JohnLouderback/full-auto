@@ -76,7 +76,7 @@ public sealed partial class MainPage : Page {
 
 
   private void MainPage_OnLoaded(object sender, RoutedEventArgs e) {
-    ViewModel.StartCapture(SwapChainPanel);
+    ViewModel.StartCapture(SwapChainPanel, DispatcherQueue);
   }
 
 

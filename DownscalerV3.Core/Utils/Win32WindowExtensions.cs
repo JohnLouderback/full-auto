@@ -47,12 +47,23 @@ public static class Win32WindowExtensions {
   /// <param name="window"> </param>
   /// <returns> </returns>
   public static RECT GetAbsoluteClientRect(this Win32Window window) {
-    var clientRect = window.GetClientRectRelativeToWindow();
-    var windowRect = window.GetRect();
-    clientRect.left   += windowRect.left;
-    clientRect.top    += windowRect.top;
-    clientRect.right  += windowRect.left;
-    clientRect.bottom += windowRect.top;
+    var clientRect = window.GetClientRect();
+    var topLeft = new Point {
+      X = clientRect.left,
+      Y = clientRect.top
+    };
+    var bottomRight = new Point {
+      X = clientRect.right,
+      Y = clientRect.bottom
+    };
+
+    ClientToScreen(window.Hwnd, ref topLeft);
+    ClientToScreen(window.Hwnd, ref bottomRight);
+
+    clientRect.left   += topLeft.X;
+    clientRect.top    += topLeft.Y;
+    clientRect.right  += bottomRight.X;
+    clientRect.bottom += bottomRight.Y;
     return clientRect;
   }
 
@@ -86,17 +97,33 @@ public static class Win32WindowExtensions {
   ///   images of the entire window.
   /// </summary>
   /// <param name="window"> The window to get the client rectangle of. </param>
+  /// <param name="scaleByDpi"> Whether to scale the client area by the DPI of the monitor. </param>
   /// <returns>
   ///   The rectangle that represents the window's client area relative to the window itself.
   /// </returns>
-  public static unsafe RECT GetClientRectRelativeToWindow(this Win32Window window) {
+  public static unsafe RECT GetClientRectRelativeToWindow(
+    this Win32Window window,
+    bool scaleByDpi = false
+  ) {
     var hwnd       = window.Hwnd;
     var clientRect = window.GetClientRect();
 
+    // The top-left corner of the client area is the origin of the window. Usually, (0, 0).
     var topLeft = new Point {
       X = clientRect.left,
       Y = clientRect.top
     };
+
+    // The bottom-right corner of the client area is the width and height of the window.
+    var bottomRight = new Point {
+      X = clientRect.right,
+      Y = clientRect.bottom
+    };
+
+    // Convert the client area's top-left corner to screen coordinates.
+    ClientToScreen(hwnd, ref topLeft);
+    // Convert the client area's bottom-right corner to screen coordinates.
+    ClientToScreen(hwnd, ref bottomRight);
 
     RECT extendedFrameBounds;
     var result = DwmGetWindowAttribute(
@@ -106,8 +133,9 @@ public static class Win32WindowExtensions {
       (uint)sizeof(RECT)
     );
 
-    var dpi      = GetDpiForWindow(hwnd);
-    var dpiScale = dpi / (float)baseDPI;
+    var dpi = hwnd.GetMonitor().GetDpi();
+    // Calculate the DPI scale. No scaling is done if the scaleByDpi parameter is false.
+    var dpiScale = scaleByDpi ? dpi / (float)baseDPI : 1;
 
     if (SUCCEEDED(result)) {
       // Calculate the offset of the client area within the extended frame bounds.
@@ -115,11 +143,10 @@ public static class Win32WindowExtensions {
       // bounds are in physical pixels, so we need to scale them down to logical pixels.
       clientRect.left = (int)(topLeft.X - extendedFrameBounds.left / dpiScale);
       clientRect.top  = (int)(topLeft.Y - extendedFrameBounds.top / dpiScale);
-
-      // Scale the client area to account for DPI scaling. The client side is not initially scaled by DPI, so we need
-      // to do this manually.
-      clientRect.right = (int)((clientRect.left + (clientRect.right - clientRect.left)) * dpiScale);
-      clientRect.bottom = (int)((clientRect.top + (clientRect.bottom - clientRect.top)) * dpiScale);
+      var clientWidth  = bottomRight.X - topLeft.X;
+      var clientHeight = bottomRight.Y - topLeft.Y;
+      clientRect.right  = clientRect.left + clientWidth;
+      clientRect.bottom = clientRect.top + clientHeight;
     }
     else {
       // Handle the error case where DwmGetWindowAttribute might fail on non-DWM platforms.
@@ -178,6 +205,19 @@ public static class Win32WindowExtensions {
   public static int GetHeight(this Win32Window window) {
     var rect = window.GetRect();
     return rect.bottom - rect.top;
+  }
+
+
+  /// <summary>
+  ///   Gets the monitor that this window is on.
+  /// </summary>
+  /// <param name="window"> The window to get the monitor of. </param>
+  /// <returns> The monitor that this window is on. </returns>
+  public static Win32Monitor GetMonitor(this Win32Window window) {
+    var monitor = window.Hwnd.GetMonitor();
+    return new Win32Monitor {
+      HMonitor = monitor
+    };
   }
 
 

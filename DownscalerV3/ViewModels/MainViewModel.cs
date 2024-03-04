@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using DownscalerV3.Contracts.Services;
 using DownscalerV3.Core.Contracts.Services;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 
 namespace DownscalerV3.ViewModels;
@@ -104,10 +105,18 @@ public partial class MainViewModel : INotifyPropertyChanged {
   /// <param name="swapChainPanel">
   ///   The <see cref="SwapChainPanel" /> to display the captured contents on.
   /// </param>
-  public void StartCapture(SwapChainPanel swapChainPanel) {
+  /// <param name="dispatcherQueue">
+  ///   The dispatcher queue to use for the capturer. Captured frames will be rendered on this
+  ///   dispatcher queue. If omitted, the renderer will use a free-threaded approach entirely
+  ///   independent of the UI thread. The trade-off between the two approaches is that the
+  ///   free-threaded approach is faster but may cause issues with UI synchronization, while the
+  ///   dispatcher queue approach is slower but is guaranteed to be thread-safe and synchronized with
+  ///   the UI - possibly preventing lag spikes and other issues.
+  /// </param>
+  public void StartCapture(SwapChainPanel swapChainPanel, DispatcherQueue? dispatcherQueue = null) {
     // Start the capture service.
     // CaptureService.PickAndCaptureWindow(swapChainPanel);
-    CaptureService.StartCapture(swapChainPanel);
+    CaptureService.StartCapture(swapChainPanel, dispatcherQueue);
     CaptureService.FrameRateChanged += (_, args) => {
       swapChainPanel.DispatcherQueue.TryEnqueue(
         () => {
@@ -121,18 +130,31 @@ public partial class MainViewModel : INotifyPropertyChanged {
 
   private void UpdateMouseCoordsDetails() {
     MouseCoordsDetails = $"""
-      X: {
+      Absolute Position: (X:{
         MouseEventService.CurrentMouseCoords.Absolute.X.ToString(),
-        5}
-      Y: {
+        5}px, Y:{
         MouseEventService.CurrentMouseCoords.Absolute.Y.ToString(),
-        5}
-      Relative to downscaled window: {
-        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow
-      }
-      Relative to source window: {
-        MouseEventService.CurrentMouseCoords.RelativeToSourceWindow
-      }
+        5}px)
+      Relative to downscaled window: (X:{
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow.X.ToString(),
+        5
+      }px, Y:{
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow.Y.ToString(),
+        5
+      }px)
+      (X:{
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent.X,7:P2}, Y:{
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent.Y,7:P2})
+      Relative to source window: (X:{
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindow.X.ToString(),
+        5
+      }px, Y:{
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindow.Y.ToString(),
+        5
+      }px)
+      (X:{
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindowPercent.X,7:P2}, Y:{
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindowPercent.Y,7:P2})
       """;
   }
 

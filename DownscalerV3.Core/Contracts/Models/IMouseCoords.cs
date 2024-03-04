@@ -10,13 +10,13 @@ public interface IMouseCoords {
   ///   The absolute position of the mouse on the screen where (0, 0) is the top-left corner of the
   ///   primary monitor.
   /// </summary>
-  public Point Absolute { get; }
+  Point Absolute { get; }
 
   /// <summary>
   ///   The mouse position relative to the downscaled (i.e. this) window. This is the position of the
   ///   mouse relative to the client area of the downscaled window.
   /// </summary>
-  public Point RelativeToDownscaledWindow { get; }
+  Point RelativeToDownscaledWindow { get; }
 
   /// <summary>
   ///   The mouse position relative to the source window. This is the position of the mouse relative
@@ -26,11 +26,25 @@ public interface IMouseCoords {
   ///   doubled from its value in the downscaled window - mapping the cursor to its correct position
   ///   on the source window.
   /// </summary>
-  public Point RelativeToSourceWindow { get; }
+  Point RelativeToSourceWindow { get; }
 
   /// <summary>
   ///   Indicates whether the mouse coordinates show that the cursor is within the downscaled
   ///   window's client area.
   /// </summary>
-  public bool IsWithinDownscaledWindow { get; }
+  bool IsWithinDownscaledWindow { get; }
+
+  /// <summary>
+  ///   The mouse position relative to the downscaled window as a percentage of the downscaled window's
+  ///   client area. X at the left-most edge is 0.0, X at the right-most edge is 1.0. Y at the top-most
+  ///   edge is 0.0, Y at the bottom-most edge is 1.0.
+  /// </summary>
+  (float X, float Y) RelativeToDownscaledWindowPercent { get; }
+
+  /// <summary>
+  ///   The mouse position relative to the source window as a percentage of the source window's
+  ///   client area. X at the left-most edge is 0.0, X at the right-most edge is 1.0. Y at the top-most
+  ///   edge is 0.0, Y at the bottom-most edge is 1.0.
+  /// </summary>
+  (float X, float Y) RelativeToSourceWindowPercent { get; }
 }

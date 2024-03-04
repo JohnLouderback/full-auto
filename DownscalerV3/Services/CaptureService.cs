@@ -5,6 +5,7 @@ using DownscalerV3.Contracts.Services;
 using DownscalerV3.Core.Contracts.Models;
 using DownscalerV3.Core.Utils;
 using DownscalerV3.Helpers.Graphics;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 
@@ -31,7 +32,10 @@ public class CaptureService : ICaptureService {
 
 
   /// <inheritdoc />
-  public async Task PickAndCaptureWindow(SwapChainPanel swapChainPanel) {
+  public async Task PickAndCaptureWindow(
+    SwapChainPanel swapChainPanel,
+    DispatcherQueue? dispatcherQueue = null
+  ) {
     var picker = new GraphicsCapturePicker();
     var hwnd   = AppState.DownscaleWindow.Hwnd;
     InitializeWithWindow.Initialize(picker, hwnd);
@@ -42,20 +46,24 @@ public class CaptureService : ICaptureService {
       await dialog.ShowAsync();
     }
 
-    InitializeCapture(captureItem!, swapChainPanel);
+    InitializeCapture(captureItem!, swapChainPanel, dispatcherQueue);
   }
 
 
   /// <inheritdoc />
-  public void StartCapture(HWND window, SwapChainPanel swapChainPanel) {
+  public void StartCapture(
+    HWND window,
+    SwapChainPanel swapChainPanel,
+    DispatcherQueue? dispatcherQueue = null
+  ) {
     var captureItem = CreateCaptureItemForWindow(window);
-    InitializeCapture(captureItem, swapChainPanel);
+    InitializeCapture(captureItem, swapChainPanel, dispatcherQueue);
   }
 
 
   /// <inheritdoc />
-  public void StartCapture(SwapChainPanel swapChainPanel) {
-    StartCapture(AppState.WindowToScale.Hwnd, swapChainPanel);
+  public void StartCapture(SwapChainPanel swapChainPanel, DispatcherQueue? dispatcherQueue = null) {
+    StartCapture(AppState.WindowToScale.Hwnd, swapChainPanel, dispatcherQueue);
   }
 
 
@@ -95,11 +103,15 @@ public class CaptureService : ICaptureService {
   }
 
 
-  private void InitializeCapture(GraphicsCaptureItem item, SwapChainPanel panel) {
+  private void InitializeCapture(
+    GraphicsCaptureItem item,
+    SwapChainPanel panel,
+    DispatcherQueue? dispatcherQueue = null
+  ) {
     // If there is already a capturer, then close it before creating a new one.
     capturer?.Close();
 
-    capturer = new SimpleCapturer(item, panel);
+    capturer = new SimpleCapturer(item, panel, AppState, dispatcherQueue);
     capturer.FrameRateChanged += (newFrameRate, newFrameTime) => {
       FrameRateChanged?.Invoke(this, (newFrameRate, newFrameTime));
     };

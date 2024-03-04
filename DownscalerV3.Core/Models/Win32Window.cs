@@ -13,8 +13,8 @@ namespace DownscalerV3.Core.Models;
 /// </summary>
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public unsafe struct Win32WindowBlittable {
-  public const int StringLength = 1024;
-  public HWND Hwnd;
+  public const int  StringLength = 1024;
+  public       HWND Hwnd;
   public fixed char Title[StringLength];
   public fixed char ClassName[StringLength];
   public fixed char ProcessName[StringLength];
@@ -42,24 +42,24 @@ public struct Win32Window {
   /// <summary>
   ///   The handle of the window. The handle is a unique identifier for the window.
   /// </summary>
-  public HWND Hwnd { get; set; }
+  public HWND Hwnd { get; init; }
 
   /// <summary>
   ///   The title of the window. This is the text that is displayed in the title bar of the window.
   /// </summary>
-  public string Title { get; set; }
+  public string Title { get; init; }
 
   /// <summary>
   ///   The class name of the window. This is the name of the window class that the window belongs
   ///   to. These values are used to create the window and are set by the application that creates
   ///   the window. An example of a class name is "Chrome_WidgetWin_1".
   /// </summary>
-  public string ClassName { get; set; }
+  public string ClassName { get; init; }
 
   /// <summary>
   ///   The process name of the window. This is the name of the process that created the window.
   /// </summary>
-  public string ProcessName { get; set; }
+  public string ProcessName { get; init; }
 
 
   public static unsafe explicit operator Win32WindowBlittable(Win32Window window) {

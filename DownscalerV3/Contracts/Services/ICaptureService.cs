@@ -1,4 +1,5 @@
 ﻿using Windows.Win32.Foundation;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 
 namespace DownscalerV3.Contracts.Services;
@@ -28,7 +29,15 @@ public interface ICaptureService {
   ///   current capture session, then this method will end the current session and start a new one.
   /// </summary>
   /// <param name="swapChainPanel"> </param>
-  Task PickAndCaptureWindow(SwapChainPanel swapChainPanel);
+  /// <param name="dispatcherQueue">
+  ///   The dispatcher queue to use for the capturer. Captured frames will be rendered on this
+  ///   dispatcher queue. If omitted, the renderer will use a free-threaded approach entirely
+  ///   independent of the UI thread. The trade-off between the two approaches is that the
+  ///   free-threaded approach is faster but may cause issues with UI synchronization, while the
+  ///   dispatcher queue approach is slower but is guaranteed to be thread-safe and synchronized with
+  ///   the UI - possibly preventing lag spikes and other issues.
+  /// </param>
+  Task PickAndCaptureWindow(SwapChainPanel swapChainPanel, DispatcherQueue? dispatcherQueue = null);
 
 
   /// <summary>
@@ -38,7 +47,19 @@ public interface ICaptureService {
   /// </summary>
   /// <param name="window"> </param>
   /// <param name="swapChainPanel"> </param>
-  void StartCapture(HWND window, SwapChainPanel swapChainPanel);
+  /// <param name="dispatcherQueue">
+  ///   The dispatcher queue to use for the capturer. Captured frames will be rendered on this
+  ///   dispatcher queue. If omitted, the renderer will use a free-threaded approach entirely
+  ///   independent of the UI thread. The trade-off between the two approaches is that the
+  ///   free-threaded approach is faster but may cause issues with UI synchronization, while the
+  ///   dispatcher queue approach is slower but is guaranteed to be thread-safe and synchronized with
+  ///   the UI - possibly preventing lag spikes and other issues.
+  /// </param>
+  void StartCapture(
+    HWND window,
+    SwapChainPanel swapChainPanel,
+    DispatcherQueue? dispatcherQueue = null
+  );
 
 
   /// <summary>
@@ -47,5 +68,13 @@ public interface ICaptureService {
   ///   current capture session, then this method will end the current session and start a new one.
   /// </summary>
   /// <param name="swapChainPanel"> </param>
-  void StartCapture(SwapChainPanel swapChainPanel);
+  /// <param name="dispatcherQueue">
+  ///   The dispatcher queue to use for the capturer. Captured frames will be rendered on this
+  ///   dispatcher queue. If omitted, the renderer will use a free-threaded approach entirely
+  ///   independent of the UI thread. The trade-off between the two approaches is that the
+  ///   free-threaded approach is faster but may cause issues with UI synchronization, while the
+  ///   dispatcher queue approach is slower but is guaranteed to be thread-safe and synchronized with
+  ///   the UI - possibly preventing lag spikes and other issues.
+  /// </param>
+  void StartCapture(SwapChainPanel swapChainPanel, DispatcherQueue? dispatcherQueue = null);
 }

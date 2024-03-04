@@ -1,4 +1,5 @@
-﻿using DownscalerV3.Activation;
+﻿using System.Diagnostics;
+using DownscalerV3.Activation;
 using DownscalerV3.Contracts.Services;
 using DownscalerV3.Core.Contracts.Models;
 using DownscalerV3.Core.Contracts.Services;
@@ -35,6 +36,11 @@ public partial class App : Application {
       .UseContentRoot(AppContext.BaseDirectory)
       .ConfigureServices(
         (context, services) => {
+          // Set the process priority to high.
+          using (var p = Process.GetCurrentProcess()) {
+            p.PriorityClass = ProcessPriorityClass.High;
+          }
+
           // Default Activation Handler
           services
             .AddTransient<ActivationHandler<LaunchActivatedEventArgs>,

@@ -2,8 +2,13 @@
 using System.Runtime.CompilerServices;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX.Direct3D11;
+using Windows.Win32.Foundation;
+using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Models;
+using DownscalerV3.Core.Utils;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 // For SwapChainPanel in WinUI 3
 // As of my last update, capture APIs might still be under Windows.*
@@ -15,8 +20,11 @@ using DirectXPixelFormat =
 namespace DownscalerV3.Helpers.Graphics;
 
 public class SimpleCapturer : ICapturer {
-  private readonly GraphicsCaptureItem        item;
-  private readonly SwapChainPanel             swapChainPanel;
+  private readonly GraphicsCaptureItem item;
+  private readonly SwapChainPanel      swapChainPanel;
+
+  private readonly IAppState                  AppState;
+  private readonly DispatcherQueue?           dispatcherQueue;
   private          CanvasSwapChain            swapChain;
   private          IDirect3DDevice            device;
   private          CanvasDevice               canvasDevice;
@@ -49,15 +57,39 @@ public class SimpleCapturer : ICapturer {
   /// </summary>
   private CanvasFrameProcessor frameProcessor;
 
+  private Win32Window windowToScale;
+
   public delegate void FrameRateChangedEventHandler(double newFrameRate, double newFrameTime);
 
   /// <inheritdoc />
   public event FrameRateChangedEventHandler? FrameRateChanged;
 
 
-  public SimpleCapturer(GraphicsCaptureItem item, SwapChainPanel panel) {
-    this.item      = item;
-    swapChainPanel = panel;
+  /// <summary>
+  ///   Instantiates a new <c> SimpleCapturer </c> with the provided <see cref="GraphicsCaptureItem" />
+  ///   and <see cref="SwapChainPanel" /> and <see cref="HWND" />.
+  /// </summary>
+  /// <param name="item"> The window to capture. </param>
+  /// <param name="panel"> The panel to render the captured frames to. </param>
+  /// <param name="appState"> The application state. </param>
+  /// <param name="dispatcherQueue">
+  ///   The dispatcher queue to use for the capturer. Captured frames will be rendered on this
+  ///   dispatcher queue. If omitted, the renderer will use a free-threaded approach entirely
+  ///   independent of the UI thread. The trade-off between the two approaches is that the
+  ///   free-threaded approach is faster but may cause issues with UI synchronization, while the
+  ///   dispatcher queue approach is slower but is guaranteed to be thread-safe and synchronized with
+  ///   the UI - possibly preventing lag spikes and other issues.
+  /// </param>
+  public SimpleCapturer(
+    GraphicsCaptureItem item,
+    SwapChainPanel panel,
+    IAppState appState,
+    DispatcherQueue? dispatcherQueue = null
+  ) {
+    this.item            = item;
+    swapChainPanel       = panel;
+    AppState             = appState;
+    this.dispatcherQueue = dispatcherQueue;
 
     InitializeCapture();
   }
@@ -81,24 +113,47 @@ public class SimpleCapturer : ICapturer {
     canvasDevice = CanvasDevice.GetSharedDevice();
     device       = canvasDevice;
 
-    framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
-      canvasDevice,
-      DirectXPixelFormat.B8G8R8A8UIntNormalized,
-      2,
-      size
-    );
+    if (dispatcherQueue is not null) {
+      framePool = Direct3D11CaptureFramePool.Create(
+        canvasDevice,
+        DirectXPixelFormat.B8G8R8A8UIntNormalized,
+        // 2, // Double buffer
+        1, // Single buffer
+        size
+      );
+    }
+    else {
+      framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
+        canvasDevice,
+        DirectXPixelFormat.B8G8R8A8UIntNormalized,
+        // 2, // Double buffer
+        1, // Single buffer
+        size
+      );
+    }
 
     session                        = framePool.CreateCaptureSession(item);
     session.IsCursorCaptureEnabled = false;
+
+    // If there is a difference in DPI between the downscale window and the window being scaled,
+    // then we'll need to adjust the size of the swap chain to account for the DPI difference.
+    windowToScale = AppState.WindowToScale;
+    var dpiScaleFactor = AppState.DownscaleWindow.GetMonitor().GetDpi() /
+                         (float)windowToScale.GetMonitor().GetDpi();
 
     // Listen for frame arrival events.
     framePool.FrameArrived += OnFrameArrived;
 
     // Initialize the swap chain
-    swapChain = new CanvasSwapChain(canvasDevice, size.Width, size.Height, 96);
+    swapChain = new CanvasSwapChain(
+      canvasDevice,
+      size.Width * dpiScaleFactor,
+      size.Height * dpiScaleFactor,
+      windowToScale.GetMonitor().GetDpi()
+    );
 
     // Initialize the frame processor
-    frameProcessor = new CanvasFrameProcessor(canvasDevice, swapChain);
+    frameProcessor = new CanvasFrameProcessor(canvasDevice, swapChain, in windowToScale);
 
     // Create a CanvasSwapChainPanel and assign the swap chain to it.
     var swapChainPanelControl = new CanvasSwapChainPanel {
