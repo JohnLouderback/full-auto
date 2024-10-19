@@ -77,6 +77,7 @@ public sealed partial class MainPage : Page {
 
   private void MainPage_OnLoaded(object sender, RoutedEventArgs e) {
     ViewModel.StartCapture(SwapChainPanel, DispatcherQueue);
+    UpdatePositions();
   }
 
 
@@ -115,5 +116,9 @@ public sealed partial class MainPage : Page {
 
     // Set the mouse coords container width to the mouse coords width.
     MouseCoordsContainer.Width = mouseCoordsWidth;
+
+    // Hard-set the width and height of the SwapChainPanel to the intended width and height of the window.
+    SwapChainPanel.Width  = ViewModel.DownscaleWidth;
+    SwapChainPanel.Height = ViewModel.DownscaleHeight;
   }
 }

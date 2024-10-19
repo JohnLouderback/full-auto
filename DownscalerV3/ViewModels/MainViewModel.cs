@@ -1,12 +1,16 @@
 ﻿using System.ComponentModel;
 using DownscalerV3.Contracts.Services;
+using DownscalerV3.Core.Contracts.Models;
 using DownscalerV3.Core.Contracts.Services;
+using DownscalerV3.Core.Utils;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 
 namespace DownscalerV3.ViewModels;
 
 public partial class MainViewModel : INotifyPropertyChanged {
+  private readonly IAppState AppState;
+
   public string MouseCoordsDetails { get; set; }
 
   /// <summary>
@@ -83,8 +87,36 @@ public partial class MainViewModel : INotifyPropertyChanged {
   /// </summary>
   public bool CanShowPassedInArgs => ShowDebugInfo && ShouldShowPassedInArgs;
 
+  /// <summary>
+  ///   The width to downscale the source window to.
+  /// </summary>
+  public int DownscaleWidth =>
+    // We need to divide by the DPI scale factor to get the correct width because XAML uses DIPs
+    // and not physical pixels.
+    (int)(AppState.DownscaleWidth / DpiScaleFactor);
 
-  public MainViewModel(IMouseEventService mouseEventService, ICaptureService captureService) {
+  /// <summary>
+  ///   The height to downscale the source window to.
+  /// </summary>
+  public int DownscaleHeight =>
+    // We need to divide by the DPI scale factor to get the correct height because XAML uses DIPs
+    // and not physical pixels.
+    (int)(AppState.DownscaleHeight / DpiScaleFactor);
+
+  /// <summary>
+  ///   The "scale factor" is used to adjust sizing from device-independent pixels (DIPs) to physical
+  ///   pixels. This is necessary because the source window's dimensions are in physical pixels, but
+  ///   the downscale window's dimensions are in DIPs.
+  /// </summary>
+  private float DpiScaleFactor => AppState.DownscaleWindow.GetMonitor().GetDpi() / 96f;
+
+
+  public MainViewModel(
+    IMouseEventService mouseEventService,
+    ICaptureService captureService,
+    IAppState appState
+  ) {
+    AppState          = appState;
     MouseEventService = mouseEventService;
     CaptureService    = captureService;
     UpdateMouseCoordsDetails();
@@ -143,8 +175,10 @@ public partial class MainViewModel : INotifyPropertyChanged {
         5
       }px)
       (X:{
-        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent.X,7:P2}, Y:{
-        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent.Y,7:P2})
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent.X,
+        7:P2}, Y:{
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent.Y,
+        7:P2})
       Relative to source window: (X:{
         MouseEventService.CurrentMouseCoords.RelativeToSourceWindow.X.ToString(),
         5
@@ -153,8 +187,10 @@ public partial class MainViewModel : INotifyPropertyChanged {
         5
       }px)
       (X:{
-        MouseEventService.CurrentMouseCoords.RelativeToSourceWindowPercent.X,7:P2}, Y:{
-        MouseEventService.CurrentMouseCoords.RelativeToSourceWindowPercent.Y,7:P2})
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindowPercent.X,
+        7:P2}, Y:{
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindowPercent.Y,
+        7:P2})
       """;
   }
 

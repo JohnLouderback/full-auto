@@ -10,6 +10,7 @@ public struct MouseCoords : IMouseCoords {
   private (float X, float Y)? relativeToDownscaledWindowPercent;
   private (float X, float Y)? relativeToSourceWindowPercent;
   private bool?               isWithinDownscaledWindow;
+  private bool?               isWithinSourceWindow;
 
   // ReSharper disable once InconsistentNaming
   /// <summary>
@@ -170,6 +171,30 @@ public struct MouseCoords : IMouseCoords {
       var downscaledWindow   = AppState.DownscaleWindow;
       var absoluteClientRect = downscaledWindow.GetAbsoluteClientRect();
       return isWithinDownscaledWindow ??= absoluteClientRect.Contains(Absolute);
+    }
+  }
+
+  /// <inheritdoc />
+  public bool IsWithinSourceWindow {
+    get {
+      // If we've already calculated whether the mouse is within the source window, return the
+      // result.
+      if (isWithinSourceWindow is not null) {
+        return (bool)isWithinSourceWindow;
+      }
+
+      // If AppState is null, throw an exception. AppState should be set, indirectly, by the
+      // application's DI container.
+      if (AppState is null) {
+        throw new InvalidOperationException(
+          "AppState is was not set. Unable to obtain the state of the application."
+        );
+      }
+
+      // Get the coordinates of the source window.
+      var sourceWindow       = AppState.WindowToScale;
+      var absoluteClientRect = sourceWindow.GetAbsoluteClientRect();
+      return isWithinSourceWindow ??= absoluteClientRect.Contains(Absolute);
     }
   }
 }

@@ -198,6 +198,18 @@ public static class Win32WindowExtensions {
 
 
   /// <summary>
+  ///   Gets the DPI of the window. The DPI is the number of dots that fit into a linear inch. The
+  ///   DPI of a window with a 1:1 pixel density is 96. For 150% scaling, the DPI is 144. The DPI of
+  ///   the window may not be the same as the DPI of the monitor. It depends on whether the window
+  ///   is DPI-aware or not.
+  /// </summary>
+  /// <returns> The DPI of the window. </returns>
+  public static uint GetDpi(this Win32Window window) {
+    return GetDpiForWindow(window.Hwnd);
+  }
+
+
+  /// <summary>
   ///   Gets the height of this window, including the window frame.
   /// </summary>
   /// <param name="window"> The window to get the height of. </param>

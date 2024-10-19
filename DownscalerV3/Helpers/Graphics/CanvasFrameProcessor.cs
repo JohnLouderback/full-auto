@@ -93,7 +93,8 @@ public class CanvasFrameProcessor {
        ) {
       frameBitmap = CanvasBitmap.CreateFromDirect3D11Surface(canvasDevice, frame.Surface);
 
-      // Get the area to crop to based on the source window's client area relative to the window.
+      // Get the area to crop to based on the source window's client area relative to the window. We
+      // don't, for example, want to show the window "chrome" (the window's title bar, borders, etc.)
       var crop = sourceWindow.GetClientRectRelativeToWindow();
 
       srcRect = new Rect(

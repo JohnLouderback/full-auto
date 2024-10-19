@@ -124,7 +124,7 @@ public class NativeBuffer<T> : IDisposable where T : struct {
   /// <param name="encoding"> Optionally, the encoding to use when converting the buffer to a string. </param>
   /// <returns> A managed string representation of the buffer. </returns>
   /// <example>
-  ///   <code lang="cs">
+  ///   <code lang="csharp">
   ///   // Convert a buffer of ASCII / UTF-8 characters to a managed string.
   ///   var buffer = new NativeBuffer&lt;char&gt;(new char[] { 72, 101, 108, 108, 111 });
   ///   var str = buffer.ToManagedString(Encoding.UTF8); // "Hello"

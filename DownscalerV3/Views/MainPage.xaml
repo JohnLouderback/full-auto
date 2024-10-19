@@ -11,7 +11,7 @@
   Loaded="MainPage_OnLoaded"
   SizeChanged="MainPage_OnSizeChanged">
 
-  <SwapChainPanel x:Name="SwapChainPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+  <SwapChainPanel x:Name="SwapChainPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
     <Canvas x:Name="Canvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
       <!-- Other XAML UI elements can be declared here if needed -->
 

@@ -23,6 +23,7 @@ public class SimpleCapturer : ICapturer {
   private readonly GraphicsCaptureItem item;
   private readonly SwapChainPanel      swapChainPanel;
 
+  // ReSharper disable once InconsistentNaming - AppState is accessed like global static class.
   private readonly IAppState                  AppState;
   private readonly DispatcherQueue?           dispatcherQueue;
   private          CanvasSwapChain            swapChain;
@@ -108,7 +109,8 @@ public class SimpleCapturer : ICapturer {
 
 
   private void InitializeCapture() {
-    var size = item.Size;
+    var size        = item.Size;
+    var pixelFormat = DirectXPixelFormat.B8G8R8A8UIntNormalized;
 
     canvasDevice = CanvasDevice.GetSharedDevice();
     device       = canvasDevice;
@@ -116,7 +118,7 @@ public class SimpleCapturer : ICapturer {
     if (dispatcherQueue is not null) {
       framePool = Direct3D11CaptureFramePool.Create(
         canvasDevice,
-        DirectXPixelFormat.B8G8R8A8UIntNormalized,
+        pixelFormat,
         // 2, // Double buffer
         1, // Single buffer
         size
@@ -125,9 +127,9 @@ public class SimpleCapturer : ICapturer {
     else {
       framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
         canvasDevice,
-        DirectXPixelFormat.B8G8R8A8UIntNormalized,
-        // 2, // Double buffer
-        1, // Single buffer
+        pixelFormat,
+        2, // Double buffer i.e. VSync
+        // 1, // Single buffer
         size
       );
     }
@@ -147,9 +149,16 @@ public class SimpleCapturer : ICapturer {
     // Initialize the swap chain
     swapChain = new CanvasSwapChain(
       canvasDevice,
-      size.Width * dpiScaleFactor,
-      size.Height * dpiScaleFactor,
-      windowToScale.GetMonitor().GetDpi()
+      // size.Width * dpiScaleFactor,
+      // size.Height * dpiScaleFactor,
+      AppState.DownscaleWidth * dpiScaleFactor,
+      AppState.DownscaleHeight * dpiScaleFactor,
+      //windowToScale.GetMonitor().GetDpi()
+
+      // Needs investigating. Even when the source and downscale windows have "120" for their
+      // DPI, they frame comes back at 96 DPI. If this value _is not_ 96 DPI, the rendered frame
+      // will appear slightly blurry even when nearest neighbor interpolation is used.
+      96
     );
 
     // Initialize the frame processor
@@ -194,7 +203,7 @@ public class SimpleCapturer : ICapturer {
   private void UpdateFps() {
     // If the stopwatch has been running for at least a 750 ms, calculate the new FPS.
     if (stopwatch.Elapsed.TotalSeconds - lastFpsReport >= 0.75) {
-      // For performance we don't check for overflow in any of the following operations.
+      // For performance, we don't check for overflow in any of the following operations.
       unchecked {
         var newFPS = frameCount / (stopwatch.Elapsed.TotalSeconds - lastFpsReport);
         frameTime = 1000.0 / newFPS;

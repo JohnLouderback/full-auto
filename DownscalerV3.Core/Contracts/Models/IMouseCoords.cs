@@ -35,6 +35,12 @@ public interface IMouseCoords {
   bool IsWithinDownscaledWindow { get; }
 
   /// <summary>
+  ///   Indicates whether the mouse coordinates show that the cursor is within the source window's
+  ///   client area.
+  /// </summary>
+  bool IsWithinSourceWindow { get; }
+
+  /// <summary>
   ///   The mouse position relative to the downscaled window as a percentage of the downscaled window's
   ///   client area. X at the left-most edge is 0.0, X at the right-most edge is 1.0. Y at the top-most
   ///   edge is 0.0, Y at the bottom-most edge is 1.0.

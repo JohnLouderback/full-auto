@@ -9,7 +9,15 @@ namespace DownscalerV3.Core.Utils;
 ///   A series of utility functions that mimic the behavior of some Win32 macros.
 /// </summary>
 public static class Macros {
-  public const int NULL    = 0;
+  /// <summary>
+  ///   A constant that represents a null pointer. This is equivalent to the C++ keyword "nullptr",
+  ///   but is used in the context of Win32 programming.
+  /// </summary>
+  public const int NULL = 0;
+
+  /// <summary>
+  ///   A constant that represents a null pointer. This is equivalent to the C++ keyword "nullptr".
+  /// </summary>
   public const int nullptr = 0;
 
 
@@ -64,6 +72,19 @@ public static class Macros {
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static int LOWORD(int l) {
     return l & 0xFFFF;
+  }
+
+
+  /// <summary>
+  ///   Creates an LPARAM value from the given x and y coordinates. The x-coordinate is the low-order
+  ///   word of the given value, and the y-coordinate is the high-order word of the given value.
+  /// </summary>
+  /// <param name="x"> The x-coordinate. </param>
+  /// <param name="y"> The y-coordinate. </param>
+  /// <returns> The LPARAM value created from the given x and y coordinates. </returns>
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public static LPARAM MAKELPARAM(int x, int y) {
+    return (x & 0xFFFF) | ((y & 0xFFFF) << 16);
   }
 
 

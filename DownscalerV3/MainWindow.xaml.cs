@@ -1,5 +1,7 @@
-﻿using Windows.UI.ViewManagement;
+﻿using Windows.Graphics;
+using Windows.UI.ViewManagement;
 using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 using DownscalerV3.Contracts.Services;
 using DownscalerV3.Core.Contracts.Models;
 using DownscalerV3.Core.Models;
@@ -38,12 +40,19 @@ public sealed partial class MainWindow : WindowEx {
 
     // Set the app state's downscale window to the main window.
     var hwnd = new HWND(this.GetWindowHandle());
+
     AppState.DownscaleWindow = new Win32Window {
       Hwnd        = hwnd,
       ClassName   = hwnd.GetClassName(),
       ProcessName = hwnd.GetProcessName(),
       Title       = hwnd.GetWindowText()
     };
+
+    // Set the window styles for the main window.
+    hwnd.SetWindowStyle(WINDOW_STYLE.WS_OVERLAPPED);
+
+    // Set the window's initial size.
+    AppWindow.Resize(new SizeInt32((int)AppState.WindowWidth, (int)AppState.WindowHeight));
 
     // Initialize the window event handler service with this window's handle.
     WindowEventHandlerService.InitializeForWindow(new HWND(this.GetWindowHandle()));

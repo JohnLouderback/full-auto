@@ -2,7 +2,7 @@
   "profiles": {
     "DownscalerV3 (Unpackaged)": {
       "commandName": "Project",
-      "commandLineArgs": "\"HROT.exe\" \"TForm1\" -f 2"
+      "commandLineArgs": "\"Alwa's Awakening\" -f 2"
     },
     "DownscalerV3 (Package)": {
       "commandName": "MsixPackage"

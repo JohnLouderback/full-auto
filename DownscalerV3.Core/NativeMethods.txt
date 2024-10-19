@@ -58,3 +58,7 @@ DwmGetWindowAttribute
 GetDpiForWindow
 MonitorFromWindow
 GetDpiForMonitor
+GetDpiForWindow
+SendMessage
+PostMessage
+MODIFIERKEYS_FLAGS

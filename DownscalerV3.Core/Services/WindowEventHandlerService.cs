@@ -33,11 +33,11 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   /// </summary>
   private static uint rawInputBufferSize;
 
-  private static IAppState? AppState;
+  private static IAppState?          AppState;
   private static IMouseEventService? MouseEventService;
 
-  private HWND hwnd;
-  private bool isInitialized;
+  private HWND          hwnd;
+  private bool          isInitialized;
   private SUBCLASSPROC? subclassProc;
 
 
@@ -128,7 +128,7 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   /// <param name="size"> The required size of the buffer. </param>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   private static void EnsureRawInputBufferSize(uint size) {
-    if (rawInputBuffer == nint.Zero ||
+    if (rawInputBuffer == nullptr ||
         rawInputBufferSize < size) {
       if (rawInputBuffer != nint.Zero) {
         Console.WriteLine("Freeing previous buffer.");
@@ -171,8 +171,9 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
 
     EnsureRawInputBufferSize(sizeNeeded); // Ensure the buffer is large enough for the data
 
+    // If there is data in the buffer, process it.
     if (sizeNeeded > 0) {
-      // Second call to GetRawInputData: retrieves the data
+      // Second call to GetRawInputData: retrieves the data and stores it in the buffer.
       if (GetRawInputData(
             new HRAWINPUT(lParam),
             RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT,
@@ -187,6 +188,7 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
         if (rawInput -> header.dwType == (uint)RawInputMethod.RIM_TYPEMOUSE) {
           // var xPosRelative = rawInput -> data.mouse.lLastX;
           // var yPosRelative = rawInput -> data.mouse.lLastY;
+
           var absolutePos = GetMousePosition();
           // Signal to the mouse event service that the mouse position has been updated.
           MouseEventService?.UpdateMousePosition(absolutePos.X, absolutePos.Y);
@@ -196,7 +198,36 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
   }
 
 
-  private static LRESULT SubclassWndProc(
+  private static LRESULT SubclassDownscalerWindowProc(
+    HWND hWnd,
+    uint msg,
+    WPARAM wParam,
+    LPARAM lParam,
+    nuint uIdSubclass,
+    nuint dwRefData
+  ) {
+    var message = (Msg)msg;
+    // Handle messages
+    // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+    switch (message) {
+      // case Msg.WM_MOUSEMOVE:
+      //   Console.WriteLine($"Mouse moved to: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})");
+      //   break;
+      // case Msg.WM_NCMOUSEMOVE:
+      //   Console.WriteLine(
+      //     $"Mouse moved to non-client area: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})"
+      //   );
+      //   break;
+      case Msg.WM_INPUT:
+        ProcessRawInput(lParam);
+        break;
+    }
+
+    return DefSubclassProc(hWnd, msg, wParam, lParam);
+  }
+
+
+  private static LRESULT SubclassSourceWindowProc(
     HWND hWnd,
     uint msg,
     WPARAM wParam,
@@ -216,9 +247,6 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
           $"Mouse moved to non-client area: ({GET_X_LPARAM(lParam)}, {GET_Y_LPARAM(lParam)})"
         );
         break;
-      case Msg.WM_INPUT:
-        ProcessRawInput(lParam);
-        break;
       default:
         Console.WriteLine(
           $"{Enum.GetName(typeof(Msg), message)} received on class: {hWnd.GetClassName()}"
@@ -231,20 +259,34 @@ public class WindowEventHandlerService : IWindowEventHandlerService {
 
 
   private void InstallEventHandlers() {
-    // Install the event handlers into the main window.
-    InstallWindowSubclass(hwnd);
+    // Install the event handlers into the main window - the downscaler window.
+    InstallWindowSubclassForDownscalerWindow(hwnd);
+
+    // Install the event handler into the source window - the window that is being downscaled.
+    // InstallWindowSubclassForSourceWindow(hwnd);
+
+    // Listen for raw input from the mouse globally.
     RegisterForRawInput(hwnd);
 
     // Get all child windows of the main window and install the event handlers into them.
     foreach (var child in EnumerateChildWindowsRecursively(hwnd)) {
-      InstallWindowSubclass(child.Hwnd);
+      InstallWindowSubclassForDownscalerWindow(child.Hwnd);
       //RegisterForRawInput(child.Hwnd);
     }
   }
 
 
-  private void InstallWindowSubclass(HWND hwnd) {
-    if (!SetWindowSubclass(hwnd, SubclassWndProc, 1, nuint.Zero)) {
+  private void InstallWindowSubclassForDownscalerWindow(HWND hwnd) {
+    var installSucceeded = SetWindowSubclass(hwnd, SubclassDownscalerWindowProc, 1, nuint.Zero);
+    if (!installSucceeded) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
+  }
+
+
+  private void InstallWindowSubclassForSourceWindow(HWND hwnd) {
+    var installSucceeded = SetWindowSubclass(hwnd, SubclassSourceWindowProc, 1, nuint.Zero);
+    if (!installSucceeded) {
       throw new Win32Exception(Marshal.GetLastWin32Error());
     }
   }
