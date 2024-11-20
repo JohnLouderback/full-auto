@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using CommandLine;
 using CommandLine.Text;
-using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Contracts.Services;
 using DownscalerV3.Core.Models;
 using DownscalerV3.Core.Utils;
@@ -69,14 +69,20 @@ public class Options {
   public uint? DownscaleHeight { get; set; }
 }
 
-public class ArgsParser(IAppState appState) : IArgsParser {
-  private readonly IAppState AppState = appState;
-
-
+public class ArgsParser(IAppState AppState, IYamlParser YamlParser) : IArgsParser {
   /// <inheritdoc />
   public bool ParseArgs(string[] args) {
     // First, hack off the first argument, which is the name of the executable.
     args = args[1..];
+
+    // Check if the first argument is a YAML file. If it is, we'll skip normal argument parsing and
+    // load the settings from the file by differing to the YAML parser.
+    if (args.Length > 0 &&
+        (args[0].EndsWith(".yaml") || args[0].EndsWith(".yml"))) {
+      Console.WriteLine("Parsing YAML config file...");
+      YamlParser.ParseYaml(args[0]);
+      return true;
+    }
 
     var parser = new Parser(
       settings => {

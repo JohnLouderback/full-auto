@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using DownscalerV3.Activation;
 using DownscalerV3.Contracts.Services;
-using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Contracts.Services;
-using DownscalerV3.Core.Models;
+using DownscalerV3.Core.Models.AppState;
 using DownscalerV3.Core.Services;
 using DownscalerV3.Services;
 using DownscalerV3.ViewModels;
@@ -55,6 +55,7 @@ public partial class App : Application {
 
           // Core Services //
           services.AddSingleton<IAppState, AppState>();
+          services.AddSingleton<IYamlParser, YamlParser>();
           services.AddSingleton<IArgsParser, ArgsParser>();
           services.AddSingleton<IFileService, FileService>();
           services.AddSingleton<IWindowEventHandlerService, WindowEventHandlerService>();

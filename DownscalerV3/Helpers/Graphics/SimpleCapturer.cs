@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Win32.Foundation;
-using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Models;
 using DownscalerV3.Core.Utils;
 using Microsoft.Graphics.Canvas;
@@ -156,7 +156,7 @@ public class SimpleCapturer : ICapturer {
       //windowToScale.GetMonitor().GetDpi()
 
       // Needs investigating. Even when the source and downscale windows have "120" for their
-      // DPI, they frame comes back at 96 DPI. If this value _is not_ 96 DPI, the rendered frame
+      // DPI, the frame comes back at 96 DPI. If this value _is not_ 96 DPI, the rendered frame
       // will appear slightly blurry even when nearest neighbor interpolation is used.
       96
     );

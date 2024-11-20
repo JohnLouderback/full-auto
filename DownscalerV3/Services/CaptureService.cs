@@ -2,7 +2,7 @@
 using Windows.UI.Popups;
 using Windows.Win32.Foundation;
 using DownscalerV3.Contracts.Services;
-using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Utils;
 using DownscalerV3.Helpers.Graphics;
 using Microsoft.UI.Dispatching;

@@ -15,15 +15,15 @@
                Title="Debug Settings">
     <TeachingTip.Content>
       <StackPanel Margin="0,15,0,0">
-        <CheckBox Content="Show Debug UI" IsChecked="{x:Bind ViewModel.ShowDebugInfo, Mode=TwoWay}">
+        <!--<CheckBox Content="Show Debug UI" IsChecked="{x:Bind ViewModel.ShowDebugInfo, Mode=TwoWay}">
           <CheckBox.KeyboardAccelerators>
             <KeyboardAccelerator Key="D" Modifiers="Menu,Shift" />
           </CheckBox.KeyboardAccelerators>
-        </CheckBox>
-        <CheckBox Content="Show FPS" IsChecked="{x:Bind ViewModel.ShouldShowFPS, Mode=TwoWay}"
-                  IsEnabled="{x:Bind ViewModel.ShowDebugInfo, Mode=OneWay}" />
-        <CheckBox Content="Show Mouse Coordinates" IsChecked="{x:Bind ViewModel.ShouldShowMouseCoords, Mode=TwoWay}"
-                  IsEnabled="{x:Bind ViewModel.ShowDebugInfo, Mode=OneWay}" />
+        </CheckBox>-->
+        <!--<CheckBox Content="Show FPS" IsChecked="{x:Bind ViewModel.ShouldShowFPS, Mode=TwoWay}"
+                  IsEnabled="{x:Bind ViewModel.ShowDebugInfo, Mode=OneWay}" />-->
+        <!--<CheckBox Content="Show Mouse Coordinates" IsChecked="{x:Bind ViewModel.ShouldShowMouseCoords, Mode=TwoWay}"
+                  IsEnabled="{x:Bind ViewModel.ShowDebugInfo, Mode=OneWay}" />-->
         <CheckBox Content="Show Window Events List" IsChecked="{x:Bind ViewModel.ShouldShowEventsList, Mode=TwoWay}"
                   IsEnabled="{x:Bind ViewModel.ShowDebugInfo, Mode=OneWay}" />
         <CheckBox Content="Show Passed-in Arguments" IsChecked="{x:Bind ViewModel.ShouldShowPassedInArgs, Mode=TwoWay}"

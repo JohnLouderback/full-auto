@@ -1,8 +1,8 @@
-﻿using DownscalerV3.Core.Contracts.Models;
+﻿using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Utils;
 using static DownscalerV3.Core.Utils.Macros;
 
-namespace DownscalerV3.Core.Models;
+namespace DownscalerV3.Core.Models.AppState;
 
 public class AppState : IAppState {
   private uint?   downscaleWidth;
@@ -166,4 +166,18 @@ public class AppState : IAppState {
 
   /// <inheritdoc />
   public IEnumerable<Win32Window> AllWindows { get; set; }
+
+  /// <inheritdoc />
+  public IAppDebugState DebugState { get; set; } = new AppDebugState {
+    Enabled = false,
+    FontSize = null, // The null default value allows for dynamic font size based on window size.
+    ShowFps = false,
+    ShowMouseCoordinates = false
+  };
+
+  /// <inheritdoc />
+  public int? InitialX { get; set; }
+
+  /// <inheritdoc />
+  public int? InitialY { get; set; }
 }

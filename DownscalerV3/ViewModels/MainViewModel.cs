@@ -1,12 +1,18 @@
 ﻿using System.ComponentModel;
 using DownscalerV3.Contracts.Services;
-using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Contracts.Services;
 using DownscalerV3.Core.Utils;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace DownscalerV3.ViewModels;
+
+/// <summary>
+///   The event handler for when the position of the downscaler window changes.
+/// </summary>
+public delegate void PositionChangedEventHandler(object sender, object? args);
 
 public partial class MainViewModel : INotifyPropertyChanged {
   private readonly IAppState AppState;
@@ -37,12 +43,12 @@ public partial class MainViewModel : INotifyPropertyChanged {
   /// <summary>
   ///   Whether or not to show any debugging UI and information.
   /// </summary>
-  public bool ShowDebugInfo { get; set; } = true;
+  public bool ShowDebugInfo => AppState.DebugState.Enabled;
 
   /// <summary>
   ///   Whether or not the user wishes to show the current mouse coordinates.
   /// </summary>
-  public bool ShouldShowMouseCoords { get; set; }
+  public bool ShouldShowMouseCoords => AppState.DebugState.ShowMouseCoordinates;
 
   /// <summary>
   ///   Whether or not the UI is allowed to show the current mouse coordinates. If debug info is
@@ -54,7 +60,7 @@ public partial class MainViewModel : INotifyPropertyChanged {
   /// <summary>
   ///   Whether or not the user wishes to show the current frames per second.
   /// </summary>
-  public bool ShouldShowFPS { get; set; }
+  public bool ShouldShowFPS => AppState.DebugState.ShowFps;
 
   /// <summary>
   ///   Whether or not the UI is allowed to show the current frames per second. If debug info is
@@ -104,11 +110,103 @@ public partial class MainViewModel : INotifyPropertyChanged {
     (int)(AppState.DownscaleHeight / DpiScaleFactor);
 
   /// <summary>
+  ///   The current height of the window as reported by the downscaler window.
+  /// </summary>
+  public int WindowHeight { get; set; }
+
+  /// <summary>
+  ///   The current width of the window as reported by the downscaler window.
+  /// </summary>
+  public int WindowWidth { get; set; }
+
+  /// <summary>
+  ///   To properly align the pixel font with the pixel grid, we need to nudge it by a certain amount
+  ///   at certain DPIs. As it stands, I cannot find any rhyme or reason to the nudge amount, so the
+  ///   value are hard-coded.
+  /// </summary>
+  public double PixelFontNudge {
+    get {
+      // The function calculates a nudge value based on the fractional part of DpiScaleFactor. The
+      // function creates a repeating waveform with:
+      // - Peaks at 0.25 (nudge = 0.64) and 0.75 (nudge = 0.32)
+      // - Zeros at 0.0, 0.5, and 1.0.
+      //
+      // Nudge Value
+      //    ^
+      //  0.64|------------*---------------------------------------
+      //      |           * *        
+      //      |          *   *       
+      //      |         *     *      
+      //  0.48|--------*-------*-----------------------------------
+      //      |       *         *     
+      //      |      *           *    
+      //      |     *             *                
+      //  0.32|----*---------------*-----------------*-------------
+      //      |   *                 *             *     *
+      //      |  *                   *         *           *
+      //      | *                     *     *                 *
+      //  0.0 |*                       * *                       *
+      //      +----------------------------------------------------
+      //       ^           ^            ^            ^           ^   
+      //       0        0.25          0.5         0.75         1.0
+      //             Fractional Part of DpiScaleFactor
+
+      var frac = DpiScaleFactor - Math.Floor(DpiScaleFactor);
+
+      // Calculate nudge value based on fractional part
+      var nudge = 0.64 * Math.Max(0, 1 - 4 * Math.Abs(frac - 0.25)) +
+                  0.32 * Math.Max(0, 1 - 4 * Math.Abs(frac - 0.75));
+
+      return nudge;
+    }
+  }
+
+  /// <summary>
+  ///   Determines the pixel font size to use based on the current window height.
+  /// </summary>
+  public double PixelFontSize {
+    get {
+      // The 1:1 font size is the base font size that the other font sizes are based on.
+      var baseFontSize = (double)Application.Current.Resources["MainPixelFontSizeOneToOne"];
+
+      // If the configuration specifies a font size, use that.
+      if (AppState.DebugState.FontSize is not null) {
+        // The configuration value with be a positive integer, greater than or equal to 1. 1
+        // represents a 1:1 ratio with the screen pixels, 2 represents a 2:1 ratio with the screen
+        // pixels, and so on. We scale the font size by the DPI scale factor to ensure that the font
+        // size is correct for the current DPI.
+        return
+          Math.Round(
+            AppState.DebugState.FontSize.Value *
+            baseFontSize *
+            (1 / DpiScaleFactor),
+            3,
+            MidpointRounding.AwayFromZero
+          );
+      }
+
+      return WindowHeight switch {
+        < 480 => baseFontSize *
+                 DpiScaleFactor,
+        < 720 => (double)Application.Current.Resources["MainPixelFontSizeTwoToOne"] *
+                 DpiScaleFactor,
+        >= 720 => (double)Application.Current.Resources["MainPixelFontSizeThreeToOne"] *
+                  DpiScaleFactor
+      };
+    }
+  }
+
+  /// <summary>
   ///   The "scale factor" is used to adjust sizing from device-independent pixels (DIPs) to physical
   ///   pixels. This is necessary because the source window's dimensions are in physical pixels, but
   ///   the downscale window's dimensions are in DIPs.
   /// </summary>
-  private float DpiScaleFactor => AppState.DownscaleWindow.GetMonitor().GetDpi() / 96f;
+  public float DpiScaleFactor => AppState.DownscaleWindow.GetMonitor().GetDpi() / 96f;
+
+  /// <summary>
+  ///   Raised when the position of the downscaler window changes.
+  /// </summary>
+  public event PositionChangedEventHandler PositionChanged;
 
 
   public MainViewModel(
@@ -119,13 +217,27 @@ public partial class MainViewModel : INotifyPropertyChanged {
     AppState          = appState;
     MouseEventService = mouseEventService;
     CaptureService    = captureService;
+
     UpdateMouseCoordsDetails();
+
     MouseEventService.MouseMoved += (sender, coords) => {
       // Update the mouse coordinates if the user has requested to see them.
       if (ShouldShowMouseCoords) {
         UpdateMouseCoordsDetails();
       }
     };
+
+    // Ensure that properties whose values are derived from the position of the downscaler window
+    // are updated when the position changes.
+    PositionChanged += (_, _) => UpdateAfterPositionChange();
+  }
+
+
+  /// <summary>
+  ///   Raises the <see cref="PositionChanged" /> event.
+  /// </summary>
+  public void RaisePositionChanged() {
+    PositionChanged?.Invoke(this, null);
   }
 
 
@@ -157,6 +269,18 @@ public partial class MainViewModel : INotifyPropertyChanged {
         }
       );
     };
+  }
+
+
+  /// <summary>
+  ///   Updates view model properties after the position of the downscaler window changes. Some
+  ///   properties are derived from the position of the window, so they need to be updated when the
+  ///   position changes.
+  /// </summary>
+  private void UpdateAfterPositionChange() {
+    Console.WriteLine("Position changed!");
+    OnPropertyChanged(nameof(DpiScaleFactor));
+    OnPropertyChanged(nameof(PixelFontSize));
   }
 
 

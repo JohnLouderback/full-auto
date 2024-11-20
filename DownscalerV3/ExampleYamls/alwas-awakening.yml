@@ -1,0 +1,3 @@
+﻿# yaml-language-server: $schema=../../YamlSchemaTypes/downscaler.schema.json
+window-title: Alwa's Awakening
+downscale-factor: .5

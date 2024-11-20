@@ -22,14 +22,17 @@ public sealed partial class MainPage : Page {
       VisibilityProperty,
       DebugUI_VisibilityChanged
     );
+
+    // If the downscaler window is moved, then update the positions of the FPS and mouse coordinates.
+    ViewModel.PositionChanged += (sender, args) => UpdatePositions();
   }
 
 
   private async void DebugButton_OnClick(object sender, RoutedEventArgs e) {
     // First open the debug sub menu.
-    DebugSettingsFlyout.IsOpen = true;
+    // DebugSettingsFlyout.IsOpen = true;
     // Then, focus the first item in the sub menu.
-    DebugSettingsFlyout.Focus(FocusState.Programmatic);
+    // DebugSettingsFlyout.Focus(FocusState.Programmatic);
 
     // var mainWindow = App.MainWindow;
     // var hwnd       = WindowNative.GetWindowHandle(mainWindow);
@@ -95,30 +98,47 @@ public sealed partial class MainPage : Page {
     // Get the widths for each element so we can calculate the correct positions.
     var fpsWidth          = Fps.ActualWidth;
     var frameTimeWidth    = FrameTime.ActualWidth;
-    var mouseCoordsWidth  = MouseCoords.ActualWidth;
-    var mouseCoordsHeight = MouseCoords.ActualHeight;
+    var mouseCoordsWidth  = Math.Round(MouseCoords.ActualWidth, MidpointRounding.AwayFromZero);
+    var mouseCoordsHeight = Math.Round(MouseCoords.ActualHeight, MidpointRounding.AwayFromZero);
 
     // Get whichever was the largest width.
-    var largestFPSWidth = Math.Max(fpsWidth, frameTimeWidth);
+    var largestFPSWidth = Math.Round(
+      Math.Max(fpsWidth, frameTimeWidth),
+      MidpointRounding.AwayFromZero
+    );
 
-    var canvasWidth  = Canvas.ActualWidth;
-    var canvasHeight = Canvas.ActualHeight;
+    // var canvasWidth  = ViewModel.WindowWidth;
+    // var canvasHeight = ViewModel.WindowHeight;
+    var canvasWidth  = (uint)SwapChainPanel.ActualWidth;
+    var canvasHeight = (uint)SwapChainPanel.ActualHeight;
 
     // Move the FPS text to right edge with 5 pixels padding.
-    Canvas.SetLeft(FpsContainer, canvasWidth - largestFPSWidth - 5);
+    Canvas.SetLeft(
+      FpsContainer,
+      Math.Round(canvasWidth - largestFPSWidth - 5, MidpointRounding.AwayFromZero) +
+      ViewModel.PixelFontNudge
+    );
 
     // Set the fps container width to the largest width.
     FpsContainer.Width = largestFPSWidth;
 
     // Move the MouseCoordsContainer to the bottom right edge with 5 pixels padding
-    Canvas.SetLeft(MouseCoordsContainer, canvasWidth - mouseCoordsWidth - 5);
-    Canvas.SetTop(MouseCoordsContainer, canvasHeight - mouseCoordsHeight - 5);
+    Canvas.SetLeft(
+      MouseCoordsContainer,
+      Math.Round(canvasWidth - mouseCoordsWidth - 5, MidpointRounding.AwayFromZero) +
+      ViewModel.PixelFontNudge
+    );
+    Canvas.SetTop(
+      MouseCoordsContainer,
+      Math.Round(canvasHeight - mouseCoordsHeight - 5, MidpointRounding.AwayFromZero) +
+      ViewModel.PixelFontNudge
+    );
 
     // Set the mouse coords container width to the mouse coords width.
     MouseCoordsContainer.Width = mouseCoordsWidth;
 
     // Hard-set the width and height of the SwapChainPanel to the intended width and height of the window.
-    SwapChainPanel.Width  = ViewModel.DownscaleWidth;
-    SwapChainPanel.Height = ViewModel.DownscaleHeight;
+    // SwapChainPanel.Width  = ViewModel.DownscaleWidth;
+    // SwapChainPanel.Height = ViewModel.DownscaleHeight;
   }
 }

@@ -7,7 +7,7 @@ using Windows.Win32.UI.Input;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using DownscalerV3.Contracts.Services;
-using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Contracts.Services;
 using DownscalerV3.Core.Utils;
 using static Windows.Win32.PInvoke;

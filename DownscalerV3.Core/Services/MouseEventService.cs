@@ -2,6 +2,7 @@
 using System.Drawing;
 using Windows.Win32.System.SystemServices;
 using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Contracts.Services;
 using DownscalerV3.Core.Models;
 using DownscalerV3.Core.Utils;

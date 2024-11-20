@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Utils;
 
 namespace DownscalerV3.Core.Models;

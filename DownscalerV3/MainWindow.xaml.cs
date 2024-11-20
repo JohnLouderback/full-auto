@@ -1,9 +1,10 @@
-﻿using Windows.Graphics;
+﻿using Windows.Foundation;
+using Windows.Graphics;
 using Windows.UI.ViewManagement;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 using DownscalerV3.Contracts.Services;
-using DownscalerV3.Core.Contracts.Models;
+using DownscalerV3.Core.Contracts.Models.AppState;
 using DownscalerV3.Core.Models;
 using DownscalerV3.Core.Utils;
 using DownscalerV3.Helpers;
@@ -28,7 +29,7 @@ public sealed partial class MainWindow : WindowEx {
   public MainWindow() {
     InitializeComponent();
 
-    AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets/WindowIcon.ico"));
+    AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets/downscaler.ico"));
     Content = null;
     Title   = "AppDisplayName".GetLocalized();
 
@@ -54,8 +55,38 @@ public sealed partial class MainWindow : WindowEx {
     // Set the window's initial size.
     AppWindow.Resize(new SizeInt32((int)AppState.WindowWidth, (int)AppState.WindowHeight));
 
+    if (AppState.InitialX is not null &&
+        AppState.InitialY is not null) {
+      AppWindow.Move(new PointInt32(AppState.InitialX.Value, AppState.InitialY.Value));
+    }
+
+    // Report the height of the window to the view model.
+    ViewModel.WindowHeight = (int)AppState.WindowHeight;
+
     // Initialize the window event handler service with this window's handle.
     WindowEventHandlerService.InitializeForWindow(new HWND(this.GetWindowHandle()));
+  }
+
+
+  /// <inheritdoc />
+  protected override void OnPositionChanged(PointInt32 position) {
+    // Maintain the window's size across monitors.
+    AppWindow.Resize(new SizeInt32((int)AppState.WindowWidth, (int)AppState.WindowHeight));
+    ViewModel.WindowWidth  = (int)AppState.WindowWidth;
+    ViewModel.WindowHeight = (int)AppState.WindowHeight;
+    OnSizeChanged(new Size(AppState.WindowWidth, (double)AppState.WindowHeight));
+    ViewModel.RaisePositionChanged();
+    base.OnPositionChanged(position);
+  }
+
+
+  /// <inheritdoc />
+  protected override bool OnSizeChanged(Size newSize) {
+    // Update the view model's window width and height. We cast to int because the value of newSize
+    // should be in device pixels, which are inherently integral.
+    ViewModel.WindowWidth  = (int)newSize.Width;
+    ViewModel.WindowHeight = (int)newSize.Height;
+    return base.OnSizeChanged(newSize);
   }
 
 

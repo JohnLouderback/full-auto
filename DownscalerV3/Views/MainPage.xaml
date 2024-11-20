@@ -4,18 +4,17 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:views="using:DownscalerV3.Views"
   xmlns:animations="using:CommunityToolkit.WinUI.Animations"
   Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
   mc:Ignorable="d"
   Loaded="MainPage_OnLoaded"
   SizeChanged="MainPage_OnSizeChanged">
 
-  <SwapChainPanel x:Name="SwapChainPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
+  <SwapChainPanel x:Name="SwapChainPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
     <Canvas x:Name="Canvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
       <!-- Other XAML UI elements can be declared here if needed -->
 
-      <Button x:Name="DebugButton" CornerRadius="22.5" Width="45" Height="45" Canvas.Left="5" Canvas.Top="5"
+      <!--<Button x:Name="DebugButton" CornerRadius="22.5" Width="45" Height="45" Canvas.Left="5" Canvas.Top="5"
               Click="DebugButton_OnClick" Visibility="{x:Bind ViewModel.ShowDebugInfo, Mode=OneWay}">
         <animations:Implicit.ShowAnimations>
           <animations:TranslationAnimation From="-50, 0, 0" To="0" Duration="0:0:0.5" />
@@ -27,7 +26,7 @@
         </animations:Implicit.HideAnimations>
         <FontIcon Glyph="&#xEBE8;" />
       </Button>
-      <views:DebugSettingsFlyout x:Name="DebugSettingsFlyout" Target="{x:Bind DebugButton}" />
+      <views:DebugSettingsFlyout x:Name="DebugSettingsFlyout" Target="{x:Bind DebugButton}" />-->
       <StackPanel Loaded="Fps_OnLoaded" x:Name="FpsContainer" HorizontalAlignment="Right" MaxWidth="200"
                   Visibility="{x:Bind ViewModel.CanShowFPS, Mode=OneWay}">
         <animations:Implicit.ShowAnimations>
@@ -41,17 +40,17 @@
 
         <TextBlock
           x:Name="Fps"
-          FontFamily="Courier New"
+          FontFamily="{StaticResource MainFontFamily}"
           Foreground="Gray"
-          FontSize="14"
+          FontSize="{x:Bind ViewModel.PixelFontSize, Mode=OneWay}"
           HorizontalTextAlignment="Right"
           Text="{x:Bind ViewModel.FrameRateString, Mode=OneWay}" />
 
         <TextBlock
           x:Name="FrameTime"
-          FontFamily="Courier New"
+          FontFamily="{StaticResource MainFontFamily}"
           Foreground="Gray"
-          FontSize="14"
+          FontSize="{x:Bind ViewModel.PixelFontSize, Mode=OneWay}"
           HorizontalTextAlignment="Right"
           Text="{x:Bind ViewModel.FrameTimeString, Mode=OneWay}" />
       </StackPanel>
@@ -69,9 +68,9 @@
 
         <TextBlock
           x:Name="MouseCoords"
-          FontFamily="Courier New"
+          FontFamily="{StaticResource MainFontFamily}"
           Foreground="Gray"
-          FontSize="14"
+          FontSize="{x:Bind ViewModel.PixelFontSize, Mode=OneWay}"
           HorizontalTextAlignment="Right"
           Text="{x:Bind ViewModel.MouseCoordsDetails, Mode=OneWay}" />
       </StackPanel>

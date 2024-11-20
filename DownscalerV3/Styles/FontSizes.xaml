@@ -1,9 +1,30 @@
 ﻿<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <x:Double x:Key="LargeFontSize">24</x:Double>
-
-    <x:Double x:Key="MediumFontSize">16</x:Double>
+  <!-- Font sizes -->
+  <!--
+        "MainPixelFontSizeOneToOne" is used for the font size of the main pixel font. It is the size where the pixels
+        of the font are 1:1 with the pixels of the screen. This is the smallest font size that can be used.
+    -->
+  <x:Double x:Key="MainPixelFontSizeOneToOne"> 8 </x:Double>
+  <!--
+        "MainPixelFontSizeTwoToOne" is used for the font size of the main pixel font. It is the size where the pixels
+        of the font are 2:1 with the pixels of the screen. This is double the size of "MainPixelFontSizeOneToOne".
+    -->
+  <x:Double x:Key="MainPixelFontSizeTwoToOne"> 16 </x:Double>
+  <!--
+        "MainPixelFontSizeThreeToOne" is used for the font size of the main pixel font. It is the size where the pixels
+        of the font are 3:1 with the pixels of the screen. This is triple the size of "MainPixelFontSizeOneToOne".
+    -->
+  <x:Double x:Key="MainPixelFontSizeThreeToOne"> 24 </x:Double>
+  <!--
+        "MainPixelFontSize" is used for the font size of the main pixel font. The value of this is dynamic and set
+        based on the size of the window. It is set to the value of "MainPixelFontSizeOneToOne" for small windows, like
+        240px tall, and set to the value of "MainPixelFontSizeTwoToOne" for larger windows, like 480px tall.
+    -->
+  <x:Double x:Key="MainPixelFontSize"> 8 </x:Double>
+  <x:Double x:Key="LargeFontSize"> 24 </x:Double>
+  <x:Double x:Key="MediumFontSize"> 16 </x:Double>
 
 </ResourceDictionary>

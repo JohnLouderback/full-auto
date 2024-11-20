@@ -1,0 +1,8 @@
+﻿<ResourceDictionary
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- "ContentControlThemeFontFamily" is used for the font of the content of a ContentControl. -->
+  <FontFamily x:Key="ContentControlThemeFontFamily"> /Assets/Pixel-Millennium.ttf#Pixel Millennium </FontFamily>
+  <FontFamily x:Key="MainFontFamily"> /Assets/Pixel-Millennium.ttf#Pixel Millennium </FontFamily>
+  <FontFamily x:Key="SecondaryFontFamily"> /Assets/Pixel-rocks.ttf#Pixel rocks Regular </FontFamily>
+</ResourceDictionary>

@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DownscalerV3.Cpp.Core", "Do
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DownscalerV3.Cpp.WinRT", "DownscalerV3.Cpp.WinRT\DownscalerV3.Cpp.WinRT.vcxproj", "{48CDF8C2-4070-4040-A150-30C1B63B39EB}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "YamlSchemaTypes", "YamlSchemaTypes\YamlSchemaTypes.esproj", "{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -175,6 +177,30 @@ Global
 		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|x64.Build.0 = Release|x64
 		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|x86.ActiveCfg = Release|Win32
 		{48CDF8C2-4070-4040-A150-30C1B63B39EB}.Release|x86.Build.0 = Release|Win32
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|arm64.Build.0 = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|arm64.Deploy.0 = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|x64.Build.0 = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|x86.Build.0 = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|arm64.ActiveCfg = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|arm64.Build.0 = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|arm64.Deploy.0 = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|x64.ActiveCfg = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|x64.Build.0 = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|x64.Deploy.0 = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|x86.ActiveCfg = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|x86.Build.0 = Release|Any CPU
+		{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
