@@ -7,27 +7,20 @@
   xmlns:animations="using:CommunityToolkit.WinUI.Animations"
   Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
   mc:Ignorable="d"
-  Loaded="MainPage_OnLoaded"
-  SizeChanged="MainPage_OnSizeChanged">
+  Loaded="MainPage_OnLoaded">
 
   <SwapChainPanel x:Name="SwapChainPanel" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-    <Canvas x:Name="Canvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-      <!-- Other XAML UI elements can be declared here if needed -->
-
-      <!--<Button x:Name="DebugButton" CornerRadius="22.5" Width="45" Height="45" Canvas.Left="5" Canvas.Top="5"
-              Click="DebugButton_OnClick" Visibility="{x:Bind ViewModel.ShowDebugInfo, Mode=OneWay}">
-        <animations:Implicit.ShowAnimations>
-          <animations:TranslationAnimation From="-50, 0, 0" To="0" Duration="0:0:0.5" />
-          <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:0.5" />
-        </animations:Implicit.ShowAnimations>
-        <animations:Implicit.HideAnimations>
-          <animations:TranslationAnimation From="0" To="-50, 0, 0" Duration="0:0:0.5" />
-          <animations:OpacityAnimation From="1.0" To="0" Duration="0:0:0.5" />
-        </animations:Implicit.HideAnimations>
-        <FontIcon Glyph="&#xEBE8;" />
-      </Button>
-      <views:DebugSettingsFlyout x:Name="DebugSettingsFlyout" Target="{x:Bind DebugButton}" />-->
-      <StackPanel Loaded="Fps_OnLoaded" x:Name="FpsContainer" HorizontalAlignment="Right" MaxWidth="200"
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <StackPanel x:Name="FpsContainer" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top"
+                  HorizontalAlignment="Right" MaxWidth="200"
                   Visibility="{x:Bind ViewModel.CanShowFPS, Mode=OneWay}">
         <animations:Implicit.ShowAnimations>
           <animations:TranslationAnimation From="200, 0, 0" To="0" Duration="0:0:0.5" />
@@ -54,7 +47,8 @@
           HorizontalTextAlignment="Right"
           Text="{x:Bind ViewModel.FrameTimeString, Mode=OneWay}" />
       </StackPanel>
-      <StackPanel Loaded="MouseCoords_OnLoaded" x:Name="MouseCoordsContainer" HorizontalAlignment="Right"
+      <StackPanel x:Name="MouseCoordsContainer" Grid.Row="1" Grid.Column="1"
+                  VerticalAlignment="Bottom" HorizontalAlignment="Right"
                   MinWidth="400"
                   Visibility="{x:Bind ViewModel.CanShowMouseCoords, Mode=OneWay}">
         <animations:Implicit.ShowAnimations>
@@ -74,6 +68,6 @@
           HorizontalTextAlignment="Right"
           Text="{x:Bind ViewModel.MouseCoordsDetails, Mode=OneWay}" />
       </StackPanel>
-    </Canvas>
+    </Grid>
   </SwapChainPanel>
 </Page>

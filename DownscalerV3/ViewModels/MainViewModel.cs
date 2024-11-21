@@ -120,48 +120,6 @@ public partial class MainViewModel : INotifyPropertyChanged {
   public int WindowWidth { get; set; }
 
   /// <summary>
-  ///   To properly align the pixel font with the pixel grid, we need to nudge it by a certain amount
-  ///   at certain DPIs. As it stands, I cannot find any rhyme or reason to the nudge amount, so the
-  ///   value are hard-coded.
-  /// </summary>
-  public double PixelFontNudge {
-    get {
-      // The function calculates a nudge value based on the fractional part of DpiScaleFactor. The
-      // function creates a repeating waveform with:
-      // - Peaks at 0.25 (nudge = 0.64) and 0.75 (nudge = 0.32)
-      // - Zeros at 0.0, 0.5, and 1.0.
-      //
-      // Nudge Value
-      //    ^
-      //  0.64|------------*---------------------------------------
-      //      |           * *        
-      //      |          *   *       
-      //      |         *     *      
-      //  0.48|--------*-------*-----------------------------------
-      //      |       *         *     
-      //      |      *           *    
-      //      |     *             *                
-      //  0.32|----*---------------*-----------------*-------------
-      //      |   *                 *             *     *
-      //      |  *                   *         *           *
-      //      | *                     *     *                 *
-      //  0.0 |*                       * *                       *
-      //      +----------------------------------------------------
-      //       ^           ^            ^            ^           ^   
-      //       0        0.25          0.5         0.75         1.0
-      //             Fractional Part of DpiScaleFactor
-
-      var frac = DpiScaleFactor - Math.Floor(DpiScaleFactor);
-
-      // Calculate nudge value based on fractional part
-      var nudge = 0.64 * Math.Max(0, 1 - 4 * Math.Abs(frac - 0.25)) +
-                  0.32 * Math.Max(0, 1 - 4 * Math.Abs(frac - 0.75));
-
-      return nudge;
-    }
-  }
-
-  /// <summary>
   ///   Determines the pixel font size to use based on the current window height.
   /// </summary>
   public double PixelFontSize {
