@@ -7,7 +7,7 @@ public struct AppDebugState : IAppDebugState {
   public bool Enabled { get; set; }
 
   /// <inheritdoc />
-  public int? FontSize { get; set; }
+  public int? FontScale { get; set; }
 
   /// <inheritdoc />
   public bool ShowFps { get; set; }

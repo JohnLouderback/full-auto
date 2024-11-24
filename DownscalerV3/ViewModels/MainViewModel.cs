@@ -128,14 +128,14 @@ public partial class MainViewModel : INotifyPropertyChanged {
       var baseFontSize = (double)Application.Current.Resources["MainPixelFontSizeOneToOne"];
 
       // If the configuration specifies a font size, use that.
-      if (AppState.DebugState.FontSize is not null) {
+      if (AppState.DebugState.FontScale is not null) {
         // The configuration value with be a positive integer, greater than or equal to 1. 1
         // represents a 1:1 ratio with the screen pixels, 2 represents a 2:1 ratio with the screen
         // pixels, and so on. We scale the font size by the DPI scale factor to ensure that the font
         // size is correct for the current DPI.
         return
           Math.Round(
-            AppState.DebugState.FontSize.Value *
+            AppState.DebugState.FontScale.Value *
             baseFontSize *
             (1 / DpiScaleFactor),
             3,

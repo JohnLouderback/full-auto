@@ -7,6 +7,6 @@ x: 0
 y: 0
 debug:
   enabled: true
-  font-size: 1
+  font-scale: 1
   show-fps: true
   show-mouse-coordinates: true

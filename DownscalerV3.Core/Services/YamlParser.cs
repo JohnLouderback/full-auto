@@ -276,8 +276,8 @@ public class YamlParser(IAppState AppState) : IYamlParser {
         AppState.DebugState.Enabled = yamlConfig.Debug.Enabled.Value;
       }
 
-      if (yamlConfig.Debug.FontSize is not null) {
-        AppState.DebugState.FontSize = yamlConfig.Debug.FontSize.Value;
+      if (yamlConfig.Debug.FontScale is not null) {
+        AppState.DebugState.FontScale = yamlConfig.Debug.FontScale.Value;
       }
 
       if (yamlConfig.Debug.ShowFps is not null) {
@@ -318,7 +318,7 @@ public class YamlParser(IAppState AppState) : IYamlParser {
       CheckForGreaterThanZero(
         ("scale-width", yamlConfig.ScaleWidth),
         ("scale-height", yamlConfig.ScaleHeight),
-        ("debug.font-size", yamlConfig.Debug?.FontSize)
+        ("debug.font-scale", yamlConfig.Debug?.FontScale)
       ),
       CheckForNotZero(
         ("downscale-factor", yamlConfig.DownscaleFactor),

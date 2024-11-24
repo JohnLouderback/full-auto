@@ -170,7 +170,7 @@ public class AppState : IAppState {
   /// <inheritdoc />
   public IAppDebugState DebugState { get; set; } = new AppDebugState {
     Enabled = false,
-    FontSize = null, // The null default value allows for dynamic font size based on window size.
+    FontScale = null, // The null default value allows for dynamic font size based on window size.
     ShowFps = false,
     ShowMouseCoordinates = false
   };

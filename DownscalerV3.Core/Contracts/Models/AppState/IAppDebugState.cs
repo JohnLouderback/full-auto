@@ -10,11 +10,11 @@ public interface IAppDebugState {
   bool Enabled { get; set; }
 
   /// <summary>
-  ///   The font size to use for the debug information. A value of <c>1</c> means
+  ///   The font scaling factor to use for the debug information. A value of <c>1</c> means
   ///   the pixel font has a 1:1 ratio with the screen pixels. A value of <c>2</c>
   ///   means the pixel font has a 2:1 ratio with the screen pixels.
   /// </summary>
-  int? FontSize { get; set; }
+  int? FontScale { get; set; }
 
   /// <summary>
   ///   Whether to show the frames per second (FPS) in the debug information.

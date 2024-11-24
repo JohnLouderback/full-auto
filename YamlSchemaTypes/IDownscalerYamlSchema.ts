@@ -6,7 +6,7 @@
     enabled?: boolean;
 
     /**
-     * The font size to use for the debug information. A value of `1` means
+     * The font scaling factor to use for the debug information. A value of `1` means
      * the pixel font has a 1:1 ratio with the screen pixels. A value of `2`
      * means the pixel font has a 2:1 ratio with the screen pixels.
      *
@@ -14,7 +14,7 @@
      * the downscaler window.
      * @type integer
      */
-    'font-size'?: number;
+    'font-scale'?: number;
 
     /**
      * Whether to show the frames per second (FPS) in the debug information.
