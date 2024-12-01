@@ -6,9 +6,9 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using Downscaler.Helpers;
 using Downscaler.ViewModels;
 using DownscalerV3.Contracts.Services;
-using DownscalerV3.Core.Contracts.Models.AppState;
-using DownscalerV3.Core.Models;
-using DownscalerV3.Core.Utils;
+using Downscaler.Core.Contracts.Models.AppState;
+using Downscaler.Core.Models;
+using Downscaler.Core.Utils;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Downscaler;

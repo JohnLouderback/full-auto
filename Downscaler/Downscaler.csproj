@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DownscalerV3.Core\DownscalerV3.Core.csproj" />
+    <ProjectReference Include="..\Downscaler.Core\Downscaler.Core.csproj" />
     <ProjectReference Include="..\YamlSchemaTypes\YamlSchemaTypes.esproj" />
   </ItemGroup>
 

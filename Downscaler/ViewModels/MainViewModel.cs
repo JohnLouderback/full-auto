@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 using Downscaler.Contracts.Services;
-using DownscalerV3.Core.Contracts.Models.AppState;
-using DownscalerV3.Core.Contracts.Services;
-using DownscalerV3.Core.Utils;
+using Downscaler.Core.Contracts.Models.AppState;
+using Downscaler.Core.Contracts.Services;
+using Downscaler.Core.Utils;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -123,13 +123,13 @@ public partial class MainViewModel : INotifyPropertyChanged {
   public double PixelFontLineHeight {
     get {
       var baseLineHeight = AppState.DebugState.FontFamily switch {
-        DownscalerV3.Core.Contracts.Models.AppState.FontFamily.ExtraSmall =>
+        Core.Contracts.Models.AppState.FontFamily.ExtraSmall =>
           (double)Application.Current.Resources["ExtraSmallPixelFontLineHeight"],
-        DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Small =>
+        Core.Contracts.Models.AppState.FontFamily.Small =>
           (double)Application.Current.Resources["SmallPixelFontLineHeight"],
-        DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Normal =>
+        Core.Contracts.Models.AppState.FontFamily.Normal =>
           (double)Application.Current.Resources["NormalPixelFontLineHeight"],
-        DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Large =>
+        Core.Contracts.Models.AppState.FontFamily.Large =>
           (double)Application.Current.Resources["LargePixelFontLineHeight"],
         _ => (double)Application.Current.Resources["NormalPixelFontLineHeight"]
       };
@@ -142,13 +142,13 @@ public partial class MainViewModel : INotifyPropertyChanged {
   ///   Determines the pixel font family to use based on the current font family in the app state.
   /// </summary>
   public FontFamily PixelFontFamily => AppState.DebugState.FontFamily switch {
-    DownscalerV3.Core.Contracts.Models.AppState.FontFamily.ExtraSmall =>
+    Core.Contracts.Models.AppState.FontFamily.ExtraSmall =>
       (FontFamily)Application.Current.Resources["ExtraSmallFontFamily"],
-    DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Small =>
+    Core.Contracts.Models.AppState.FontFamily.Small =>
       (FontFamily)Application.Current.Resources["SmallFontFamily"],
-    DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Normal =>
+    Core.Contracts.Models.AppState.FontFamily.Normal =>
       (FontFamily)Application.Current.Resources["NormalFontFamily"],
-    DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Large =>
+    Core.Contracts.Models.AppState.FontFamily.Large =>
       (FontFamily)Application.Current.Resources["LargeFontFamily"],
     _ => (FontFamily)Application.Current.Resources["NormalFontFamily"]
   };
@@ -160,16 +160,16 @@ public partial class MainViewModel : INotifyPropertyChanged {
     get {
       // Choose the base font size based on the font family in the app state.
       var baseFontSize = AppState.DebugState.FontFamily switch {
-        DownscalerV3.Core.Contracts.Models.AppState.FontFamily.ExtraSmall => (double)Application
+        Core.Contracts.Models.AppState.FontFamily.ExtraSmall => (double)Application
           .Current
           .Resources["ExtraSmallPixelFontSize"],
-        DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Small => (double)Application.Current
+        Core.Contracts.Models.AppState.FontFamily.Small => (double)Application.Current
           .Resources[
             "SmallPixelFontSize"],
-        DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Normal => (double)Application.Current
+        Core.Contracts.Models.AppState.FontFamily.Normal => (double)Application.Current
           .Resources[
             "NormalPixelFontSize"],
-        DownscalerV3.Core.Contracts.Models.AppState.FontFamily.Large => (double)Application.Current
+        Core.Contracts.Models.AppState.FontFamily.Large => (double)Application.Current
           .Resources[
             "LargePixelFontSize"],
         _ => (double)Application.Current.Resources["NormalPixelFontSize"]
