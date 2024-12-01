@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32811.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DiagnosticWindow", "DiagnosticWindow\DiagnosticWindow.vcxproj", "{B76CDB65-8EE2-4879-9AB0-A1C58FAE6114}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownscalerV3", "DownscalerV3\DownscalerV3.csproj", "{364F0467-7C29-4D7F-859E-FBF6C0F7F016}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Downscaler", "Downscaler\Downscaler.csproj", "{364F0467-7C29-4D7F-859E-FBF6C0F7F016}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownscalerV3.Core", "DownscalerV3.Core\DownscalerV3.Core.csproj", "{EBD6998B-2764-4177-9852-C3242B490F82}"
 EndProject

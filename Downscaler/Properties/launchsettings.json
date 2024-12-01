@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "Downscaler (Unpackaged)": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\John\\Projects\\Downscaler\\Downscaler\\ExampleYamls\\hrot.yml\" -f 2"
+    },
+    "Downscaler (Package)": {
+      "commandName": "MsixPackage"
+    }
+  }
+}
