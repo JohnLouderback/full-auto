@@ -1,8 +1,8 @@
 ﻿# yaml-language-server: $schema=../../YamlSchemaTypes/downscaler.schema.json
 process-name: HROT.exe
 class-name: TForm1
-scale-width: 853
-scale-height: 240
+scale-width: 497
+scale-height: 332
 x: 0
 y: 0
 debug:
@@ -10,3 +10,4 @@ debug:
   font-scale: 1
   show-fps: true
   show-mouse-coordinates: true
+  font-family: large

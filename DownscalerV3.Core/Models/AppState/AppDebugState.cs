@@ -14,4 +14,7 @@ public struct AppDebugState : IAppDebugState {
 
   /// <inheritdoc />
   public bool ShowMouseCoordinates { get; set; }
+
+  /// <inheritdoc />
+  public FontFamily FontFamily { get; set; }
 }

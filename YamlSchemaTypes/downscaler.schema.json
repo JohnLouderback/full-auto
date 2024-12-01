@@ -18,6 +18,15 @@
               "description": "If true, debug information will be displayed in the downscaler window.",
               "type": "boolean"
             },
+            "font-family": {
+              "description": "The font family to use for the debug information. The font family can be one of the following:\n- \"small\": Useful for small windows like 240p. (font: Pixel Millennium, 5px tall)\n- \"normal\": Useful for most windows. (font: Dogica Pixel, 7px tall)\n- \"large\": Useful for larger windows like 1024x768 and up. (font: Fixedsys, 9px tall)",
+              "enum": [
+                "small",
+                "normal",
+                "large"
+              ],
+              "type": "string"
+            },
             "font-scale": {
               "description": "The font scaling factor to use for the debug information. A value of `1` means the pixel font has a 1:1 ratio with the screen pixels. A value of `2` means the pixel font has a 2:1 ratio with the screen pixels.\n\nBy default, the font size is chosen dynamically based on the size of the downscaler window.",
               "type": "number"

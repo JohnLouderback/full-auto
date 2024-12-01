@@ -124,6 +124,35 @@ public class YamlParser(IAppState AppState) : IYamlParser {
 
 
   /// <summary>
+  ///   Checks that the given property is one of the given values. If it is not, then an error
+  ///   message is returned. If it is, then <c>null</c> is returned.
+  /// </summary>
+  /// <param name="properties"> The properties to check against along with an array of acceptable values. </param>
+  /// <returns>
+  ///   An error message if the property is not one of the given values. Otherwise, <c>null</c>.
+  /// </returns>
+  private string? CheckForOneOfValues(params (string, object?, object?[])[] properties) {
+    var invalidProperties = properties.Where(p => !p.Item3.Contains(p.Item2)).ToArray();
+    var count             = invalidProperties.Length;
+
+    // If any of the properties are not one of the given values, return an error message.
+    if (count > 0) {
+      return $"The following properties must be one of the following values: \n\r{
+        string.Join(
+          "\n\r",
+          invalidProperties.Select(
+            p => $"\"{p.Item1}\" must be one of: {string.Join(", ", p.Item3.Where(v => v != null))}"
+          )
+        )
+      }.";
+    }
+
+    // If all of the properties are one of the given values, return null, indicating no violation of the rule.
+    return null;
+  }
+
+
+  /// <summary>
   ///   Deserializes the given YAML content into a <see cref="IYamlConfig" /> instance.
   /// </summary>
   /// <param name="yamlContent"> The content of the YAML file in string form to deserialize. </param>
@@ -287,6 +316,18 @@ public class YamlParser(IAppState AppState) : IYamlParser {
       if (yamlConfig.Debug.ShowMouseCoordinates is not null) {
         AppState.DebugState.ShowMouseCoordinates = yamlConfig.Debug.ShowMouseCoordinates.Value;
       }
+
+      if (yamlConfig.Debug.FontFamily is not null) {
+        AppState.DebugState.FontFamily = yamlConfig.Debug.FontFamily switch {
+          "extra-small" => FontFamily.ExtraSmall,
+          "small"       => FontFamily.Small,
+          "normal"      => FontFamily.Normal,
+          "large"       => FontFamily.Large,
+          _ => throw new InvalidOperationException(
+                 $"Unknown font family: {yamlConfig.Debug.FontFamily}"
+               )
+        };
+      }
     }
 
     return errors;
@@ -324,6 +365,10 @@ public class YamlParser(IAppState AppState) : IYamlParser {
         ("downscale-factor", yamlConfig.DownscaleFactor),
         ("scale-width", yamlConfig.ScaleWidth),
         ("scale-height", yamlConfig.ScaleHeight)
+      ),
+      CheckForOneOfValues(
+        ("debug.font-family", yamlConfig.Debug?.FontFamily?.ToLower(),
+         [null, /* "extra-small", */ "small", "normal", "large"])
       )
     };
 

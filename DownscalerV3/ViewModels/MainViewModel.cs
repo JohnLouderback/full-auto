@@ -6,6 +6,7 @@ using DownscalerV3.Core.Utils;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using FontFamily = Microsoft.UI.Xaml.Media.FontFamily;
 
 namespace DownscalerV3.ViewModels;
 
@@ -119,13 +120,56 @@ public partial class MainViewModel : INotifyPropertyChanged {
   /// </summary>
   public int WindowWidth { get; set; }
 
+  public double PixelFontLineHeight {
+    get {
+      var baseLineHeight = AppState.DebugState.FontFamily switch {
+        Core.Contracts.Models.AppState.FontFamily.ExtraSmall =>
+          (double)Application.Current.Resources["ExtraSmallPixelFontLineHeight"],
+        Core.Contracts.Models.AppState.FontFamily.Small =>
+          (double)Application.Current.Resources["SmallPixelFontLineHeight"],
+        Core.Contracts.Models.AppState.FontFamily.Normal =>
+          (double)Application.Current.Resources["NormalPixelFontLineHeight"],
+        Core.Contracts.Models.AppState.FontFamily.Large =>
+          (double)Application.Current.Resources["LargePixelFontLineHeight"],
+        _ => (double)Application.Current.Resources["NormalPixelFontLineHeight"]
+      };
+
+      return baseLineHeight * AppState.DebugState.FontScale ?? 1;
+    }
+  }
+
+  /// <summary>
+  ///   Determines the pixel font family to use based on the current font family in the app state.
+  /// </summary>
+  public FontFamily PixelFontFamily => AppState.DebugState.FontFamily switch {
+    Core.Contracts.Models.AppState.FontFamily.ExtraSmall =>
+      (FontFamily)Application.Current.Resources["ExtraSmallFontFamily"],
+    Core.Contracts.Models.AppState.FontFamily.Small =>
+      (FontFamily)Application.Current.Resources["SmallFontFamily"],
+    Core.Contracts.Models.AppState.FontFamily.Normal =>
+      (FontFamily)Application.Current.Resources["NormalFontFamily"],
+    Core.Contracts.Models.AppState.FontFamily.Large =>
+      (FontFamily)Application.Current.Resources["LargeFontFamily"],
+    _ => (FontFamily)Application.Current.Resources["NormalFontFamily"]
+  };
+
   /// <summary>
   ///   Determines the pixel font size to use based on the current window height.
   /// </summary>
   public double PixelFontSize {
     get {
-      // The 1:1 font size is the base font size that the other font sizes are based on.
-      var baseFontSize = (double)Application.Current.Resources["MainPixelFontSizeOneToOne"];
+      // Choose the base font size based on the font family in the app state.
+      var baseFontSize = AppState.DebugState.FontFamily switch {
+        Core.Contracts.Models.AppState.FontFamily.ExtraSmall => (double)Application.Current
+          .Resources["ExtraSmallPixelFontSize"],
+        Core.Contracts.Models.AppState.FontFamily.Small => (double)Application.Current.Resources[
+          "SmallPixelFontSize"],
+        Core.Contracts.Models.AppState.FontFamily.Normal => (double)Application.Current.Resources[
+          "NormalPixelFontSize"],
+        Core.Contracts.Models.AppState.FontFamily.Large => (double)Application.Current.Resources[
+          "LargePixelFontSize"],
+        _ => (double)Application.Current.Resources["NormalPixelFontSize"]
+      };
 
       // If the configuration specifies a font size, use that.
       if (AppState.DebugState.FontScale is not null) {
@@ -250,22 +294,28 @@ public partial class MainViewModel : INotifyPropertyChanged {
         MouseEventService.CurrentMouseCoords.Absolute.Y.ToString(),
         5}px)
       Relative to downscaled window: (X:{
-        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow.X.ToString(),
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow.X
+          .ToString(),
         5
       }px, Y:{
-        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow.Y.ToString(),
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindow.Y
+          .ToString(),
         5
       }px)
       (X:{
-        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent.X,
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent
+          .X,
         7:P2}, Y:{
-        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent.Y,
+        MouseEventService.CurrentMouseCoords.RelativeToDownscaledWindowPercent
+          .Y,
         7:P2})
       Relative to source window: (X:{
-        MouseEventService.CurrentMouseCoords.RelativeToSourceWindow.X.ToString(),
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindow.X
+          .ToString(),
         5
       }px, Y:{
-        MouseEventService.CurrentMouseCoords.RelativeToSourceWindow.Y.ToString(),
+        MouseEventService.CurrentMouseCoords.RelativeToSourceWindow.Y
+          .ToString(),
         5
       }px)
       (X:{

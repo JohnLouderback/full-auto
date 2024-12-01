@@ -14,4 +14,7 @@ public class DebugConfig : IDebugConfig {
 
   /// <inheritdoc />
   public bool? ShowMouseCoordinates { get; set; }
+
+  /// <inheritdoc />
+  public string? FontFamily { get; set; }
 }

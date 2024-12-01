@@ -171,6 +171,7 @@ public class AppState : IAppState {
   public IAppDebugState DebugState { get; set; } = new AppDebugState {
     Enabled = false,
     FontScale = null, // The null default value allows for dynamic font size based on window size.
+    FontFamily = FontFamily.Normal,
     ShowFps = false,
     ShowMouseCoordinates = false
   };

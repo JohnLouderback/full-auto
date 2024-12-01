@@ -29,4 +29,24 @@ public interface IDebugConfig {
   ///   transformed from the downscaler window to the source window.
   /// </summary>
   bool? ShowMouseCoordinates { get; set; }
+
+  /// <summary>
+  ///   The font family to use for the debug information. The font family can be
+  ///   one of the following:
+  ///   <ul>
+  ///     <li>
+  ///       <c>extra-small</c>: Useful for small windows like 240p. (font: Pixel Rocks, 3px tall)
+  ///     </li>
+  ///     <li>
+  ///       <c>small</c>: Useful for small windows like 240p. (font: Pixel Millennium, 5px tall)
+  ///     </li>
+  ///     <li>
+  ///       <c>normal</c>: Useful for most windows. (font: Dogica Pixel, 7px tall)
+  ///     </li>
+  ///     <li>
+  ///       <c>large</c>: Useful for larger windows like 1024x768 and up. (font: Fixedsys, 9px tall)
+  ///     </li>
+  ///   </ul>
+  /// </summary>
+  string? FontFamily { get; set; }
 }

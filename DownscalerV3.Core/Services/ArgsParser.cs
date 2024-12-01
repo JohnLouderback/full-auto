@@ -80,8 +80,7 @@ public class ArgsParser(IAppState AppState, IYamlParser YamlParser) : IArgsParse
     if (args.Length > 0 &&
         (args[0].EndsWith(".yaml") || args[0].EndsWith(".yml"))) {
       Console.WriteLine("Parsing YAML config file...");
-      YamlParser.ParseYaml(args[0]);
-      return true;
+      return YamlParser.ParseYaml(args[0]);
     }
 
     var parser = new Parser(

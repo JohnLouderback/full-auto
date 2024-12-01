@@ -29,4 +29,27 @@ public interface IAppDebugState {
   ///   transformed from the downscaler window to the source window.
   /// </summary>
   bool ShowMouseCoordinates { get; set; }
+
+  /// <summary>
+  ///   The font family to use for the debug information. The font family can be
+  ///   one of the following:
+  ///   <ul>
+  ///     <li>
+  ///       <see cref="FontFamily.ExtraSmall" />: Useful for small windows like 240p. (font: Pixel Rocks,
+  ///       3px tall)
+  ///     </li>
+  ///     <li>
+  ///       <see cref="FontFamily.Small" />: Useful for small windows like 240p. (font: Pixel Millennium,
+  ///       5px tall)
+  ///     </li>
+  ///     <li>
+  ///       <see cref="FontFamily.Normal" />: Useful for most windows. (font: Dogica Pixel, 7px tall)
+  ///     </li>
+  ///     <li>
+  ///       <see cref="FontFamily.Large" />: Useful for larger windows like 1024x768 and up. (font:
+  ///       Fixedsys, 9px tall)
+  ///     </li>
+  ///   </ul>
+  /// </summary>
+  FontFamily FontFamily { get; set; }
 }
