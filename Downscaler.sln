@@ -11,9 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Downscaler.Core", "Downscal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DownscalerV3.Tests.MSTest", "DownscalerV3.Tests.MSTest\DownscalerV3.Tests.MSTest.csproj", "{8148505E-8B97-455F-94A7-E0B1B240DB1B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DownscalerV3.Cpp.Core", "DownscalerV3.Cpp.Core\DownscalerV3.Cpp.Core.vcxproj", "{B81789D9-BFF3-4911-A01A-D0AE1F24C9AE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Downscaler.Cpp.Core", "Downscaler.Cpp.Core\Downscaler.Cpp.Core.vcxproj", "{B81789D9-BFF3-4911-A01A-D0AE1F24C9AE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DownscalerV3.Cpp.WinRT", "DownscalerV3.Cpp.WinRT\DownscalerV3.Cpp.WinRT.vcxproj", "{48CDF8C2-4070-4040-A150-30C1B63B39EB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Downscaler.Cpp.WinRT", "Downscaler.Cpp.WinRT\Downscaler.Cpp.WinRT.vcxproj", "{48CDF8C2-4070-4040-A150-30C1B63B39EB}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "YamlSchemaTypes", "YamlSchemaTypes\YamlSchemaTypes.esproj", "{AB9BAC2E-012A-424A-BF9B-89E8D1100CAF}"
 EndProject

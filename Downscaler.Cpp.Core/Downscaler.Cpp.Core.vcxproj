@@ -23,7 +23,7 @@
     <EnableManagedPackageReferenceSupport>true</EnableManagedPackageReferenceSupport>
     <ProjectGuid>{B81789D9-BFF3-4911-A01A-D0AE1F24C9AE}</ProjectGuid>
     <Keyword>NetCoreCProj</Keyword>
-    <RootNamespace>DownscalerV3CppCore</RootNamespace>
+    <RootNamespace>DownscalerCppCore</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <TargetFramework>net8.0-windows10.0.22624.0</TargetFramework>
   </PropertyGroup>
@@ -84,7 +84,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>windowsapp.lib;dwmapi.lib;$(OutDir)DownscalerV3.Cpp.WinRT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>windowsapp.lib;dwmapi.lib;$(OutDir)Downscaler.Cpp.WinRT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -96,7 +96,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>windowsapp.lib;dwmapi.lib;$(OutDir)DownscalerV3.Cpp.WinRT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>windowsapp.lib;dwmapi.lib;$(OutDir)Downscaler.Cpp.WinRT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -108,7 +108,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>windowsapp.lib;dwmapi.lib;$(OutDir)DownscalerV3.Cpp.WinRT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>windowsapp.lib;dwmapi.lib;$(OutDir)Downscaler.Cpp.WinRT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,7 +120,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>windowsapp.lib;dwmapi.lib;$(OutDir)DownscalerV3.Cpp.WinRT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>windowsapp.lib;dwmapi.lib;$(OutDir)Downscaler.Cpp.WinRT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -130,8 +130,9 @@
     <ClCompile Include="WindowUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DownscalerV3.Cpp.WinRT\DownscalerV3.Cpp.WinRT.vcxproj">
+    <ProjectReference Include="..\Downscaler.Cpp.WinRT\Downscaler.Cpp.WinRT.vcxproj">
       <Project>{48cdf8c2-4070-4040-a150-30c1b63b39eb}</Project>
+      <Name>Downscaler.Cpp.WinRT</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

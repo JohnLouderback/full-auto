@@ -13,7 +13,7 @@
 
 using namespace winrt::Windows::Graphics::Capture;
 
-namespace DownscalerV3::Cpp::WinRT {
+namespace Downscaler::Cpp::WinRT {
   /**
    * @brief Creates a capture item for a window. A capture item is used to capture the contents of a window.
    * @param hwnd The window to capture.

@@ -13,7 +13,7 @@ namespace Downscaler.Core.Utils;
 
 public static class HwndExtensions {
   public static nint CreateCaptureItem(this HWND hwnd) {
-    return DownscalerV3.Cpp.Core.WindowUtils.CreateCaptureItemForWindow(hwnd.Value);
+    return Cpp.Core.WindowUtils.CreateCaptureItemForWindow(hwnd.Value);
   }
 
 
@@ -49,7 +49,7 @@ public static class HwndExtensions {
 
 
   public static string GetProcessName(this HWND hwnd) {
-    return DownscalerV3.Cpp.Core.WindowUtils.GetProcessName(hwnd.Value).TrimEnd('\0');
+    return Cpp.Core.WindowUtils.GetProcessName(hwnd.Value).TrimEnd('\0');
   }
 
 

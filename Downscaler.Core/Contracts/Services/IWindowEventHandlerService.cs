@@ -1,6 +1,6 @@
 ﻿using Windows.Win32.Foundation;
 
-namespace DownscalerV3.Contracts.Services;
+namespace Downscaler.Core.Contracts.Services;
 
 /// <summary>
 ///   Service for handling the win32 window events for the given window.

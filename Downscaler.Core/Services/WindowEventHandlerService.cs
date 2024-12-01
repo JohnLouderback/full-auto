@@ -9,7 +9,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Services;
 using Downscaler.Core.Utils;
-using DownscalerV3.Contracts.Services;
 using static Windows.Win32.PInvoke;
 using static Downscaler.Core.Utils.Macros;
 using static Downscaler.Core.Utils.NativeUtils;

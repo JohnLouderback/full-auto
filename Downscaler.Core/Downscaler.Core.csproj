@@ -16,6 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DownscalerV3.Cpp.Core\DownscalerV3.Cpp.Core.vcxproj" />
+    <ProjectReference Include="..\Downscaler.Cpp.Core\Downscaler.Cpp.Core.vcxproj" />
   </ItemGroup>
 </Project>

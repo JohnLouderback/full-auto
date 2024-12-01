@@ -1,11 +1,11 @@
 #include "window-utils.h";
-#include "DownscalerV3.Cpp.WinRT.h"
+#include "Downscaler.Cpp.WinRT.h"
 
 using namespace System;
-using namespace DownscalerV3::Cpp::Core;
-using namespace DownscalerV3;
+using namespace Downscaler::Cpp::Core;
+using namespace Downscaler;
 
-namespace DownscalerV3::Cpp::Core {
+namespace Downscaler::Cpp::Core {
   public ref class WindowUtils {
     public:
       /**

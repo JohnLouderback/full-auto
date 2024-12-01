@@ -4,7 +4,6 @@ using Downscaler.Contracts.Services;
 using Downscaler.Services;
 using Downscaler.ViewModels;
 using Downscaler.Views;
-using DownscalerV3.Contracts.Services;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Services;
 using Downscaler.Core.Models.AppState;
