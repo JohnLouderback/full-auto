@@ -2,12 +2,12 @@
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
-using Downscaler.Core.Models;
+using Core.Models;
 using static Windows.Win32.PInvoke;
-using static Downscaler.Core.Utils.Macros;
-using static Downscaler.Core.Utils.NativeUtils;
+using static Core.Utils.Macros;
+using static Core.Utils.NativeUtils;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 public static class Win32WindowExtensions {
   private const int baseDPI = 96;

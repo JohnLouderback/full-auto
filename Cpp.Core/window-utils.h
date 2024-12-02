@@ -5,7 +5,7 @@
 #include <vector>
 #include <array>
 
-namespace Downscaler::Cpp::Core::NativeImpls {
+namespace Cpp::Core::NativeImpls {
   /**
    * @brief Retrieves the name of the process that created the window.
    * @param hwnd The handle to the window.

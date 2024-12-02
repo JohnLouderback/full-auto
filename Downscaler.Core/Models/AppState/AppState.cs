@@ -1,6 +1,7 @@
-﻿using Downscaler.Core.Contracts.Models.AppState;
-using Downscaler.Core.Utils;
-using static Downscaler.Core.Utils.Macros;
+﻿using Core.Models;
+using Core.Utils;
+using Downscaler.Core.Contracts.Models.AppState;
+using static Core.Utils.Macros;
 
 namespace Downscaler.Core.Models.AppState;
 

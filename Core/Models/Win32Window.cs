@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Windows.Win32.Foundation;
-using static Downscaler.Core.Utils.NativeUtils;
+using static Core.Utils.NativeUtils;
 
-namespace Downscaler.Core.Models;
+namespace Core.Models;
 
 /// <summary>
 ///   Represents a window in the Windows operating system. This is a blittable version of the

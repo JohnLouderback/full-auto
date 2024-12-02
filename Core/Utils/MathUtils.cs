@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 /// <summary>
 ///   Provides utility methods for mathematical operations.

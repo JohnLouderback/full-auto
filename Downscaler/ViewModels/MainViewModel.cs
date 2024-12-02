@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
+using Core.Utils;
 using Downscaler.Contracts.Services;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Services;
-using Downscaler.Core.Utils;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

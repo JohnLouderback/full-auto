@@ -1,7 +1,7 @@
 ﻿using Windows.Win32.Graphics.Gdi;
-using Downscaler.Core.Utils;
+using Core.Utils;
 
-namespace Downscaler.Core.Models;
+namespace Core.Models;
 
 /// <summary>
 ///   Represents a monitor in the Windows operating system.

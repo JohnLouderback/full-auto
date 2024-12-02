@@ -6,12 +6,12 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.Input;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
+using Core.Utils;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Services;
-using Downscaler.Core.Utils;
 using static Windows.Win32.PInvoke;
-using static Downscaler.Core.Utils.Macros;
-using static Downscaler.Core.Utils.NativeUtils;
+using static Core.Utils.Macros;
+using static Core.Utils.NativeUtils;
 
 namespace Downscaler.Core.Services;
 

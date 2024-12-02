@@ -1,12 +1,12 @@
-﻿using Downscaler.Core.Contracts.Models.AppState;
+﻿using Core.Models;
+using Core.Utils;
+using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Models.Yaml;
 using Downscaler.Core.Contracts.Services;
-using Downscaler.Core.Models;
 using Downscaler.Core.Models.Yaml;
-using Downscaler.Core.Utils;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
-using static Downscaler.Core.Utils.WindowUtils;
+using static Core.Utils.WindowUtils;
 
 namespace Downscaler.Core.Services;
 

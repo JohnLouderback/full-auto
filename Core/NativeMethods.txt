@@ -62,3 +62,4 @@ GetDpiForWindow
 SendMessage
 PostMessage
 MODIFIERKEYS_FLAGS
+GetProcessName

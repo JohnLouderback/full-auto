@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
 using Windows.Win32.System.SystemServices;
+using Core.Utils;
 using Downscaler.Core.Contracts.Models;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Services;
 using Downscaler.Core.Models;
-using Downscaler.Core.Utils;
-using static Downscaler.Core.Utils.Macros;
+using static Core.Utils.Macros;
 using static Windows.Win32.PInvoke;
 
 namespace Downscaler.Core.Services;

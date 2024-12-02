@@ -1,5 +1,5 @@
 ﻿using Windows.Win32.Foundation;
-using Downscaler.Core.Models;
+using Core.Models;
 
 namespace Downscaler.Core.Contracts.Services;
 

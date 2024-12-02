@@ -1,9 +1,9 @@
 ﻿using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
 using static Windows.Win32.PInvoke;
-using static Downscaler.Core.Utils.Macros;
+using static Core.Utils.Macros;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 public static class HMonitorExtensions {
   /// <summary>

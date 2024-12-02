@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 /// <summary>
 ///   A type-safe wrapper around a native buffer (C array) that can be used in C#. The
@@ -134,28 +134,27 @@ public class NativeBuffer<T> : IDisposable where T : struct {
   ///   var str = buffer.ToManagedString(Encoding.Unicode); // "Hello"
   ///   </code>
   /// </example>
-  public unsafe string ToManagedString(Encoding? encoding = null) {
-    if (typeof(T) == typeof(byte))
-    {
+  public string ToManagedString(Encoding? encoding = null) {
+    if (typeof(T) == typeof(byte)) {
       // If T is byte and encoding is provided, use the encoding to convert the buffer to string.
       encoding ??= Encoding.UTF8; // Default to UTF-8 if no encoding is provided.
-      byte[] byteArray = new byte[Length];
+      var byteArray = new byte[Length];
       Marshal.Copy(GCHandle.AddrOfPinnedObject(), byteArray, 0, Length);
       return encoding.GetString(byteArray);
     }
-    else if (typeof(T) == typeof(char))
-    {
+
+    if (typeof(T) == typeof(char)) {
       // If T is char, we assume it's UTF-16 and create a string directly.
-      char[] charArray = new char[Length];
+      var charArray = new char[Length];
       Marshal.Copy(GCHandle.AddrOfPinnedObject(), charArray, 0, Length);
       return new string(charArray);
     }
-    else
-    {
-      // If T is neither byte nor char, throw an exception.
-      var typeName = typeof(T).Name;
-      throw new InvalidOperationException($"Unsupported type \"{typeName}\" for ToManagedString method.");
-    }
+
+    // If T is neither byte nor char, throw an exception.
+    var typeName = typeof(T).Name;
+    throw new InvalidOperationException(
+      $"Unsupported type \"{typeName}\" for ToManagedString method."
+    );
   }
 
 

@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
+using Core.Utils;
 using Downscaler.Core.Contracts.Models;
 using Downscaler.Core.Contracts.Models.AppState;
-using Downscaler.Core.Utils;
 
 namespace Downscaler.Core.Models;
 

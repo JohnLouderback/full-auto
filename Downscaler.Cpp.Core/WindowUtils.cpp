@@ -1,26 +1,12 @@
-#include "window-utils.h";
+#include <dwmapi.h>
 #include "Downscaler.Cpp.WinRT.h"
 
 using namespace System;
-using namespace Downscaler::Cpp::Core;
 using namespace Downscaler;
 
 namespace Downscaler::Cpp::Core {
   public ref class WindowUtils {
     public:
-      /**
-       * @brief Gets the process name for a window.
-       * @param hwnd The window handle.
-       * @return The process name for the window as a managed string.
-       */
-      static String^ GetProcessName(IntPtr hwnd) {
-        // Convert IntPtr to HWND (native handle)
-        auto nativeHwnd = reinterpret_cast<HWND>(hwnd.ToPointer());
-
-        auto processName = NativeImpls::GetProcessName(nativeHwnd);
-        return gcnew String(processName.data());
-      }
-
       /**
        * @brief Given a window handle, returns a Windows.Graphics.Capture.GraphicsCaptureItem for that window.
        * @param hwnd The window handle to create a capture item for.

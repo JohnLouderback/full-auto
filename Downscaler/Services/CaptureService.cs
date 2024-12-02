@@ -1,10 +1,11 @@
 ﻿using Windows.Graphics.Capture;
 using Windows.UI.Popups;
 using Windows.Win32.Foundation;
+using Core.Utils;
 using Downscaler.Contracts.Services;
-using Downscaler.Helpers.Graphics;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Utils;
+using Downscaler.Helpers.Graphics;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;

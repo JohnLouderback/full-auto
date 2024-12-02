@@ -1,12 +1,12 @@
 ﻿using System.Reflection;
 using CommandLine;
 using CommandLine.Text;
+using Core.Models;
+using Core.Utils;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Services;
-using Downscaler.Core.Models;
-using Downscaler.Core.Utils;
 using TypeInfo = CommandLine.TypeInfo;
-using static Downscaler.Core.Utils.WindowUtils;
+using static Core.Utils.WindowUtils;
 
 namespace Downscaler.Core.Services;
 

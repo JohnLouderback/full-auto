@@ -1,6 +1,6 @@
-﻿using Downscaler.Core.Models;
+﻿using Core.Models;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 /// <summary>
 ///   General higher-level utilities for interacting with windows.

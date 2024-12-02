@@ -3,10 +3,10 @@ using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
-using Downscaler.Core.Models;
+using Core.Models;
 using static Windows.Win32.PInvoke;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 /// <summary>
 ///   The size of a pointer in bytes.
@@ -102,7 +102,7 @@ public static class NativeUtils {
     if (classAtom == 0) {
       throw new Win32Exception();
     }
-    
+
     var parentHwnd = parent ?? new HWND(nint.Zero);
 
     var hwnd = CreateWindowEx(

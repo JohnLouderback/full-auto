@@ -3,7 +3,7 @@ using Windows.Win32.Foundation;
 
 // ReSharper disable InconsistentNaming
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 /// <summary>
 ///   A series of utility functions that mimic the behavior of some Win32 macros.

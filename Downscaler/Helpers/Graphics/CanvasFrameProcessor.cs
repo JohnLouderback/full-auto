@@ -1,8 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using Windows.Foundation;
 using Windows.Graphics.Capture;
-using Downscaler.Core.Models;
-using Downscaler.Core.Utils;
+using Core.Models;
+using Core.Utils;
 using Microsoft.Graphics.Canvas;
 using Microsoft.UI;
 

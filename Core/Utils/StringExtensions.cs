@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 public static class StringExtensions {
   /// <summary>

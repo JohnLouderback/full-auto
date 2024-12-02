@@ -3,12 +3,12 @@ using Windows.Graphics;
 using Windows.UI.ViewManagement;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
-using Downscaler.Helpers;
-using Downscaler.ViewModels;
+using Core.Models;
+using Core.Utils;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Services;
-using Downscaler.Core.Models;
-using Downscaler.Core.Utils;
+using Downscaler.Helpers;
+using Downscaler.ViewModels;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Downscaler;

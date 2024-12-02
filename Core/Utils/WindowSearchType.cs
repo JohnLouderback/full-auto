@@ -1,4 +1,4 @@
-﻿namespace Downscaler.Core.Utils;
+﻿namespace Core.Utils;
 
 /// <summary>
 ///   The type of search to perform when looking for a window.

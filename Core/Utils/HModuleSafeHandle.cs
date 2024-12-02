@@ -2,7 +2,7 @@
 using Windows.Win32.Foundation;
 using Microsoft.Win32.SafeHandles;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 /// <summary>
 ///   Represents a safe handle for a module. A "safe handle" is a handle that is automatically

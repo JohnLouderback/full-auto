@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Windows.Win32.Foundation;
 
-namespace Downscaler.Core.Utils;
+namespace Core.Utils;
 
 public static class RectExtensions {
   /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace Downscaler.Core.Utils;
+﻿namespace Core.Utils;
 
 /// <summary>
 ///   Represents the method that is used to process the input from a raw input device.

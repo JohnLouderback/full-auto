@@ -1,4 +1,4 @@
-﻿namespace Downscaler.Core.Utils;
+﻿namespace Core.Utils;
 
 public static class NumberExtensions {
   /// <summary>
