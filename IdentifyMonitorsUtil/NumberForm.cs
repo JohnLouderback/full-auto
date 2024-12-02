@@ -1,13 +1,10 @@
-using System.Runtime.InteropServices;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
+using Core.Utils;
 
 namespace IdentifyMonitorsUtil;
 
 public partial class NumberForm : Form {
-  private const int GWL_EXSTYLE = -20;
-  private const int WS_EX_LAYERED = 0x80000;
-  private const int WS_EX_TRANSPARENT = 0x20;
-
-
   public NumberForm(MonitorDetails monitorDetails) {
     InitializeComponent();
     SetStyle(ControlStyles.SupportsTransparentBackColor, true);
@@ -23,20 +20,15 @@ public partial class NumberForm : Form {
     Shown += (sender, args) => {
       monitorIndex.Text = monitorDetails.Index.ToString();
       deviceID.Text     = "Device ID: " + monitorDetails.DeviceName;
-      // Make the form click-through
-      var exStyle = GetWindowLong(Handle, GWL_EXSTYLE);
-      SetWindowLong(Handle, GWL_EXSTYLE, exStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT);
+
+      // Make the form "click-through" by setting the WS_EX_LAYERED and WS_EX_TRANSPARENT styles.
+      var hwnd    = (HWND)Handle;
+      var exStyle = hwnd.GetWindowExStyle();
+      hwnd.SetWindowExStyle(
+        exStyle | WINDOW_EX_STYLE.WS_EX_LAYERED | WINDOW_EX_STYLE.WS_EX_TRANSPARENT
+      );
     };
   }
-
-
-  [DllImport("user32.dll", SetLastError = true)]
-  private static extern int GetWindowLong(nint hWnd, int nIndex);
-
-
-  // Import SetWindowLong from the user32 library to enable click-through
-  [DllImport("user32.dll", SetLastError = true)]
-  private static extern int SetWindowLong(nint hWnd, int nIndex, int dwNewLong);
 
 
   // protected override void OnPaintBackground(PaintEventArgs e) {

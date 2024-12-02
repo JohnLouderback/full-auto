@@ -12,6 +12,14 @@ namespace Core.Utils;
 ///   This is largely for a more convenient API that toes the line between the C# and C++ APIs.
 /// </summary>
 public static class Win32Ex {
+  [DllImport("user32.dll", EntryPoint = "GetWindowLong", SetLastError = true)]
+  public static extern int _GetWindowLong(HWND hWnd, int nIndex);
+
+
+  [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr", SetLastError = true)]
+  public static extern nint _GetWindowLongPtr(HWND hWnd, int nIndex);
+
+
   /// <inheritdoc cref="Windows.Win32.PInvoke.GetModuleHandle(PCWSTR)" />
   [SupportedOSPlatform("windows5.1.2600")]
   public static unsafe FreeLibrarySafeHandle GetModuleHandle(string? lpModuleName = null) {
@@ -40,6 +48,28 @@ public static class Win32Ex {
     fixed (char* lpModuleNameLocal = nullLpModuleName) {
       return PInvoke.GetModuleHandle(lpModuleNameLocal);
     }
+  }
+
+
+  /// <summary>
+  ///   Retrieves information about the specified window. The function also retrieves the value at a
+  ///   specified offset into the extra window memory.
+  /// </summary>
+  /// <param name="hWnd"> A handle to the window and, indirectly, the class to which the window belongs. </param>
+  /// "
+  /// <param name="nIndex"> The zero-based offset to the value to be retrieved. </param>
+  /// <returns>
+  ///   If the function succeeds, the return value is the requested value. Otherwise, the return value is
+  ///   zero.
+  /// </returns>
+  public static nint GetWindowLong(HWND hWnd, WINDOW_LONG_PTR_INDEX nIndex) {
+    // If the pointer size is 32 bits, we call the 32-bit version of the function. Otherwise, we call
+    // the 64-bit version.
+    if (NativeUtils.GetPointerSize() == PointerSize.PointerSize32) {
+      return new nint(_GetWindowLong(hWnd, (int)nIndex));
+    }
+
+    return _GetWindowLongPtr(hWnd, (int)nIndex);
   }
 
 

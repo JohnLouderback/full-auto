@@ -48,6 +48,21 @@ public static class HwndExtensions {
   }
 
 
+  public static WINDOW_EX_STYLE GetWindowExStyle(this HWND hwnd) {
+    return (WINDOW_EX_STYLE)hwnd.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
+  }
+
+
+  public static nint GetWindowLong(this HWND hwnd, WINDOW_LONG_PTR_INDEX index) {
+    return Win32Ex.GetWindowLong(hwnd, index);
+  }
+
+
+  public static WINDOW_STYLE GetWindowStyle(this HWND hwnd) {
+    return (WINDOW_STYLE)hwnd.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE);
+  }
+
+
   public static unsafe string GetWindowText(this HWND hwnd) {
     var bufferSize = 1024;
     using (var textBuffer = new NativeBuffer<char>(bufferSize)) {
@@ -63,11 +78,6 @@ public static class HwndExtensions {
   /// </summary>
   /// <param name="window"> The window to remove the owner from. </param>
   /// <returns> The same window this method was called on. </returns>
-  /// <exception cref="Win32Exception">
-  ///   Thrown if the call to <see cref="PInvoke.SetWindowLong" /> or
-  ///   <see cref="PInvoke.SetWindowLongPtr" />
-  ///   fails when attempting to remove the owner from the window.
-  /// </exception>
   public static HWND RemoveOwner(this HWND window) {
     // Get the owner of the window.
     var hOwner = PInvoke.GetWindow(window, GET_WINDOW_CMD.GW_OWNER);
@@ -76,11 +86,7 @@ public static class HwndExtensions {
     if (hOwner == nullptr) return window;
 
     // Remove the owner from the window.
-    var result = Win32Ex.SetWindowLong(window, WINDOW_LONG_PTR_INDEX.GWL_HWNDPARENT, NULL);
-
-    if (result == 0) {
-      throw new Win32Exception(Marshal.GetLastWin32Error());
-    }
+    window.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_HWNDPARENT, NULL);
 
     // Update the window's position to reflect the change in ownership.
     window.SetWindowPosition();
@@ -93,6 +99,22 @@ public static class HwndExtensions {
     var result = PInvoke.SetParent(hwnd, parent);
 
     if (result == nint.Zero) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
+
+    return hwnd;
+  }
+
+
+  public static HWND SetWindowExStyle(this HWND hwnd, WINDOW_EX_STYLE style) {
+    return hwnd.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, (int)style);
+  }
+
+
+  public static HWND SetWindowLong(this HWND hwnd, WINDOW_LONG_PTR_INDEX index, int value) {
+    var result = Win32Ex.SetWindowLong(hwnd, index, value);
+
+    if (result == 0) {
       throw new Win32Exception(Marshal.GetLastWin32Error());
     }
 
@@ -215,13 +237,7 @@ public static class HwndExtensions {
 
 
   public static HWND SetWindowStyle(this HWND hwnd, WINDOW_STYLE style) {
-    var result = Win32Ex.SetWindowLong(hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
-
-    if (result == 0) {
-      throw new Win32Exception(Marshal.GetLastWin32Error());
-    }
-
-    return hwnd;
+    return hwnd.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
   }
 
 
