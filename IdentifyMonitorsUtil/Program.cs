@@ -27,6 +27,9 @@ internal static class Program {
       monitorIndex++;
     }
 
+    var monitorList = new MonitorList();
+    monitorList.Show();
+
     // Start the application
     Application.Run();
   }
