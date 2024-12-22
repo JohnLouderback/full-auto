@@ -207,7 +207,7 @@ public partial class MainViewModel : INotifyPropertyChanged {
   ///   pixels. This is necessary because the source window's dimensions are in physical pixels, but
   ///   the downscale window's dimensions are in DIPs.
   /// </summary>
-  public float DpiScaleFactor => AppState.DownscaleWindow.GetMonitor().GetDpi() / 96f;
+  public float DpiScaleFactor => AppState.DownscaleWindow.GetMonitor().Dpi / 96f;
 
   /// <summary>
   ///   Raised when the position of the downscaler window changes.

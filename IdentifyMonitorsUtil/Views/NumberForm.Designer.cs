@@ -1,4 +1,4 @@
-﻿namespace IdentifyMonitorsUtil;
+﻿namespace IdentifyMonitorsUtil.Views;
 
 partial class NumberForm {
   /// <summary>

@@ -140,8 +140,8 @@ public class SimpleCapturer : ICapturer {
     // If there is a difference in DPI between the downscale window and the window being scaled,
     // then we'll need to adjust the size of the swap chain to account for the DPI difference.
     windowToScale = AppState.WindowToScale;
-    var dpiScaleFactor = AppState.DownscaleWindow.GetMonitor().GetDpi() /
-                         (float)windowToScale.GetMonitor().GetDpi();
+    var dpiScaleFactor = AppState.DownscaleWindow.GetMonitor().Dpi /
+                         (float)windowToScale.GetMonitor().Dpi;
 
     // Listen for frame arrival events.
     framePool.FrameArrived += OnFrameArrived;

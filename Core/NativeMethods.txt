@@ -63,3 +63,10 @@ SendMessage
 PostMessage
 MODIFIERKEYS_FLAGS
 GetProcessName
+GetMonitorInfo
+MONITORINFO
+MONITORINFOEXW
+DISPLAY_DEVICE
+EnumDisplayDevices
+EnumDisplayMonitors
+MONITORINFOF_PRIMARY

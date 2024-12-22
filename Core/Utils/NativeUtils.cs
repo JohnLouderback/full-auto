@@ -175,6 +175,24 @@ public static class NativeUtils {
 
 
   /// <summary>
+  ///   Enumerates all connected monitors on the system at the time of the call.
+  /// </summary>
+  /// <returns>
+  ///   An <see cref="IEnumerable{T}" /> of <see cref="Win32Monitor" /> that contains all connected
+  ///   monitors on the system at the time of the call.
+  /// </returns>
+  public static IEnumerable<Win32Monitor> EnumerateMonitors() {
+    var result          = new List<Win32Monitor>();
+    var monitorEnumProd = GetMonitorEnumProc(result);
+    if (!EnumDisplayMonitors((HDC)nint.Zero, null as RECT?, monitorEnumProd, nint.Zero)) {
+      throw new Win32Exception("Failed to enumerate monitors.");
+    }
+
+    return result;
+  }
+
+
+  /// <summary>
   ///   Enumerates all top-level windows on the system at the time of the call.
   /// </summary>
   /// <returns>
@@ -190,6 +208,36 @@ public static class NativeUtils {
 
     // Return the results.
     return result;
+  }
+
+
+  /// <summary>
+  ///   Returns a <see cref="MONITORENUMPROC" /> that can be used to enumerate monitors and add them to
+  ///   a list given a list to store the results in.
+  /// </summary>
+  /// <param name="result"> The list to store the results in. </param>
+  /// <returns> A <see cref="MONITORENUMPROC" /> that can be used to enumerate monitors. </returns>
+  public static unsafe MONITORENUMPROC GetMonitorEnumProc(ICollection<Win32Monitor> result) {
+    return (hMonitor, hdcMonitor, lprcMonitor, dwData) => {
+      var monitorInfo = hMonitor.GetMonitorInfoEx();
+      var szDevice    = monitorInfo.szDevice.ToString();
+      var device      = hMonitor.GetDisplayDeviceById(szDevice);
+
+      result.Add(
+        new Win32Monitor {
+          HMonitor     = hMonitor,
+          DeviceId     = device.DeviceID.ToString(),
+          DeviceName   = device.DeviceName.ToString(),
+          DeviceString = device.DeviceString.ToString(),
+          DeviceKey    = device.DeviceKey.ToString(),
+          MonitorRect  = monitorInfo.monitorInfo.rcMonitor,
+          WorkArea     = monitorInfo.monitorInfo.rcWork,
+          Dpi          = hMonitor.GetDpi(),
+          IsPrimary    = (monitorInfo.monitorInfo.dwFlags & MONITORINFOF_PRIMARY) != 0
+        }
+      );
+      return true;
+    };
   }
 
 

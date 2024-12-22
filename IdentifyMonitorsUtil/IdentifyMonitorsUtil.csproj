@@ -12,4 +12,18 @@
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DryIoc" Version="6.0.0-preview-08" />
+    <PackageReference Include="ObjectListView.Official" Version="2.9.2-alpha2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\MonitorList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Views\NumberForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

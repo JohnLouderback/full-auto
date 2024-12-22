@@ -1,10 +1,26 @@
+using Core.Contracts.Services;
+using Core.Services;
+using DryIoc;
+using IdentifyMonitorsUtil.Contracts.Presenters;
+using IdentifyMonitorsUtil.Contracts.Views;
+using IdentifyMonitorsUtil.Presenters;
+using IdentifyMonitorsUtil.Views;
+
 namespace IdentifyMonitorsUtil;
 
 internal static class Program {
+  private static readonly Container container =
+    new(rules => rules.WithTrackingDisposableTransients());
+
+
   [STAThread]
   private static void Main() {
     Application.EnableVisualStyles();
     Application.SetCompatibleTextRenderingDefault(false);
+
+    container.Register<IMonitorEnumerationService, MonitorEnumerationService>(Reuse.Singleton);
+    container.Register<IMonitorListPresenter, MonitorListPresenter>(Reuse.ScopedOrSingleton);
+    container.Register<IMonitorListView, MonitorList>(Reuse.ScopedOrSingleton);
 
     // Number to display
     var monitorIndex = 1;
@@ -27,8 +43,11 @@ internal static class Program {
       monitorIndex++;
     }
 
-    var monitorList = new MonitorList();
+    var monitorList = container.Resolve<IMonitorListView>();
     monitorList.Show();
+    // The monitor list is considered to be the "main window", so when it's closed, the application
+    // should exit.
+    monitorList.Closed += (sender, args) => Application.Exit();
 
     // Start the application
     Application.Run();

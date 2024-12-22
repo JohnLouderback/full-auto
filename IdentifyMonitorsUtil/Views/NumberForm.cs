@@ -2,7 +2,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 using Core.Utils;
 
-namespace IdentifyMonitorsUtil;
+namespace IdentifyMonitorsUtil.Views;
 
 public partial class NumberForm : Form {
   public NumberForm(MonitorDetails monitorDetails) {
