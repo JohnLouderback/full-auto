@@ -3,9 +3,10 @@
 namespace Core.Contracts.Services;
 
 /// <summary>
-///   Provides methods for listing and identifying monitors on the current system.
+///   Provides methods for listing and identifying monitors on the current system as well as
+///   storing user preferences regarding monitor configuration.
 /// </summary>
-public interface IMonitorEnumerationService {
+public interface IMonitorManagerService {
   /// <summary>
   ///   Enumerates all monitors on the system.
   /// </summary>

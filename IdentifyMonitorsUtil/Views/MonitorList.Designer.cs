@@ -51,6 +51,7 @@ partial class MonitorList {
     //   CanDropOnSubItem = false
     // };
     list.DropSink         = new RearrangingDropSink();
+    (list.DropSink as RearrangingDropSink).FeedbackColor = SystemColors.Highlight;
     list.TabIndex         = 0;
     list.UseExplorerTheme = true;
     list.ShowGroups       = false;

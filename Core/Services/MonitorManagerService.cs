@@ -4,7 +4,7 @@ using Core.Utils;
 
 namespace Core.Services;
 
-public class MonitorEnumerationService : IMonitorEnumerationService {
+public class MonitorManagerService : IMonitorManagerService {
   /// <inheritdoc />
   public IEnumerable<Win32Monitor> EnumerateMonitors() {
     return NativeUtils.EnumerateMonitors();

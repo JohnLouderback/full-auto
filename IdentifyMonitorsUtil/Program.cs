@@ -18,7 +18,7 @@ internal static class Program {
     Application.EnableVisualStyles();
     Application.SetCompatibleTextRenderingDefault(false);
 
-    container.Register<IMonitorEnumerationService, MonitorEnumerationService>(Reuse.Singleton);
+    container.Register<IMonitorManagerService, MonitorManagerService>(Reuse.Singleton);
     container.Register<IMonitorListPresenter, MonitorListPresenter>(Reuse.ScopedOrSingleton);
     container.Register<IMonitorListView, MonitorList>(Reuse.ScopedOrSingleton);
 

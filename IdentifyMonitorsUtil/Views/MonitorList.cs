@@ -1,4 +1,5 @@
 ﻿using BrightIdeasSoftware;
+using DarkModeForms;
 using IdentifyMonitorsUtil.Contracts.Models;
 using IdentifyMonitorsUtil.Contracts.Presenters;
 using IdentifyMonitorsUtil.Contracts.Views;
@@ -8,11 +9,18 @@ namespace IdentifyMonitorsUtil.Views;
 
 internal partial class MonitorList : Form, IMonitorListView {
   private readonly Lazy<IMonitorListPresenter> presenter;
+  private readonly DarkModeCS                  darkMode;
   private          IEnumerable<IMonitor>       monitors = Enumerable.Empty<IMonitor>();
 
 
   public MonitorList(Lazy<IMonitorListPresenter> presenter) {
     this.presenter = presenter;
+
+    darkMode = new DarkModeCS(this) {
+      //[Optional] Choose your preferred color mode here:
+      // ColorMode = DarkModeCS.DisplayMode.ClearMode
+      ColorMode = DarkModeCS.DisplayMode.SystemDefault
+    };
 
     InitializeComponent();
 
@@ -39,6 +47,7 @@ internal partial class MonitorList : Form, IMonitorListView {
     Shown += (sender, args) => {
       AddUserOrderColumn();
       AdjustIsPrimaryColumn();
+      UpdateHeadersStyle();
       this.presenter.Value.Initialize();
       list.AutoSizeColumns();
       list.AutoResizeColumns();
@@ -101,5 +110,31 @@ internal partial class MonitorList : Form, IMonitorListView {
       var item = list.GetItem(i);
       list.RefreshItem(item);
     }
+  }
+
+
+  private void UpdateHeadersStyle() {
+    list.HeaderUsesThemes  = false;
+    list.HeaderStyle       = ColumnHeaderStyle.Nonclickable;
+    list.HeaderFormatStyle = new HeaderFormatStyle();
+    list.HeaderFormatStyle.SetBackColor(darkMode.OScolors.Surface);
+    list.HeaderFormatStyle.SetForeColor(darkMode.OScolors.TextActive);
+    list.ContextMenuStrip            = null;
+    list.ShowFilterMenuOnRightClick  = false;
+    list.ShowCommandMenuOnRightClick = false;
+
+    foreach (OLVColumn item in list.Columns) {
+      var headerStyle = new HeaderFormatStyle();
+      headerStyle.SetBackColor(darkMode.OScolors.Surface);
+      headerStyle.SetForeColor(darkMode.OScolors.TextActive);
+      item.HeaderFormatStyle = headerStyle;
+    }
+
+    // Make the last column fill the remaining space.
+    // Get the last column
+    var lastColumn = list.AllColumns.Last();
+
+    // Set it to fill the remaining space
+    lastColumn.FillsFreeSpace = true;
   }
 }

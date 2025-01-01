@@ -8,16 +8,16 @@ using Monitor = IdentifyMonitorsUtil.Models.Monitor;
 namespace IdentifyMonitorsUtil.Presenters;
 
 public class MonitorListPresenter : IMonitorListPresenter {
-  private readonly IMonitorListView           view;
-  private readonly IMonitorEnumerationService monitorEnumerationService;
+  private readonly IMonitorListView       view;
+  private readonly IMonitorManagerService monitorManagerService;
 
 
   public MonitorListPresenter(
     IMonitorListView view,
-    IMonitorEnumerationService monitorEnumerationService
+    IMonitorManagerService monitorManagerService
   ) {
-    this.view                      = view;
-    this.monitorEnumerationService = monitorEnumerationService;
+    this.view                  = view;
+    this.monitorManagerService = monitorManagerService;
   }
 
 
@@ -29,7 +29,7 @@ public class MonitorListPresenter : IMonitorListPresenter {
 
   /// <inheritdoc />
   public void LoadMonitors() {
-    var monitors = monitorEnumerationService.EnumerateMonitors()
+    var monitors = monitorManagerService.EnumerateMonitors()
       .Select<Win32Monitor, IMonitor>(win32Monitor => new Monitor(win32Monitor));
     view.SetMonitors(monitors);
   }
