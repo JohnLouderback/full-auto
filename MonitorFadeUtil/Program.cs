@@ -19,14 +19,27 @@ public class TransparentOverlay : Form {
   private static readonly byte
     darkestAlpha = 200; // transparency level (0=fully transparent, 255=fully opaque)
 
-  private static TransparentOverlay[] overlays;
-  private static Timer                fadeTimer;
-  private static Point                lastCursorPos;
-  private static Timer                fadeTimeout;
-  private static TransparentOverlay   activeOverlay;
+  private static List<TransparentOverlay> overlays;
+  private static Timer                    fadeTimer;
+  private static Point                    lastCursorPos;
+  private static Timer                    fadeTimeout;
+  private static TransparentOverlay       activeOverlay;
+
+  // Store transparency state for each overlay
+  private static readonly Dictionary<Rectangle, byte> overlayStates = new();
+
+  // Flag to track if the initial alpha value was passed to the constructor. This disables things
+  // like fading in the overlay when it's first shown.
+  private readonly bool initialAlphaWasPassed;
+
+  /// <summary>
+  ///   The unique identifier for the overlay based on the monitor it represents.
+  /// </summary>
+  public string ID { get; }
 
 
-  public TransparentOverlay(Rectangle bounds) {
+  public TransparentOverlay(string id, Rectangle bounds, byte? initialAlpha = null) {
+    ID              = id;
     FormBorderStyle = FormBorderStyle.None;
     BackColor       = Color.Black;
     Opacity         = 1.0;
@@ -42,13 +55,21 @@ public class TransparentOverlay : Form {
       new nint(style.ToInt64() | WS_EX_LAYERED | WS_EX_TRANSPARENT)
     );
 
-    if (!Bounds.Contains(Cursor.Position)) {
-      SetLayeredWindowAttributes(Handle, 0, darkestAlpha, LWA_ALPHA);
+    if (initialAlpha != null) {
+      initialAlphaWasPassed = true;
     }
-    else {
-      SetLayeredWindowAttributes(Handle, 0, 0, LWA_ALPHA);
+
+    // If an initial alpha value is provided, use it; otherwise, set the initial alpha based on
+    // the cursor position.
+    var alpha = initialAlpha ?? (Bounds.Contains(Cursor.Position) ? (byte)0 : darkestAlpha);
+
+    SetLayeredWindowAttributes(Handle, 0, alpha, LWA_ALPHA);
+
+    if (initialAlpha == 0) {
       activeOverlay = this;
     }
+
+    overlayStates[Bounds] = alpha; // Save initial state
   }
 
 
@@ -70,13 +91,17 @@ public class TransparentOverlay : Form {
 
   protected override void OnShown(EventArgs e) {
     base.OnShown(e);
-    if (!Bounds.Contains(Cursor.Position)) {
-      // Tween to darkened transparency
-      TweenAlpha(this, 0, darkestAlpha);
-    }
-    else {
-      SetLayeredWindowAttributes(Handle, 0, 0, LWA_ALPHA);
-      activeOverlay = this;
+    // If an initial alpha value was not passed to the constructor, set the initial alpha based on
+    // the cursor position. Play a fade-in animation if the cursor is not over the overlay.
+    if (!initialAlphaWasPassed) {
+      if (!Bounds.Contains(Cursor.Position)) {
+        // Tween to darkened transparency
+        TweenAlpha(this, 0, darkestAlpha);
+      }
+      else {
+        SetLayeredWindowAttributes(Handle, 0, 0, LWA_ALPHA);
+        activeOverlay = this;
+      }
     }
   }
 
@@ -89,9 +114,7 @@ public class TransparentOverlay : Form {
           TweenAlpha(overlay, darkestAlpha, 0);
         }
         else {
-          overlay.Invoke(
-            () => SetLayeredWindowAttributes(overlay.Handle, 0, 0, LWA_ALPHA)
-          ); // Fully transparent
+          overlay.Invoke(() => SetLayeredWindowAttributes(overlay.Handle, 0, 0, LWA_ALPHA));
         }
 
         activeOverlay = overlay;
@@ -113,12 +136,23 @@ public class TransparentOverlay : Form {
 
   private static void CreateOverlays() {
     var screens = Screen.AllScreens;
-    overlays = new TransparentOverlay[screens.Length];
+    overlays = new List<TransparentOverlay>(screens.Length);
 
+    // For each screen, create a transparent overlay.
     for (var i = 0; i < screens.Length; i++) {
-      overlays[i] = new TransparentOverlay(screens[i].Bounds);
-      overlays[i].Show();
+      var bounds  = screens[i].Bounds;
+      var id      = screens[i].DeviceName;
+      var overlay = new TransparentOverlay(id, bounds);
+      overlays.Add(overlay);
+      overlay.Show();
     }
+  }
+
+
+  private static byte GetCurrentAlpha(TransparentOverlay overlay) {
+    // Placeholder for logic to retrieve the current alpha value of the overlay.
+    // This value should ideally be cached or tracked when alpha changes occur.
+    return overlayStates.TryGetValue(overlay.Bounds, out var alpha) ? alpha : darkestAlpha;
   }
 
 
@@ -127,13 +161,39 @@ public class TransparentOverlay : Form {
 
 
   private static void RecreateOverlays() {
-    // Dispose of existing overlays.
-    foreach (var overlay in overlays) {
-      overlay.Invoke(() => overlay.Close());
+    var screens = Screen.AllScreens;
+
+    // Create a dictionary of overlays by ID for quick lookup.
+    var overlaysByID = overlays.ToDictionary(overlay => overlay.ID);
+
+    // Create a list of all overlays that will correspond to a screen, so we can remove any that
+    // are no longer needed.
+    var mostRecentOverlays = new List<TransparentOverlay>(screens.Length);
+
+    for (var i = 0; i < screens.Length; i++) {
+      // If the overlay already exists, update its bounds.
+      if (overlaysByID.TryGetValue(screens[i].DeviceName, out var overlay)) {
+        overlay.Bounds = screens[i].Bounds;
+        mostRecentOverlays.Add(overlay);
+      }
+      else {
+        // Otherwise, create a new overlay.
+        var bounds = screens[i].Bounds;
+        var id     = screens[i].DeviceName;
+        overlay = new TransparentOverlay(id, bounds);
+        overlay.Show();
+        overlays.Add(overlay);
+        mostRecentOverlays.Add(overlay);
+      }
     }
 
-    // Recreate overlays to reflect new screen settings.
-    CreateOverlays();
+    // Finally, remove any overlays that are no longer needed.
+    foreach (var overlay in overlays.ToList()) {
+      if (!mostRecentOverlays.Contains(overlay)) {
+        overlay.Close();
+        overlays.Remove(overlay);
+      }
+    }
   }
 
 
@@ -151,10 +211,9 @@ public class TransparentOverlay : Form {
 
 
   private static void TweenAlpha(TransparentOverlay overlay, byte startAlpha, byte endAlpha) {
-    // Smoothly transition the overlay's alpha value over the tweenDuration
     var stepCount    = 30; // Number of steps for the tween
     var stepDuration = tweenDuration / stepCount; // Duration per step in milliseconds
-    var stepSize     = (endAlpha - startAlpha) / (float)stepCount; // Alpha increment per step
+    var stepSize     = (endAlpha - startAlpha) / (float)stepCount;
 
     var   currentStep = 0;
     Timer tweenTimer  = null;
@@ -162,6 +221,7 @@ public class TransparentOverlay : Form {
       _ => {
         if (currentStep >= stepCount) {
           overlay.Invoke(() => SetLayeredWindowAttributes(overlay.Handle, 0, endAlpha, LWA_ALPHA));
+          overlayStates[overlay.Bounds] = endAlpha; // Save final alpha state
           tweenTimer.Dispose();
           return;
         }
@@ -170,6 +230,7 @@ public class TransparentOverlay : Form {
         overlay.Invoke(
           () => SetLayeredWindowAttributes(overlay.Handle, 0, currentAlpha, LWA_ALPHA)
         );
+        overlayStates[overlay.Bounds] = currentAlpha; // Update alpha state during tween
         currentStep++;
       },
       null,
@@ -182,16 +243,12 @@ public class TransparentOverlay : Form {
   private static void UpdateTransparency() {
     var cursorPos = Cursor.Position;
 
-    // If the cursor hasn't moved, don't do anything.
     if (cursorPos == lastCursorPos) return;
 
-    // Otherwise, store the new cursor position and check for overlays.
     lastCursorPos = cursorPos;
 
     foreach (var overlay in overlays) {
-      // If any given overlay contains the cursor, we set a timeout to fade it in.
       if (overlay.Bounds.Contains(cursorPos)) {
-        // If the cursor is not over the "active" overlay, set a timeout to fade it in.
         if (overlay != activeOverlay) {
           fadeTimeout?.Dispose();
           fadeTimeout = new Timer(
@@ -201,12 +258,8 @@ public class TransparentOverlay : Form {
             Timeout.Infinite
           );
         }
-        // If the cursor is over the already active overlay, cancel any timeouts that may have been
-        // set if the cursor previously left the overlay. For example: If the cursor quickly moved
-        // from one overlay to another and back, we don't want the overlay to fade out because it
-        // returned to the original overlay before the timeout expired.
         else {
-          fadeTimeout?.Dispose(); // Cancel the timeout if cursor returns to the active overlay
+          fadeTimeout?.Dispose();
         }
       }
     }
