@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 using Timer = System.Threading.Timer;
 
 namespace MonitorFadeUtil;
@@ -55,13 +56,10 @@ public class TransparentOverlay : Form {
     Application.EnableVisualStyles();
     Application.SetCompatibleTextRenderingDefault(false);
 
-    var screens = Screen.AllScreens;
-    overlays = new TransparentOverlay[screens.Length];
+    CreateOverlays();
 
-    for (var i = 0; i < screens.Length; i++) {
-      overlays[i] = new TransparentOverlay(screens[i].Bounds);
-      overlays[i].Show();
-    }
+    // Monitor for display settings changes.
+    SystemEvents.DisplaySettingsChanged += (sender, args) => RecreateOverlays();
 
     // We track the cursor position to determine when to fade the overlays in/out.
     fadeTimer = new Timer(state => UpdateTransparency(), null, 0, 16); // 16ms = ~60fps
@@ -113,8 +111,30 @@ public class TransparentOverlay : Form {
   }
 
 
+  private static void CreateOverlays() {
+    var screens = Screen.AllScreens;
+    overlays = new TransparentOverlay[screens.Length];
+
+    for (var i = 0; i < screens.Length; i++) {
+      overlays[i] = new TransparentOverlay(screens[i].Bounds);
+      overlays[i].Show();
+    }
+  }
+
+
   [DllImport("user32.dll", SetLastError = true)]
   private static extern nint GetWindowLong(nint hWnd, int nIndex);
+
+
+  private static void RecreateOverlays() {
+    // Dispose of existing overlays.
+    foreach (var overlay in overlays) {
+      overlay.Invoke(() => overlay.Close());
+    }
+
+    // Recreate overlays to reflect new screen settings.
+    CreateOverlays();
+  }
 
 
   [DllImport("user32.dll")]
