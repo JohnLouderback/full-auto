@@ -10,14 +10,14 @@ public class TransparentOverlay : Form {
   private const int  WS_EX_TRANSPARENT = 0x20;
   private const uint LWA_ALPHA         = 0x2;
 
-  private static readonly int fadeOutDelay  = 150; // milliseconds
-  private static readonly int tweenDuration = 150; // milliseconds for tweening
+  private static readonly int fadeOutDelay  = 100; // milliseconds
+  private static readonly int tweenDuration = 100; // milliseconds for tweening
 
   private static readonly bool
     enableTweening = true; // Configurable option to enable/disable tweening
 
   private static readonly byte
-    darkestAlpha = 200; // transparency level (0=fully transparent, 255=fully opaque)
+    darkestAlpha = 204; // transparency level (0=fully transparent, 255=fully opaque)
 
   private static List<TransparentOverlay> overlays;
   private static Timer                    fadeTimer;
