@@ -89,7 +89,7 @@ internal partial class MonitorList : Form, IMonitorListView {
   /// </summary>
   private void AdjustIsPrimaryColumn() {
     // Find the column for "IsPrimary"
-    var primaryColumn = list.GetColumn("Primary");
+    var primaryColumn = list.GetColumn("Primary?");
 
     // Enable checkbox rendering
     primaryColumn.CheckBoxes = true;
