@@ -38,6 +38,9 @@
     </Target>
 
     <Target Name="CopyExampleScripts" AfterTargets="Build">
+        <!-- Remove the ExampleScripts directory if it exists -->
+        <RemoveDir Directories="$(OutputPath)\ExampleScripts" Condition="Exists('$(OutputPath)\ExampleScripts')"/>
+
         <ItemGroup>
             <ExampleScriptFiles Include=".\ExampleScripts\**\*"/>
         </ItemGroup>
