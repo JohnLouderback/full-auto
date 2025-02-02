@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLauncher", "GameLaunche
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "TypeScriptCompiler", "TypeScriptCompiler\TypeScriptCompiler.esproj", "{F39E5CA1-18F1-42BB-9A2D-22591DCF5696}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLaunchTaskSourceGenerator", "GameLaunchTaskSourceGenerator\GameLaunchTaskSourceGenerator.csproj", "{8A6CF49A-C956-47D4-A858-2C2BD705B357}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -293,6 +295,22 @@ Global
 		{F39E5CA1-18F1-42BB-9A2D-22591DCF5696}.Release|x86.ActiveCfg = Release|Any CPU
 		{F39E5CA1-18F1-42BB-9A2D-22591DCF5696}.Release|x86.Build.0 = Release|Any CPU
 		{F39E5CA1-18F1-42BB-9A2D-22591DCF5696}.Release|x86.Deploy.0 = Release|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Debug|arm64.Build.0 = Debug|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Debug|x64.Build.0 = Debug|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Debug|x86.Build.0 = Debug|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Release|arm64.ActiveCfg = Release|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Release|arm64.Build.0 = Release|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Release|x64.ActiveCfg = Release|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Release|x64.Build.0 = Release|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Release|x86.ActiveCfg = Release|Any CPU
+		{8A6CF49A-C956-47D4-A858-2C2BD705B357}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

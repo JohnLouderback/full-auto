@@ -2,6 +2,7 @@
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript.V8;
+using TypeScriptCompiler = GameLauncher.TypeScript.Compiler;
 
 namespace GameLauncher.Script;
 
@@ -24,7 +25,8 @@ public class ScriptRunner {
 
   public ScriptRunner(string scriptPath) {
     this.scriptPath = scriptPath;
-    engine          = new V8ScriptEngine(V8ScriptEngineFlags.EnableTaskPromiseConversion);
+    engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableTaskPromiseConversion);
+    engine.DocumentSettings.Loader = new ScriptDocumentLoader();
   }
 
 
@@ -35,13 +37,24 @@ public class ScriptRunner {
   public async Task RunScript() {
     ProcessSourceFile();
     InjectGlobals(engine);
-    await engine.Evaluate(
-        new DocumentInfo {
-          Category = ModuleCategory.Standard
-        },
-        jsScriptContent
-      )
-      .ToTask();
+
+    try {
+      await engine.Evaluate(
+          new DocumentInfo(scriptPath) {
+            Category = ModuleCategory.Standard
+          },
+          jsScriptContent
+        )
+        .ToTask();
+    }
+    catch (Exception exception) {
+      if (exception is IScriptEngineException scriptException) {
+        Console.WriteLine(scriptException.ErrorDetails);
+      }
+      else {
+        throw;
+      }
+    }
   }
 
 
@@ -49,25 +62,7 @@ public class ScriptRunner {
   ///   Gets and stores the JavaScript code from a TypeScript source file.
   /// </summary>
   private void GetJSFromTypeScript() {
-    var tsPath = Path.Combine(AppContext.BaseDirectory, "TypeScript", "typescript.js");
-    var tsCode = File.ReadAllText(tsPath);
-    // The TypeScript compiler will use its own engine for execution.
-    using var tsEngine = new V8ScriptEngine();
-
-    tsEngine.Execute(tsCode);
-
-    var compileTsCode = @"
-      function compileTypeScript(source) {
-        return ts.transpileModule(source, { compilerOptions: {
-          module: ts.ModuleKind.ESNext,
-          target: ts.ScriptTarget.ESNext
-        }}).outputText;
-      }
-    ";
-    tsEngine.Execute(compileTsCode);
-
-    var tsSource = File.ReadAllText(scriptPath);
-    jsScriptContent = tsEngine.Script.compileTypeScript(tsSource);
+    jsScriptContent = new TypeScriptCompiler().Compile(scriptPath);
   }
 
 
@@ -78,6 +73,7 @@ public class ScriptRunner {
   private void InjectGlobals(V8ScriptEngine engine) {
     ConsoleWrapper.InjectIntoEngine(engine);
     Timers.InjectIntoEngine(engine);
+    Tasks.InjectIntoEngine(engine);
   }
 
 

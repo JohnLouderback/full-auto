@@ -27,28 +27,33 @@ internal class Timers {
 
 
   public static void InjectIntoEngine(V8ScriptEngine engine) {
-    engine.Script._setTimeout    = new Func<ScriptObject, int, int>(SetTimeout);
-    engine.Script._clearTimeout  = new Action<int>(ClearTimeout);
-    engine.Script._setInterval   = new Func<ScriptObject, int, int>(SetInterval);
-    engine.Script._clearInterval = new Action<int>(ClearInterval);
+    engine.Script.__setTimeout    = new Func<ScriptObject, int, int>(SetTimeout);
+    engine.Script.__clearTimeout  = new Action<int>(ClearTimeout);
+    engine.Script.__setInterval   = new Func<ScriptObject, int, int>(SetInterval);
+    engine.Script.__clearInterval = new Action<int>(ClearInterval);
 
     engine.Execute(
-      @"
-    function setTimeout(func, delay) {
-        let args = Array.prototype.slice.call(arguments, 2);
-        return _setTimeout(func.bind(undefined, ...args), delay || 0);
-    }
-    function clearTimeout(id) {
-        _clearTimeout(id);
-    }
-    function setInterval(func, interval) {
-        let args = Array.prototype.slice.call(arguments, 2);
-        return _setInterval(func.bind(undefined, ...args), interval || 0);
-    }
-    function clearInterval(id) {
-        _clearInterval(id);
-    }
-"
+      """
+      // noinspection JSUnresolvedReference,JSUnusedLocalSymbols
+
+      function setTimeout(func, delay) {
+          let args = Array.prototype.slice.call(arguments, 2);
+          return __setTimeout(func.bind(undefined, ...args), delay || 0);
+      }
+
+      function clearTimeout(id) {
+          __clearTimeout(id);
+      }
+
+      function setInterval(func, interval) {
+          let args = Array.prototype.slice.call(arguments, 2);
+          return __setInterval(func.bind(undefined, ...args), interval || 0);
+      }
+
+      function clearInterval(id) {
+          __clearInterval(id);
+      }
+      """
     );
   }
 

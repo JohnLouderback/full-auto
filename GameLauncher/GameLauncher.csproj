@@ -20,11 +20,16 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\GameLaunchTaskSourceGenerator\GameLaunchTaskSourceGenerator.csproj" OutputItemType="Analyzer"/>
         <ProjectReference Include="..\TypeScriptCompiler\TypeScriptCompiler.esproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Script Include="ExampleScripts\tsconfig.json"/>
+        <Script Include="tsconfig.json"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}"/>
     </ItemGroup>
 
     <Target Name="CopyTypeScriptFiles" AfterTargets="Build">
@@ -32,9 +37,7 @@
             <TypeScriptFiles Include="..\TypeScriptCompiler\node_modules\typescript\lib\**\*"/>
         </ItemGroup>
 
-        <Copy SourceFiles="@(TypeScriptFiles)"
-              DestinationFolder="$(OutputPath)\TypeScript\%(RecursiveDir)"
-              SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(TypeScriptFiles)" DestinationFolder="$(OutputPath)\TypeScript\%(RecursiveDir)" SkipUnchangedFiles="true"/>
     </Target>
 
     <Target Name="CopyExampleScripts" AfterTargets="Build">
@@ -45,9 +48,20 @@
             <ExampleScriptFiles Include=".\ExampleScripts\**\*"/>
         </ItemGroup>
 
-        <Copy SourceFiles="@(ExampleScriptFiles)"
-              DestinationFolder="$(OutputPath)\ExampleScripts\%(RecursiveDir)"
-              SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(ExampleScriptFiles)" DestinationFolder="$(OutputPath)\ExampleScripts\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+    </Target>
+
+    <Target Name="CopyLibs" AfterTargets="Build">
+        <!-- Remove the ExampleScripts directory if it exists -->
+        <RemoveDir Directories="$(OutputPath)\Lib" Condition="Exists('$(OutputPath)\Lib')"/>
+        <Delete Files="$(OutputPath)\tsconfig.json" Condition="Exists('$(OutputPath)\tsconfig.json')"/>
+
+        <ItemGroup>
+            <LibFiles Include=".\Lib\**\*"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(LibFiles)" DestinationFolder="$(OutputPath)\Lib\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+        <Copy SourceFiles=".\tsconfig.json" DestinationFolder="$(OutputPath)\" SkipUnchangedFiles="true"/>
     </Target>
 
 </Project>
