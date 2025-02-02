@@ -7,17 +7,19 @@ const tryInvoke = (func, ...args): any => {
     }
 };
 
-export const Tasks = {
+export class Tasks {
 
     /**
      * Launch the application at the specified path.
      * @param path The path to the application.
      * @throws ArgumentException Thrown when "path" is null or empty.
      */
-    Launch: async (path: string): Promise<void> => tryInvoke(
-        // @ts-ignore
-        __Tasks_Launch,
-        path
-    ),
+    public static async Launch(path: string): Promise<void> {
+      tryInvoke(
+          // @ts-ignore
+          __Tasks_Launch,
+          path
+      )
+    }
 
-};
+}

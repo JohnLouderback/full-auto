@@ -64,17 +64,19 @@ public class GenerateTasksTs : Task {
             }
         };
 
-        export const Tasks = {
+        export class Tasks {
 
         """
       );
 
       foreach (var method in methods) {
         // Exclusion list:
+        // Exclude private methods.
         if (method.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword))) {
           continue;
         }
 
+        // This method is for internal use and not needed in the generated file.
         if (method.Identifier.Text == "InjectIntoEngine") {
           continue;
         }
@@ -93,28 +95,31 @@ public class GenerateTasksTs : Task {
         );
 
         sb.AppendLine(
-          $"    {
-            method.Identifier.Text
-          }: {
-            (isAsync ? "async " : "")
-          }({
-            parameters
-          }): {
-            returnType
-          } => tryInvoke("
+          $$"""
+              public static {{
+                (isAsync ? "async " : "")
+              }}{{
+                method.Identifier.Text
+              }}({{
+                parameters
+              }}): {{
+                returnType
+              }} {
+                tryInvoke(
+          """
         );
-        sb.AppendLine("        // @ts-ignore");
-        sb.AppendLine($"        __Tasks_{method.Identifier.Text},");
+        sb.AppendLine("          // @ts-ignore");
+        sb.AppendLine($"          __Tasks_{method.Identifier.Text},");
         sb.AppendLine(
-          $"        {
+          $"          {
             string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
           }"
         );
-        sb.AppendLine("    ),");
+        sb.AppendLine("      )\n    }");
         sb.AppendLine();
       }
 
-      sb.AppendLine("};");
+      sb.AppendLine("}");
 
       // Write output
       var outputPath = Path.Combine(OutputDir, "Tasks.ts");
