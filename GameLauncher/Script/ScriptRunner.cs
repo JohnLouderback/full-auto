@@ -49,12 +49,27 @@ public class ScriptRunner {
     }
     catch (Exception exception) {
       if (exception is IScriptEngineException scriptException) {
-        Console.WriteLine(scriptException.ErrorDetails);
+        Console.WriteLine(CleanStackTrace(scriptException.ErrorDetails));
       }
       else {
         throw;
       }
     }
+  }
+
+
+  /// <summary>
+  ///   Remove extraneous stack trace lines from the error details that would not be useful
+  ///   to an end user.
+  /// </summary>
+  /// <param name="stack"> The stack trace to clean. </param>
+  /// <returns> The stack trace with extraneous lines removed. </returns>
+  private string CleanStackTrace(string stack) {
+    var lines = stack.Split('\n');
+    var filtered = lines.Where(
+      line => !line.Contains("at tryInvoke") && !line.Contains("at V8ScriptEngine")
+    );
+    return string.Join('\n', filtered);
   }
 
 

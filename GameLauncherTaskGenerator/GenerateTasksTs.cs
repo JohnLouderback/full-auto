@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 using GameLauncherTaskGenerator;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -56,12 +55,28 @@ public class GenerateTasksTs : Task {
       sb.Append(
         """
         // This file is auto-generated. Do not modify manually.
-        const tryInvoke = (func, ...args): any => {
-            try {
-                return func(...args);
-            } catch (error) {
-                throw error;
+
+        const cleanStackTrace = (stack: string): string => {
+          const lines = stack.split('\\n');
+          const filtered = lines.filter(
+            line => !line.includes('at tryInvoke') && !line.includes('at V8ScriptEngine')
+          );
+          return filtered.join('\\n');
+        };
+
+        // @ts-ignore
+        const tryInvoke = async (func, ...args): any => {
+          try {
+            const returnValue = func(...args);
+            if (returnValue instanceof Promise) {
+              // @ts-ignore
+              return (await returnValue);
             }
+            return returnValue;
+          } catch (error) {
+            error.stack = 'bob';
+            throw error;
+          }
         };
 
         export class Tasks {
@@ -81,7 +96,7 @@ public class GenerateTasksTs : Task {
           continue;
         }
 
-        var jsDoc = GenerateJsDoc(method);
+        var jsDoc = JsDocGenerator.GenerateJsDoc(method, "    ");
         sb.AppendLine(jsDoc);
 
         var isAsync    = method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword));
@@ -105,7 +120,7 @@ public class GenerateTasksTs : Task {
               }}): {{
                 returnType
               }} {
-                tryInvoke(
+                return tryInvoke(
           """
         );
         sb.AppendLine("          // @ts-ignore");
@@ -133,81 +148,5 @@ public class GenerateTasksTs : Task {
       Log.LogError($"Error generating TypeScript file: {ex.Message}");
       return false;
     }
-  }
-
-
-  private string GenerateJsDoc(MethodDeclarationSyntax method) {
-    var xmlDoc = method.GetLeadingTrivia()
-      .Select(t => t.GetStructure())
-      .OfType<DocumentationCommentTriviaSyntax>()
-      .FirstOrDefault();
-
-    if (xmlDoc == null) {
-      return "";
-    }
-
-    // 🔹 Extract raw XML doc string and clean it
-    var rawXml = xmlDoc.ToFullString();
-
-    // 🔹 Remove leading "///" from each line
-    var cleanedXml = string.Join(
-      "\n",
-      rawXml.Split('\n')
-        .Select(
-          line => line.TrimStart().StartsWith("///")
-                    ? line.TrimStart().Substring(3).TrimStart()
-                    : line
-        )
-        .Where(line => !string.IsNullOrWhiteSpace(line)) // Remove empty lines
-    );
-
-    try {
-      var doc     = XDocument.Parse("<root>" + cleanedXml + "</root>");
-      var summary = doc.Descendants("summary").FirstOrDefault()?.Value.Trim() ?? "";
-      var paramDocs = doc.Descendants("param")
-        .Select(p => $"* @param {p.Attribute("name")?.Value} {p.Value.Trim()}");
-      var returnDoc = doc.Descendants("returns").FirstOrDefault()?.Value.Trim();
-      var returns   = !string.IsNullOrWhiteSpace(returnDoc) ? $"\n     * @returns {returnDoc}" : "";
-      var throws = doc.Descendants("exception")
-        .Select(e => $"\n     * @throws {e.Attribute("cref")?.Value} {e.Value.Trim()}");
-
-      return $"""
-        
-            /**
-             * {
-               summary
-             }
-             {
-               string.Join("\n", paramDocs)
-             }{
-               returns
-             }{
-               string.Join("", throws)
-             }
-             */
-        """;
-    }
-    catch {
-      return "";
-    }
-  }
-
-
-  private string GetTypeScriptReturnType(TypeSyntax returnType, bool isAsync) {
-    var typeName = returnType.ToString();
-
-    if (isAsync) {
-      // If method is async, check for Task<T>
-      if (typeName.StartsWith("Task<") &&
-          typeName.EndsWith(">")) {
-        var innerType = typeName.Substring(5, typeName.Length - 6);
-        return $"Promise<{CSharpTypeScriptConverter.Convert(innerType)}>";
-      }
-
-      return "Promise<void>";
-    }
-
-    // Regular non-async return types
-    return CSharpTypeScriptConverter.Convert(typeName);
   }
 }

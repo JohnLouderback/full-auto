@@ -8,7 +8,7 @@ public static partial class Tasks {
   /// </summary>
   /// <param name="path"> The path to the application. </param>
   /// <exception cref="ArgumentException">
-  ///   Thrown when "path" is null or empty.
+  ///   Thrown when <paramref name="path" /> is <see langword="null" /> or empty.
   /// </exception>
   public static async Task Launch(string path) {
     if (string.IsNullOrWhiteSpace(path)) {
