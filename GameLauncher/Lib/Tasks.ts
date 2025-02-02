@@ -7,9 +7,9 @@ export class Tasks {
      * @param path The path to the application.
      * @throws ArgumentException Thrown when {@link path} is `null` or empty.
      */
-    public static async Launch(path: string): Promise<void> {
+    public static async launch(path: string): Promise<void> {
       // @ts-expect-error - This function is injected into the engine dynamically.
-      return  __Tasks_Launch(
+      return  __Tasks.Launch(
           path
       )
     }

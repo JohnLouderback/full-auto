@@ -91,7 +91,8 @@ public class GenerateTasksTs : Task {
               public static {{
                 (isAsync ? "async " : "")
               }}{{
-                method.Identifier.Text
+                // Lowercase the first letter of the method name to better fit JavaScript conventions.
+                method.Identifier.Text[0].ToString().ToLower() + method.Identifier.Text.Substring(1)
               }}({{
                 parameters
               }}): {{
@@ -101,7 +102,7 @@ public class GenerateTasksTs : Task {
                 return 
           """
         );
-        sb.AppendLine($" __Tasks_{method.Identifier.Text}(");
+        sb.AppendLine($" __Tasks.{method.Identifier.Text}(");
         sb.AppendLine(
           $"          {
             string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
