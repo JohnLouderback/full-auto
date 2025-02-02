@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <ItemGroup>
         <PackageReference Include="MSBuildTasks" Version="1.5.0.235"/>
     </ItemGroup>
@@ -20,7 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GameLaunchTaskSourceGenerator\GameLaunchTaskSourceGenerator.csproj" OutputItemType="Analyzer"/>
+        <!--        <ProjectReference Include="..\GameLaunchTaskSourceGenerator\GameLaunchTaskSourceGenerator.csproj" OutputItemType="Analyzer"/>-->
+        <ProjectReference Include="..\GameLauncherTaskGenerator\GameLauncherTaskGenerator.csproj"/>
         <ProjectReference Include="..\TypeScriptCompiler\TypeScriptCompiler.esproj"/>
     </ItemGroup>
 
@@ -31,6 +31,29 @@
     <ItemGroup>
         <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Lib\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="build-files\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Remove="build-files\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="build-files\**"/>
+    </ItemGroup>
+
+    <UsingTask AssemblyFile="build-files/dlls/GameLauncherTaskGenerator.dll" TaskName="GenerateTasksTs"/>
+
+    <Target Name="GenerateTypeScript" AfterTargets="Build">
+        <GenerateTasksTs SourceDirectory="$(ProjectDir)"
+                         OutputDir="$(ProjectDir)Lib"/>
+    </Target>
 
     <Target Name="CopyTypeScriptFiles" AfterTargets="Build">
         <ItemGroup>

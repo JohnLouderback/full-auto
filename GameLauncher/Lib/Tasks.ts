@@ -1,10 +1,7 @@
 // This file is auto-generated. Do not modify manually.
-const tryInvoke = async (func, ...args) => {
+const tryInvoke = (func, ...args): any => {
     try {
-        const returnValue = func(...args);
-        if (returnValue instanceof Promise) {
-            await returnValue;
-        }
+        return func(...args);
     } catch (error) {
         throw error;
     }
@@ -12,15 +9,15 @@ const tryInvoke = async (func, ...args) => {
 
 export const Tasks = {
 
-    InjectIntoEngine: async (engine: any) => tryInvoke(
-        // @ts-ignore
-        __Tasks_InjectIntoEngine,
-        engine
-    ),
-
-    Launch: async (path: any) => tryInvoke(
+    /**
+     * Launch the application at the specified path.
+     * @param path The path to the application.
+     * @throws ArgumentException Thrown when "path" is null or empty.
+     */
+    Launch: async (path: string): Promise<void> => tryInvoke(
         // @ts-ignore
         __Tasks_Launch,
         path
     ),
+
 };

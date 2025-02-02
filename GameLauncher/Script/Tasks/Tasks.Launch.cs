@@ -1,10 +1,15 @@
 ﻿using System.Diagnostics;
-using GameLaunchTaskSourceGenerator;
 
 namespace GameLauncher.Script;
 
-[GenerateTasks]
 public static partial class Tasks {
+  /// <summary>
+  ///   Launch the application at the specified path.
+  /// </summary>
+  /// <param name="path"> The path to the application. </param>
+  /// <exception cref="ArgumentException">
+  ///   Thrown when "path" is null or empty.
+  /// </exception>
   public static async Task Launch(string path) {
     if (string.IsNullOrWhiteSpace(path)) {
       throw new ArgumentException("Path cannot be null or empty.", nameof(path));

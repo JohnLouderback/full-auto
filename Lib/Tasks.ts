@@ -11,13 +11,16 @@ const tryInvoke = async (func, ...args) => {
 };
 
 export const Tasks = {
+/**
+ * Launch the application at the specified path.
+ * @param path The path to the application.
 
+ */
     Launch: async (path: any) => tryInvoke(
         // @ts-ignore
         __Tasks_Launch,
         path
     ),
-
     InjectIntoEngine: async (engine: any) => tryInvoke(
         // @ts-ignore
         __Tasks_InjectIntoEngine,
