@@ -1,7 +1,9 @@
 ﻿using GameLauncher.Script.Globals;
+using GameLauncher.Utils;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript.V8;
+using Task = System.Threading.Tasks.Task;
 using TypeScriptCompiler = GameLauncher.TypeScript.Compiler;
 
 namespace GameLauncher.Script;
@@ -49,7 +51,11 @@ public class ScriptRunner {
     }
     catch (Exception exception) {
       if (exception is IScriptEngineException scriptException) {
-        Console.WriteLine(CleanStackTrace(scriptException.ErrorDetails));
+        // AnsiConsole.WriteException(exception);
+        Logger.Exception(
+          CleanStackTrace(scriptException.ErrorDetails)
+        );
+        //Console.WriteLine(CleanStackTrace(scriptException.ErrorDetails));
       }
       else {
         throw;

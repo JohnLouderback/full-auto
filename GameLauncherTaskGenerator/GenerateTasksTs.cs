@@ -56,29 +56,6 @@ public class GenerateTasksTs : Task {
         """
         // This file is auto-generated. Do not modify manually.
 
-        const cleanStackTrace = (stack: string): string => {
-          const lines = stack.split('\\n');
-          const filtered = lines.filter(
-            line => !line.includes('at tryInvoke') && !line.includes('at V8ScriptEngine')
-          );
-          return filtered.join('\\n');
-        };
-
-        // @ts-ignore
-        const tryInvoke = async (func, ...args): any => {
-          try {
-            const returnValue = func(...args);
-            if (returnValue instanceof Promise) {
-              // @ts-ignore
-              return (await returnValue);
-            }
-            return returnValue;
-          } catch (error) {
-            error.stack = 'bob';
-            throw error;
-          }
-        };
-
         export class Tasks {
 
         """
@@ -109,7 +86,7 @@ public class GenerateTasksTs : Task {
           )
         );
 
-        sb.AppendLine(
+        sb.Append(
           $$"""
               public static {{
                 (isAsync ? "async " : "")
@@ -120,11 +97,11 @@ public class GenerateTasksTs : Task {
               }}): {{
                 returnType
               }} {
-                return tryInvoke(
+                // @ts-expect-error - This function is injected into the engine dynamically.
+                return 
           """
         );
-        sb.AppendLine("          // @ts-ignore");
-        sb.AppendLine($"          __Tasks_{method.Identifier.Text},");
+        sb.AppendLine($" __Tasks_{method.Identifier.Text}(");
         sb.AppendLine(
           $"          {
             string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
