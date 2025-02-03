@@ -55,74 +55,71 @@ public static class JsStackTraceParser {
       yield break;
     }
 
-    // Split the trace into lines, ignoring empty lines.
+    // Split the input into lines.
     var lines      = stackTrace.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
     var frameIndex = 0;
 
+    // This regex matches a line beginning with "at " and then either:
+    //   - a function part followed by a parenthesized location, optionally with trailing extra data (e.g. "-> ..."), or
+    //   - a location only.
+    // Example matches:
+    //   at launch (C:\path\Tasks.js:10:24) -> Object.defineProperty(...)
+    //   at (launch-example.ts [temp]:3:19)
+    var frameRegex = new Regex(
+      @"^at\s+(?:(?<function>[^(]+?)\s*\((?<location>[^)]+)\)(?:\s*->.*)?|(?<location>.+))$",
+      RegexOptions.Compiled
+    );
+
+    // This regex extracts the file, line, and optional column from the location.
+    // It will ignore any trailing extra details.
+    // Examples:
+    //   C:\path\Tasks.js:10:24
+    //   launch-example.ts [temp]:3:19
+    var locationRegex = new Regex(
+      @"^(?<file>.*?):(?<line>\d+)(?::(?<col>\d+))?(?:\s*->.*)?$",
+      RegexOptions.Compiled
+    );
+
     foreach (var line in lines) {
       var trimmed = line.Trim();
-      // Skip lines that do not begin with "at "
       if (!trimmed.StartsWith("at ")) {
         continue;
       }
 
-      // Remove the "at " prefix.
-      var content      = trimmed.Substring(3).Trim();
-      var funcPart     = string.Empty;
-      var locationPart = string.Empty;
-
-      // Check if the line contains a function part followed by a parenthesized location.
-      var parenIndex = content.IndexOf(" (");
-      if (parenIndex != -1) {
-        funcPart = content.Substring(0, parenIndex).Trim();
-
-        // Expect the location to be enclosed in parentheses.
-        var endParen = content.LastIndexOf(')');
-        if (endParen > parenIndex) {
-          locationPart = content.Substring(parenIndex + 2, endParen - parenIndex - 2).Trim();
-        }
-      }
-      else {
-        // No function information; assume the entire content is the location.
-        locationPart = content;
+      var match = frameRegex.Match(trimmed);
+      if (!match.Success) {
+        continue;
       }
 
-      // Updated regex:
-      // Matches patterns like "launch-example.ts [temp]:3:13" and also those with trailing extra data like "-> Object.defineProperty(…)"
-      // The extra info is captured by a non-capturing group (?:\s*->.*)? and then ignored.
-      var locationMatch = Regex.Match(
-        locationPart,
-        @"^(?<file>.*?):(?<line>\d+)(?::(?<col>\d+))?(?:\s*->.*)?$"
-      );
+      // Extract the function part (if any) and the location part.
+      var funcPart     = match.Groups["function"].Value.Trim();
+      var locationPart = match.Groups["location"].Value.Trim();
 
+      // Parse the location into file, line, and column.
       var file     = string.Empty;
       var lineInfo = string.Empty;
-      if (locationMatch.Success) {
-        file = locationMatch.Groups["file"].Value.Trim();
-        var lineNumber = locationMatch.Groups["line"].Value.Trim();
-        var col = locationMatch.Groups["col"].Success
-                    ? locationMatch.Groups["col"].Value.Trim()
-                    : "";
+      var locMatch = locationRegex.Match(locationPart);
+      if (locMatch.Success) {
+        file = locMatch.Groups["file"].Value.Trim();
+        var lineNumber = locMatch.Groups["line"].Value.Trim();
+        var col        = locMatch.Groups["col"].Success ? locMatch.Groups["col"].Value.Trim() : "";
         lineInfo = string.IsNullOrEmpty(col) ? lineNumber : $"{lineNumber}:{col}";
       }
       else {
-        // If the location doesn’t match the expected pattern, assign it entirely to the file.
         file = locationPart;
       }
 
-      // Process the function part to extract method name and an inline parameter list if present.
+      // Process the function part to separate type from method and inline parameters.
       var typePart      = string.Empty;
       var method        = string.Empty;
       var parameterList = string.Empty;
       var parameters    = string.Empty;
-
       if (!string.IsNullOrEmpty(funcPart)) {
-        // Look for a parameter list within the function part.
+        // Look for an inline parameter list.
         var paramStart = funcPart.IndexOf('(');
         if (paramStart != -1) {
           method        = funcPart.Substring(0, paramStart).Trim();
           parameterList = funcPart.Substring(paramStart).Trim();
-
           // Remove the surrounding parentheses for the Parameters property.
           if (parameterList.StartsWith("(") &&
               parameterList.EndsWith(")")) {
@@ -133,7 +130,7 @@ public static class JsStackTraceParser {
           method = funcPart;
         }
 
-        // If the method contains a dot, split the type from the method name.
+        // If the method contains a dot, assume the part before the last dot is the Type.
         var lastDot = method.LastIndexOf('.');
         if (lastDot != -1) {
           typePart = method.Substring(0, lastDot).Trim();

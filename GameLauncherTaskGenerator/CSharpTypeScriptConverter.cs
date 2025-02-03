@@ -152,7 +152,10 @@ public static class CSharpTypeScriptConverter {
     var lastPos = 0;
     var depth   = 0;
     for (var i = 0; i < s.Length; i++) {
+      // Character "c" of string "s".
       var c = s[i];
+
+      // If we encounter a '<', increase the depth. This is used to understanding nested generics.
       if (c == '<') {
         depth++;
       }

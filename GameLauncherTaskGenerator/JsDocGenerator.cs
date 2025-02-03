@@ -2,26 +2,42 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace GameLauncherTaskGenerator;
 
 public static class JsDocGenerator {
-    /// <summary>
-    ///   Generates a formatted JSDoc comment from the XML documentation associated with a C# method.
-    ///   Allows specifying a leading indent (to align with the method) and a maximum column width for
-    ///   wrapping.
-    /// </summary>
-    /// <param name="method">The C# method declaration.</param>
-    /// <param name="indent">Leading whitespace to prefix each line (e.g. "    " for four spaces).</param>
-    /// <param name="maxColumn">The maximum column width (default 80).</param>
-    /// <returns>The formatted JSDoc comment as a string.</returns>
-    public static string GenerateJsDoc(
+  /// <summary>
+  ///   Generates a formatted JSDoc comment from the XML documentation associated with a C# method.
+  ///   Allows specifying a leading indent (to align with the method) and a maximum column width for
+  ///   wrapping.
+  /// </summary>
+  /// <param name="method">The C# method declaration.</param>
+  /// <param name="indent">Leading whitespace to prefix each line (e.g. "    " for four spaces).</param>
+  /// <param name="maxColumn">The maximum column width (default 80).</param>
+  /// <returns>The formatted JSDoc comment as a string.</returns>
+  public static string GenerateJsDoc(
     MethodDeclarationSyntax method,
     string indent = "",
     int maxColumn = 80
   ) {
-    var xmlDocTrivia = method.GetLeadingTrivia()
+    return GenerateJsDoc((SyntaxNode)method, indent, maxColumn);
+  }
+
+
+  /// <summary>
+  ///   Generates a formatted JSDoc comment from the XML documentation associated with any C# syntax
+  ///   node.
+  ///   This works for classes, properties, methods, etc. It allows specifying a leading indent and a
+  ///   maximum column width.
+  /// </summary>
+  /// <param name="node">The C# syntax node.</param>
+  /// <param name="indent">Leading whitespace to prefix each line (e.g. "    " for four spaces).</param>
+  /// <param name="maxColumn">The maximum column width (default 80).</param>
+  /// <returns>The formatted JSDoc comment as a string.</returns>
+  public static string GenerateJsDoc(SyntaxNode node, string indent = "", int maxColumn = 80) {
+    var xmlDocTrivia = node.GetLeadingTrivia()
       .Select(t => t.GetStructure())
       .OfType<DocumentationCommentTriviaSyntax>()
       .FirstOrDefault();
@@ -51,10 +67,10 @@ public static class JsDocGenerator {
   }
 
 
-    /// <summary>
-    ///   Converts the parsed XML documentation (wrapped in a root element) into a formatted JSDoc comment.
-    /// </summary>
-    private static string ConvertDocToJsDoc(XElement root, string indent, int maxColumn) {
+  /// <summary>
+  ///   Converts the parsed XML documentation (wrapped in a root element) into a formatted JSDoc comment.
+  /// </summary>
+  private static string ConvertDocToJsDoc(XElement root, string indent, int maxColumn) {
     var lines = new List<string>();
     lines.Add($"{indent}/**");
 
@@ -112,11 +128,11 @@ public static class JsDocGenerator {
   }
 
 
-    /// <summary>
-    ///   Splits a block of text into lines that respect the maximum column width.
-    ///   Each line is prefixed with the given indent and " * " marker.
-    /// </summary>
-    private static IEnumerable<string> FormatJsDocBlock(string block, string indent, int maxColumn) {
+  /// <summary>
+  ///   Splits a block of text into lines that respect the maximum column width.
+  ///   Each line is prefixed with the given indent and " * " marker.
+  /// </summary>
+  private static IEnumerable<string> FormatJsDocBlock(string block, string indent, int maxColumn) {
     // The prefix for each line (indent + " * ") takes up some columns.
     var prefixLength = indent.Length + 3;
     // Calculate the available width for text.
@@ -138,11 +154,11 @@ public static class JsDocGenerator {
   }
 
 
-    /// <summary>
-    ///   Recursively processes XML nodes (text and elements) to build a string,
-    ///   converting inline documentation tags (like <paramref>, <see>, and <c>) to JSDoc syntax.
-    /// </summary>
-    private static string ProcessInlineNodes(IEnumerable<XNode> nodes) {
+  /// <summary>
+  ///   Recursively processes XML nodes (text and elements) to build a string,
+  ///   converting inline documentation tags (like <paramref>, <see>, and <c>) to JSDoc syntax.
+  /// </summary>
+  private static string ProcessInlineNodes(IEnumerable<XNode> nodes) {
     if (nodes == null) {
       return string.Empty;
     }
@@ -151,10 +167,10 @@ public static class JsDocGenerator {
   }
 
 
-    /// <summary>
-    ///   Processes an individual XML node, converting inline elements as needed.
-    /// </summary>
-    private static string ProcessXmlNode(XNode node) {
+  /// <summary>
+  ///   Processes an individual XML node, converting inline elements as needed.
+  /// </summary>
+  private static string ProcessXmlNode(XNode node) {
     if (node is XText textNode) {
       return textNode.Value;
     }
@@ -195,11 +211,11 @@ public static class JsDocGenerator {
   }
 
 
-    /// <summary>
-    ///   Wraps the provided text into lines of at most <paramref name="maxWidth" /> characters.
-    ///   The routine breaks lines at whitespace boundaries and will not break tokens.
-    /// </summary>
-    private static IEnumerable<string> WrapText(string text, int maxWidth) {
+  /// <summary>
+  ///   Wraps the provided text into lines of at most <paramref name="maxWidth" /> characters.
+  ///   The routine breaks lines at whitespace boundaries and will not break tokens.
+  /// </summary>
+  private static IEnumerable<string> WrapText(string text, int maxWidth) {
     var words       = text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
     var currentLine = "";
     foreach (var word in words) {

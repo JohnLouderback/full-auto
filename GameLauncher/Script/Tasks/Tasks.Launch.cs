@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using GameLauncher.Script.Objects;
+using Process = System.Diagnostics.Process;
 
 namespace GameLauncher.Script;
 
@@ -7,10 +9,15 @@ public static partial class Tasks {
   ///   Launch the application at the specified path.
   /// </summary>
   /// <param name="path"> The path to the application. </param>
+  /// <returns>
+  ///   An <see cref="Application" /> object representing the application if it was launched
+  ///   successfully; otherwise, <see langword="null" />. The <see cref="Application.ExitSignal" />
+  ///   property can be used to await the application's exit.
+  /// </returns>
   /// <exception cref="ArgumentException">
   ///   Thrown when <paramref name="path" /> is <see langword="null" /> or empty.
   /// </exception>
-  public static Task Launch(string path) {
+  public static Application? Launch(string path) {
     if (string.IsNullOrWhiteSpace(path)) {
       throw new ArgumentException("Path cannot be null or empty.", nameof(path));
     }
@@ -23,12 +30,16 @@ public static partial class Tasks {
     };
 
     if (process.Start()) {
-      return process.WaitForExitAsync()
-        .ContinueWith(
-          _ => Console.WriteLine($"Process {process.Id} exited with code {process.ExitCode}.")
-        );
+      return new Application {
+        ExitSignal = process.WaitForExitAsync(),
+        Process = new Objects.Process {
+          Name     = process.ProcessName,
+          FullPath = process.MainModule?.FileName ?? string.Empty,
+          Pid      = process.Id
+        }
+      };
     }
 
-    return Task.CompletedTask;
+    return null;
   }
 }
