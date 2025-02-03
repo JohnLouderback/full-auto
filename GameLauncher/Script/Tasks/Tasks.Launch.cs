@@ -10,7 +10,7 @@ public static partial class Tasks {
   /// <exception cref="ArgumentException">
   ///   Thrown when <paramref name="path" /> is <see langword="null" /> or empty.
   /// </exception>
-  public static async Task Launch(string path) {
+  public static Task Launch(string path) {
     if (string.IsNullOrWhiteSpace(path)) {
       throw new ArgumentException("Path cannot be null or empty.", nameof(path));
     }
@@ -23,7 +23,12 @@ public static partial class Tasks {
     };
 
     if (process.Start()) {
-      await process.WaitForExitAsync();
+      return process.WaitForExitAsync()
+        .ContinueWith(
+          _ => Console.WriteLine($"Process {process.Id} exited with code {process.ExitCode}.")
+        );
     }
+
+    return Task.CompletedTask;
   }
 }
