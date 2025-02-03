@@ -23,6 +23,7 @@
 
     <ItemGroup>
         <!--        <ProjectReference Include="..\GameLaunchTaskSourceGenerator\GameLaunchTaskSourceGenerator.csproj" OutputItemType="Analyzer"/>-->
+        <ProjectReference Include="..\Core\Core.csproj"/>
         <ProjectReference Include="..\GameLauncherTaskGenerator\GameLauncherTaskGenerator.csproj"/>
         <ProjectReference Include="..\TypeScriptCompiler\TypeScriptCompiler.esproj"/>
     </ItemGroup>

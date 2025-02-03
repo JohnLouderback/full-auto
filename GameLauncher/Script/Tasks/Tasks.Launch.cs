@@ -32,11 +32,7 @@ public static partial class Tasks {
     if (process.Start()) {
       return new Application {
         ExitSignal = process.WaitForExitAsync(),
-        Process = new Objects.Process {
-          Name     = process.ProcessName,
-          FullPath = process.MainModule?.FileName ?? string.Empty,
-          Pid      = process.Id
-        }
+        Process    = new Objects.Process(process)
       };
     }
 

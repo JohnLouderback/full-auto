@@ -14,7 +14,7 @@ export interface Application {
      */
     readonly exitSignal: Promise<void>;
     /**
-     * adsfasdf
+     * Represents the process that is running the application.
      *
      */
     readonly process: Process;

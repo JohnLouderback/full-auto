@@ -1,3 +1,7 @@
+/**
+ * Represents a process that is or was running on the system.
+ *
+ */
 // Auto-generated from C# class Process
 export interface Process {
     /**
@@ -21,4 +25,10 @@ export interface Process {
      *
      */
     kill(): void;
+    /**
+     * Lists the current child processes of the process.
+     *
+     * @returns A list of child processes.
+     */
+    listChildren(): Array<Process>;
 }

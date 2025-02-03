@@ -1,4 +1,5 @@
-﻿using GameLauncherTaskGenerator;
+﻿using Core.Utils;
+using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;
@@ -8,24 +9,33 @@ namespace GameLauncher.Script.Objects;
 /// </summary>
 [TypeScriptExport]
 public class Process {
+  private System.Diagnostics.Process process;
+  
   /// <summary>
   ///   The names of the process. For example: <c> "chrome" </c>.
   /// </summary>
   [ScriptMember("name")]
-  public required string Name { get; init; }
+  public string Name { get; }
 
   /// <summary>
   ///   The full path to the process. For example:
   ///   <c> "C:\Program Files\Google\Chrome\Application\chrome.exe" </c>.
   /// </summary>
   [ScriptMember("fullPath")]
-  public required string FullPath { get; init; }
+  public string FullPath { get; }
 
   /// <summary>
   ///   The process ID, which is unique for each process. For example: <c> 1234 </c>.
   /// </summary>
   [ScriptMember("pid")]
-  public required int Pid { get; init; }
+  public int Pid { get; }
+  
+  internal Process(System.Diagnostics.Process process) {
+    this.process = process;
+    Name     = process.ProcessName;
+    FullPath = process.MainModule?.FileName ?? string.Empty;
+    Pid      = process.Id;
+  }
 
 
   /// <summary>
@@ -33,7 +43,21 @@ public class Process {
   /// </summary>
   [ScriptMember("kill")]
   public void Kill() {
-    var process = System.Diagnostics.Process.GetProcessById(Pid);
     process.Kill();
+  }
+
+
+  /// <summary>
+  ///   Lists the current child processes of the process.
+  /// </summary>
+  /// <returns> A list of child processes. </returns>
+  [ScriptMember("listChildren")]
+  public IList<Process> ListChildren() {
+    return process.GetChildProcesses()
+      .Select<System.Diagnostics.Process, Process>(
+        proc =>
+          new Process(proc)
+      )
+      .ToList();
   }
 }
