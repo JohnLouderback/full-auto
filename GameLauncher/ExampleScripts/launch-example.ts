@@ -13,16 +13,27 @@ if (app === null) {
 Process Path: ${app.process.fullPath},
 Process ID: 0x${app.process.pid.toString(16)}`
     );
-    setTimeout(() => {
-        console.log('Killing HxD...');
-        app.process.kill();
-    }, 5000);
 
-    // count down...
-    for (let i = 5; i > 0; i--) {
-        console.log(i);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    const windows = app.listWindows();
+
+    console.log(typeof windows.forEach);
+
+    console.log(`Number of windows: ${windows.length}`);
+
+    console.log('Running for loop...');
+    for (let i = 0; i < windows.length; i++) {
+        const window = windows[i];
+        console.log(
+            `Window ${i} Title: ${window.title}`
+        );
     }
+
+    console.log('Running forEach method...');
+    windows.forEach((window) => {
+        console.log(
+            `Window Title: ${window.title}`
+        );
+    });
 
     await app.exitSignal;
     console.log('HxD exited.');

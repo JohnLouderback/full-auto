@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,6 +10,72 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace GameLauncherTaskGenerator;
 
 public static class TsTypeGenerator {
+  /// <summary>
+  ///   Extracts all base types from a C# type string, including generic arguments.
+  ///   E.g., "List&lt;Window&gt;" becomes ["List", "Window"]
+  /// </summary>
+  public static IEnumerable<string> ExtractAllBaseTypes(string typeStr) {
+    if (string.IsNullOrWhiteSpace(typeStr)) {
+      return Enumerable.Empty<string>();
+    }
+
+    var types = new HashSet<string>(StringComparer.Ordinal);
+
+    // Handle nullability
+    if (typeStr.EndsWith("?")) {
+      typeStr = typeStr.Substring(0, typeStr.Length - 1);
+    }
+
+    // Handle arrays
+    if (typeStr.EndsWith("[]")) {
+      types.Add(typeStr.Substring(0, typeStr.Length - 2));
+    }
+
+    // Handle generics
+    var genericMatch = Regex.Match(typeStr, @"^([a-zA-Z0-9_]+)<(.+)>$");
+    if (genericMatch.Success) {
+      var baseType = genericMatch.Groups[1].Value;
+      types.Add(baseType);
+
+      var genericArgs = genericMatch.Groups[2].Value.Split(',');
+      foreach (var arg in genericArgs) {
+        types.UnionWith(ExtractAllBaseTypes(arg.Trim()));
+      }
+    }
+    else {
+      types.Add(typeStr);
+    }
+
+    return types;
+  }
+
+
+  /// <summary>
+  ///   Extracts the base type name from a TypeScript type string.
+  ///   For example, "Array<Application>" yields "Application" and "Application?" becomes "Application".
+  /// </summary>
+  public static string ExtractBaseType(string typeStr) {
+    if (string.IsNullOrWhiteSpace(typeStr)) {
+      return typeStr;
+    }
+
+    if (typeStr.EndsWith("?")) {
+      typeStr = typeStr.Substring(0, typeStr.Length - 1);
+    }
+
+    if (typeStr.EndsWith("[]")) {
+      typeStr = typeStr.Substring(0, typeStr.Length - 2);
+    }
+
+    var genericIndex = typeStr.IndexOf('<');
+    if (genericIndex != -1) {
+      typeStr = typeStr.Substring(0, genericIndex);
+    }
+
+    return typeStr.Trim();
+  }
+
+
   /// <summary>
   ///   Generates TypeScript code for a given C# type declaration (class or interface) marked with the
   ///   export attribute.
@@ -117,11 +184,12 @@ public static class TsTypeGenerator {
         }
 
         var returnType = CSharpTypeScriptConverter.Convert(method.ReturnType);
-        // Add dependency if return type is custom.
-        var retBase = ExtractBaseType(returnType);
-        if (customTypes.ContainsKey(retBase) &&
-            retBase != typeName) {
-          dependencies.Add(retBase);
+
+        foreach (var type in ExtractAllBaseTypes(returnType)) {
+          if (customTypes.ContainsKey(type) &&
+              type != typeName) {
+            dependencies.Add(type);
+          }
         }
 
         // Use a local variable to avoid lambda capture issues.
@@ -131,10 +199,12 @@ public static class TsTypeGenerator {
           method.ParameterList.Parameters.Select(
             p => {
               var paramType = CSharpTypeScriptConverter.Convert(p.Type);
-              var paramBase = ExtractBaseType(paramType);
-              if (customTypes.ContainsKey(paramBase) &&
-                  paramBase != typeName) {
-                localDeps.Add(paramBase);
+
+              foreach (var type in ExtractAllBaseTypes(paramType)) {
+                if (customTypes.ContainsKey(type) &&
+                    type != typeName) {
+                  localDeps.Add(type);
+                }
               }
 
               return $"{p.Identifier.Text}: {paramType}";
@@ -147,32 +217,6 @@ public static class TsTypeGenerator {
 
     sb.AppendLine("}");
     return sb.ToString();
-  }
-
-
-  /// <summary>
-  ///   Extracts the base type name from a TypeScript type string.
-  ///   For example, "Array<Application>" yields "Application" and "Application?" becomes "Application".
-  /// </summary>
-  private static string ExtractBaseType(string typeStr) {
-    if (string.IsNullOrWhiteSpace(typeStr)) {
-      return typeStr;
-    }
-
-    if (typeStr.EndsWith("?")) {
-      typeStr = typeStr.Substring(0, typeStr.Length - 1);
-    }
-
-    if (typeStr.EndsWith("[]")) {
-      typeStr = typeStr.Substring(0, typeStr.Length - 2);
-    }
-
-    var genericIndex = typeStr.IndexOf('<');
-    if (genericIndex != -1) {
-      typeStr = typeStr.Substring(0, genericIndex);
-    }
-
-    return typeStr.Trim();
   }
 
 

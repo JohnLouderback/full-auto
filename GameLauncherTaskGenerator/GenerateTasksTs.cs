@@ -84,16 +84,20 @@ public class GenerateTasksTs : Task {
       var requiredTypes = new HashSet<string>(StringComparer.Ordinal);
       foreach (var method in tasksMethods) {
         // Process the return type.
-        var retBase = ExtractBaseType(method.ReturnType.ToString());
-        if (customTypeNames.Contains(retBase)) {
-          requiredTypes.Add(retBase);
+        var returnType = method.ReturnType.ToString();
+        foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(returnType)) {
+          if (customTypeNames.Contains(type)) {
+            requiredTypes.Add(type);
+          }
         }
 
         // Process each parameter type.
         foreach (var param in method.ParameterList.Parameters) {
-          var paramBase = ExtractBaseType(param.Type.ToString());
-          if (customTypeNames.Contains(paramBase)) {
-            requiredTypes.Add(paramBase);
+          var paramType = param.Type.ToString();
+          foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(paramType)) {
+            if (customTypeNames.Contains(type)) {
+              requiredTypes.Add(type);
+            }
           }
         }
       }
@@ -174,33 +178,6 @@ public class GenerateTasksTs : Task {
       Log.LogError($"Error generating TypeScript files: {ex.Message}");
       return false;
     }
-  }
-
-
-  /// <summary>
-  ///   Extracts the “base” type name from a C# type string (stripping generic arguments, array brackets,
-  ///   and nullability).
-  ///   E.g. "Application?" becomes "Application" and "Array<Application>" becomes "Application".
-  /// </summary>
-  private string ExtractBaseType(string typeStr) {
-    if (string.IsNullOrWhiteSpace(typeStr)) {
-      return typeStr;
-    }
-
-    if (typeStr.EndsWith("?")) {
-      typeStr = typeStr.Substring(0, typeStr.Length - 1);
-    }
-
-    if (typeStr.EndsWith("[]")) {
-      typeStr = typeStr.Substring(0, typeStr.Length - 2);
-    }
-
-    var genericIndex = typeStr.IndexOf('<');
-    if (genericIndex != -1) {
-      typeStr = typeStr.Substring(0, genericIndex);
-    }
-
-    return typeStr.Trim();
   }
 
 

@@ -69,6 +69,7 @@ public static class CSharpTypeScriptConverter {
         case "IEnumerable":
         case "IList":
         case "ICollection":
+        case "JSArray":
           return $"Array<{convertedArgs[0]}>";
         case "Dictionary":
           if (convertedArgs.Count >= 2) {
@@ -85,6 +86,7 @@ public static class CSharpTypeScriptConverter {
     // Handle non-generic collection interfaces (when the element type isn’t specified)
     if (input == "IEnumerable" ||
         input == "IList" ||
+        input == "JSArray" ||
         input == "ICollection") {
       return "Array<any>";
     }

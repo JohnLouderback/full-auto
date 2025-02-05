@@ -1,4 +1,5 @@
 import { Process } from "./Process";
+import { Window } from "./Window";
 
 /**
  * Abstractly represents an executable application that is or was running on the
@@ -18,4 +19,12 @@ export interface Application {
      *
      */
     readonly process: Process;
+    /**
+     * Lists the windows of the application. It does not list the windows of
+     * child processes or child
+     * windows.
+     *
+     * @returns A list of windows.
+     */
+    listWindows(): Array<Window>;
 }

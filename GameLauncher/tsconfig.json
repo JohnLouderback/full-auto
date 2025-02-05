@@ -8,6 +8,7 @@
     ],
     "sourceMap": true,
     "inlineSourceMap": true,
+    "inlineSources": true,
     "typeRoots": [
       "../Schema/"
     ],
