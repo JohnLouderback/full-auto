@@ -135,8 +135,28 @@ public class GenerateTasksTs : Task {
         var parameters = string.Join(
           ", ",
           method.ParameterList.Parameters.Select(
-            p =>
-              $"{p.Identifier.Text}: {CSharpTypeScriptConverter.Convert(p.Type)}"
+            p => {
+              var defaultValue = "";
+              if (p.Default != null) {
+                // p.Default is an EqualsValueClauseSyntax.
+                // Extract its value (e.g. "5" or "\"hello\"" etc.) without the leading '='.
+                defaultValue = p.Default.Value.ToString().Trim();
+              }
+
+              // If the parameter has a default value, provide the default value.
+              if (!string.IsNullOrEmpty(defaultValue)) {
+                // return $"{paramName}: {paramType} = {defaultValue}";
+                return $"{
+                  p.Identifier.Text
+                }: {
+                  CSharpTypeScriptConverter.Convert(p.Type)
+                } = {
+                  defaultValue
+                }";
+              }
+
+              return $"{p.Identifier.Text}: {CSharpTypeScriptConverter.Convert(p.Type)}";
+            }
           )
         );
 

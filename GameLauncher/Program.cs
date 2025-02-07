@@ -1,5 +1,9 @@
-﻿using GameLauncher.Script;
+﻿using Core.Utils;
+using GameLauncher.Script;
 using Microsoft.ClearScript.V8;
+
+// Initialize a win 32 message loop.
+MessageLoop.Start();
 
 using var engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableTaskPromiseConversion);
 

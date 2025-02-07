@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Win32;
@@ -43,6 +44,53 @@ public static class HwndExtensions {
   }
 
 
+  public static HWND? GetOwner(this HWND hwnd) {
+    var result = PInvoke.GetWindow(hwnd, GET_WINDOW_CMD.GW_OWNER);
+
+    if (result == nint.Zero) {
+      return null;
+    }
+
+    return result;
+  }
+
+
+  /// <summary>
+  ///   Get the parent of the window. If the window has no parent, then this method returns
+  ///   <see langword="null" />.
+  /// </summary>
+  /// <param name="hwnd"> The window to get the parent of. </param>
+  /// <returns> The parent of the window, or <see langword="null" /> if the window has no parent. </returns>
+  public static HWND? GetParent(this HWND hwnd) {
+    var result = PInvoke.GetParent(hwnd);
+
+    if (result == nint.Zero) {
+      return null;
+    }
+
+    return result;
+  }
+
+
+  /// <summary>
+  ///   Gets the process ID of the window.
+  /// </summary>
+  /// <param name="hwnd"> The window to get the process ID of. </param>
+  /// <returns> The identifier of the process that created the window. </returns>
+  /// <exception cref="Win32Exception"> Thrown when the process ID could not be retrieved. </exception>
+  public static unsafe uint GetProcessID(this HWND hwnd) {
+    // Allocate a single uint on the stack to store the process ID.
+    var processId = stackalloc uint[1];
+    var result    = PInvoke.GetWindowThreadProcessId(hwnd, processId);
+
+    if (result == 0) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
+
+    return *processId;
+  }
+
+
   public static string GetProcessName(this HWND hwnd) {
     return Cpp.Core.WindowUtils.GetProcessName(hwnd.Value).TrimEnd('\0');
   }
@@ -58,17 +106,43 @@ public static class HwndExtensions {
   }
 
 
+  public static Rectangle GetWindowRect(this HWND hwnd) {
+    PInvoke.GetWindowRect(hwnd, out var rect);
+    return rect;
+  }
+
+
   public static WINDOW_STYLE GetWindowStyle(this HWND hwnd) {
     return (WINDOW_STYLE)hwnd.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE);
   }
 
 
+  /// <summary>
+  ///   Get the text of the window's titlebar.
+  /// </summary>
+  /// <param name="hwnd"> The window to get the text of. </param>
+  /// <returns> The text of the window's titlebar. </returns>
   public static unsafe string GetWindowText(this HWND hwnd) {
     var bufferSize = 1024;
     using (var textBuffer = new NativeBuffer<char>(bufferSize)) {
       PInvoke.GetWindowText(hwnd, new PWSTR(textBuffer.GetPointer()), bufferSize);
       return textBuffer.ToManagedString(Encoding.Unicode).TrimEnd('\0');
     }
+  }
+
+
+  public static bool HasOwner(this HWND hwnd) {
+    return hwnd.GetOwner() != null;
+  }
+
+
+  /// <summary>
+  ///   Check if the window has a parent.
+  /// </summary>
+  /// <param name="hwnd"> The window to check. </param>
+  /// <returns> Whether the window has a parent. </returns>
+  public static bool HasParent(this HWND hwnd) {
+    return hwnd.GetParent() != null;
   }
 
 
@@ -238,6 +312,23 @@ public static class HwndExtensions {
 
   public static HWND SetWindowStyle(this HWND hwnd, WINDOW_STYLE style) {
     return hwnd.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
+  }
+
+
+  /// <summary>
+  ///   Set the text of the window's titlebar.
+  /// </summary>
+  /// <param name="hwnd"> The window to set the text of. </param>
+  /// <param name="text"> The text to set the titlebar to. </param>
+  /// <returns> The same window this method was called on. </returns>
+  public static unsafe HWND SetWindowText(this HWND hwnd, string text) {
+    fixed (char* textPtr = text) {
+      if (PInvoke.SetWindowText(hwnd, textPtr) == 0) {
+        throw new Win32Exception(Marshal.GetLastWin32Error());
+      }
+    }
+
+    return hwnd;
   }
 
 

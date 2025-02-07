@@ -30,9 +30,9 @@ public static partial class Tasks {
     };
 
     if (process.Start()) {
-      return new Application(engine!) {
+      return new Application {
         ExitSignal = process.WaitForExitAsync(),
-        Process    = new Objects.Process(engine!, process)
+        Process    = new Objects.Process(process)
       };
     }
 

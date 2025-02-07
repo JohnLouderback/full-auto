@@ -6,14 +6,18 @@ using Microsoft.ClearScript;
 namespace GameLauncher.Script.Utils;
 
 /// <summary>
-///   Represents a JavaScript array. A simple type-safe wrapper around a <see cref="ScriptObject" />
-///   representing a JavaScript array.
+///   Represents a JavaScript array. It acts as a proxy to a JavaScript array, allowing for
+///   manipulation of the array from C#. It implements the <see cref="IList{T}" /> interface,
+///   unlike the V8Array class provided by ClearScript, which only implements the IList and
+///   IList&lt;object&gt; interfaces.
 /// </summary>
 /// <typeparam name="T"> The type of the array. </typeparam>
 public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
   private readonly ScriptObject jsArray;
 
   private dynamic? _hasMemberFunc;
+
+  private dynamic? _getMemberFunc;
 
   /// <inheritdoc />
   public int Count => (int)jsArray.GetProperty("length");
@@ -33,6 +37,20 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
   private dynamic HasMemberFunc =>
     _hasMemberFunc ??= ScriptEngine.Current.Evaluate("(name, obj) => name in obj");
 
+  private dynamic GetMemberFunc =>
+    _getMemberFunc ??= ScriptEngine.Current.Evaluate(
+      """
+      (name, obj) => {
+        const returnVal = obj[name];
+        // If the return value is a function, bind it to the object.
+        if (typeof returnVal === 'function') {
+          return returnVal.bind(obj);
+        }
+        return returnVal;
+      }
+      """
+    );
+
   /// <inheritdoc />
   public object? this[int index] {
     get => jsArray.InvokeMethod("at", index);
@@ -48,6 +66,18 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
 
   public JSArray(ScriptObject jsArray) {
     this.jsArray = jsArray;
+  }
+
+
+  /// <summary>
+  ///   Creates a new JSArray from an existing IEnumerable.
+  /// </summary>
+  /// <param name="list"> The enumerable to convert. </param>
+  /// <typeparam name="T"> The type of the enumerable. </typeparam>
+  /// <returns> The new JSArray instance. </returns>
+  public static JSArray<T> FromIEnumerable<T>(IEnumerable<T> list) {
+    var engine = ScriptEngine.Current;
+    return new JSArray<T>(engine.Script.Array.from(list));
   }
 
 
@@ -210,6 +240,13 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
 
   public override bool TryGetMember(GetMemberBinder binder, out object result) {
     try {
+      // First, try to get the member directly from the JavaScript array members.
+      if (HasMemberFunc(binder.Name, jsArray)) {
+        result = GetMemberFunc(binder.Name, jsArray);
+        return true;
+      }
+
+      // Failing that, try to get the member from the DynamicObject members.
       result =
         jsArray.GetType()
           .GetProperty(binder.Name, BindingFlags.Public | BindingFlags.Instance)
@@ -220,6 +257,7 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
       return result != null;
     }
     catch {
+      // If an exception occurs, return false.
       result = null;
       return false;
     }

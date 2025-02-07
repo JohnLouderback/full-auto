@@ -18,6 +18,7 @@ public unsafe struct Win32WindowBlittable {
   public fixed char Title[StringLength];
   public fixed char ClassName[StringLength];
   public fixed char ProcessName[StringLength];
+  public       uint ProcessID;
 
 
   /// <summary>
@@ -30,7 +31,8 @@ public unsafe struct Win32WindowBlittable {
       Hwnd        = window.Hwnd,
       Title       = new string(window.Title).TrimEnd('\0'),
       ClassName   = new string(window.ClassName).TrimEnd('\0'),
-      ProcessName = new string(window.ProcessName).TrimEnd('\0')
+      ProcessName = new string(window.ProcessName).TrimEnd('\0'),
+      ProcessID   = window.ProcessID
     };
   }
 }
@@ -42,24 +44,29 @@ public struct Win32Window {
   /// <summary>
   ///   The handle of the window. The handle is a unique identifier for the window.
   /// </summary>
-  public HWND Hwnd { get; init; }
+  public required HWND Hwnd { get; init; }
 
   /// <summary>
   ///   The title of the window. This is the text that is displayed in the title bar of the window.
   /// </summary>
-  public string Title { get; init; }
+  public required string Title { get; init; }
 
   /// <summary>
   ///   The class name of the window. This is the name of the window class that the window belongs
   ///   to. These values are used to create the window and are set by the application that creates
   ///   the window. An example of a class name is "Chrome_WidgetWin_1".
   /// </summary>
-  public string ClassName { get; init; }
+  public required string ClassName { get; init; }
 
   /// <summary>
   ///   The process name of the window. This is the name of the process that created the window.
   /// </summary>
-  public string ProcessName { get; init; }
+  public required string ProcessName { get; init; }
+
+  /// <summary>
+  ///   The process ID of the window. This is the ID of the process that created the window.
+  /// </summary>
+  public required uint ProcessID { get; init; } // New property for process ID
 
 
   public static unsafe explicit operator Win32WindowBlittable(Win32Window window) {
@@ -82,6 +89,8 @@ public struct Win32Window {
       blittable.ProcessName,
       Win32WindowBlittable.StringLength
     );
+
+    blittable.ProcessID = window.ProcessID;
 
     return blittable;
   }

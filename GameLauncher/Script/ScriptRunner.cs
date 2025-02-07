@@ -29,8 +29,8 @@ public class ScriptRunner {
     this.scriptPath = scriptPath;
     engine = new V8ScriptEngine(
       V8ScriptEngineFlags.EnableTaskPromiseConversion |
-      V8ScriptEngineFlags.EnableDebugging |
-      V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart
+      V8ScriptEngineFlags.EnableDebugging /*|
+      V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart*/
     );
     engine.DefaultAccess           = ScriptAccess.Full;
     engine.DocumentSettings.Loader = new ScriptDocumentLoader();

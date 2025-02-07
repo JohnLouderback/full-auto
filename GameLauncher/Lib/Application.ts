@@ -27,4 +27,15 @@ export interface Application {
      * @returns A list of windows.
      */
     listWindows(): Array<Window>;
+    /**
+     * Lists the windows of the application. It lists all windows belonging to
+     * the application,
+     * including child windows. If {@link includeChildProcesses} is `true`,
+     * then it will also list windows of child processes.
+     *
+     * @param [includeChildProcesses=false] Whether to additionally include
+     * windows of child processes.
+     * @returns A list of windows.
+     */
+    listWindowsDeep(includeChildProcesses?: boolean): Array<Window>;
 }

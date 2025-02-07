@@ -6,6 +6,8 @@ RegisterClassExW
 GetClassNameW
 GetWindow
 GetWindowText
+SetWindowTextW
+GetWindowTextLength
 GetWindowThreadProcessId
 OpenProcess
 QueryFullProcessImageNameW
@@ -28,6 +30,7 @@ DefSubclassProc
 EnumWindows
 EnumChildWindows
 SetParent
+GetParent
 ShowWindow
 UpdateWindow
 SetWindowPos
@@ -52,6 +55,7 @@ GetCursorPos
 SetForegroundWindow
 GetFocus
 GetWindowRect
+GetWindow
 GetClientRect
 ClientToScreen
 DwmGetWindowAttribute
@@ -70,3 +74,7 @@ DISPLAY_DEVICE
 EnumDisplayDevices
 EnumDisplayMonitors
 MONITORINFOF_PRIMARY
+SetWinEventHook
+UnhookWinEvent
+PostThreadMessage
+GetThreadId

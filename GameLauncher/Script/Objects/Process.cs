@@ -1,7 +1,6 @@
 ﻿using Core.Utils;
 using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
-using Microsoft.ClearScript.V8;
 
 namespace GameLauncher.Script.Objects;
 
@@ -11,7 +10,7 @@ namespace GameLauncher.Script.Objects;
 [TypeScriptExport]
 public class Process {
   private readonly System.Diagnostics.Process process;
-  private readonly V8ScriptEngine             engine;
+  private readonly ScriptEngine               engine;
 
   /// <summary>
   ///   The names of the process. For example: <c> "chrome" </c>.
@@ -33,8 +32,8 @@ public class Process {
   public int Pid { get; }
 
 
-  internal Process(V8ScriptEngine engine, System.Diagnostics.Process process) {
-    this.engine  = engine;
+  internal Process(System.Diagnostics.Process process) {
+    engine       = ScriptEngine.Current;
     this.process = process;
     Name         = process.ProcessName;
     FullPath     = process.MainModule?.FileName ?? string.Empty;
@@ -60,7 +59,7 @@ public class Process {
     return process.GetChildProcesses()
       .Select<System.Diagnostics.Process, Process>(
         proc =>
-          new Process(engine, proc)
+          new Process(proc)
       )
       .ToList();
   }

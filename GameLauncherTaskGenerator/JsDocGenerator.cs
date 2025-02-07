@@ -59,7 +59,7 @@ public static class JsDocGenerator {
     try {
       // Wrap the XML in a root element for proper parsing.
       var doc = XDocument.Parse("<root>" + cleanedXml + "</root>");
-      return ConvertDocToJsDoc(doc.Root, indent, maxColumn);
+      return ConvertDocToJsDoc(node, doc.Root, indent, maxColumn);
     }
     catch {
       return string.Empty;
@@ -70,9 +70,26 @@ public static class JsDocGenerator {
   /// <summary>
   ///   Converts the parsed XML documentation (wrapped in a root element) into a formatted JSDoc comment.
   /// </summary>
-  private static string ConvertDocToJsDoc(XElement root, string indent, int maxColumn) {
+  private static string ConvertDocToJsDoc(
+    SyntaxNode node,
+    XElement root,
+    string indent,
+    int maxColumn
+  ) {
     var lines = new List<string>();
     lines.Add($"{indent}/**");
+
+    var isMethod = false;
+    // Key/Value pairs of parameter names and their syntax nodes.
+    Dictionary<string, ParameterSyntax>? parameters = null;
+
+    if (node is MethodDeclarationSyntax method) {
+      isMethod = true;
+
+      // Create a dictionary of parameter names to their syntax nodes.
+      parameters = method.ParameterList.Parameters
+        .ToDictionary(p => p.Identifier.Text, p => p);
+    }
 
     // Process <summary> element.
     var summaryElement = root.Element("summary");
@@ -86,7 +103,16 @@ public static class JsDocGenerator {
 
     // Process <param> elements.
     foreach (var param in root.Elements("param")) {
-      var paramName  = param.Attribute("name")?.Value ?? "";
+      var paramName = param.Attribute("name")?.Value ?? "";
+
+      if (isMethod &&
+          parameters != null &&
+          parameters.TryGetValue(paramName, out var paramNode)) {
+        if (paramNode.Default != null) {
+          paramName = $"[{paramName}={paramNode.Default.Value.GetText()}]";
+        }
+      }
+
       var paramText  = ProcessInlineNodes(param.Nodes()).Trim();
       var tagContent = $"@param {paramName} {paramText}".Trim();
       lines.AddRange(FormatJsDocBlock(tagContent, indent, maxColumn));
@@ -156,7 +182,8 @@ public static class JsDocGenerator {
 
   /// <summary>
   ///   Recursively processes XML nodes (text and elements) to build a string,
-  ///   converting inline documentation tags (like <paramref>, <see>, and <c>) to JSDoc syntax.
+  ///   converting inline documentation tags (like &lt;paramref&gt;, &lt;see&gt;, and &lt;c&gt; to JSDoc
+  ///   syntax.
   /// </summary>
   private static string ProcessInlineNodes(IEnumerable<XNode> nodes) {
     if (nodes == null) {
@@ -199,7 +226,7 @@ public static class JsDocGenerator {
           return string.Empty;
 
         case "c":
-          return $"`{element.Value}`";
+          return $"`{element.Value.Trim()}`";
 
         default:
           // Process any child nodes recursively.

@@ -46,6 +46,7 @@ public sealed partial class MainWindow : WindowEx {
       Hwnd        = hwnd,
       ClassName   = hwnd.GetClassName(),
       ProcessName = hwnd.GetProcessName(),
+      ProcessID   = hwnd.GetProcessID(),
       Title       = hwnd.GetWindowText()
     };
 

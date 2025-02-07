@@ -152,7 +152,7 @@ public static class Win32WindowExtensions {
       // Handle the error case where DwmGetWindowAttribute might fail on non-DWM platforms.
       // Fallback to using GetWindowRect for non-composited desktops.
       RECT windowRect;
-      GetWindowRect(hwnd, &windowRect);
+      PInvoke.GetWindowRect(hwnd, &windowRect);
 
       clientRect.left   = topLeft.X - windowRect.left;
       clientRect.top    = topLeft.Y - windowRect.top;
@@ -250,7 +250,7 @@ public static class Win32WindowExtensions {
   /// <param name="window"> The window to get the rectangle of. </param>
   /// <returns> The rectangle that represents the window's position and size. </returns>
   public static RECT GetRect(this Win32Window window) {
-    GetWindowRect(window.Hwnd, out var rect);
+    PInvoke.GetWindowRect(window.Hwnd, out var rect);
     return rect;
   }
 
@@ -263,6 +263,47 @@ public static class Win32WindowExtensions {
   public static int GetWidth(this Win32Window window) {
     var rect = window.GetRect();
     return rect.right - rect.left;
+  }
+
+
+  public static unsafe RECT GetWindowRect(
+    this Win32Window window,
+    bool scaleByDpi = false
+  ) {
+    var  hwnd = window.Hwnd;
+    RECT windowRect;
+
+    // Get the extended frame bounds of the window. This is the window's position and size including
+    // the window frame. However, this only works on DWM-composited desktops. If this fails, we fall
+    // back to using GetWindowRect.
+    RECT extendedFrameBounds;
+    var result = DwmGetWindowAttribute(
+      hwnd,
+      DWMWINDOWATTRIBUTE.DWMWA_EXTENDED_FRAME_BOUNDS,
+      &extendedFrameBounds,
+      (uint)sizeof(RECT)
+    );
+
+    var dpi = hwnd.GetMonitor().GetDpi();
+    // Calculate the DPI scale. No scaling is done if the scaleByDpi parameter is false.
+    var dpiScale = scaleByDpi ? dpi / (float)baseDPI : 1;
+
+    if (SUCCEEDED(result)) {
+      // Calculate the offset of the client area within the extended frame bounds.
+      // Scale down the extended frame bounds by the DPI scale to get the correct client area. The extended frame
+      // bounds are in physical pixels, so we need to scale them down to logical pixels.
+      windowRect.left   = (int)(extendedFrameBounds.left / dpiScale);
+      windowRect.top    = (int)(extendedFrameBounds.top / dpiScale);
+      windowRect.right  = (int)(extendedFrameBounds.right / dpiScale);
+      windowRect.bottom = (int)(extendedFrameBounds.bottom / dpiScale);
+    }
+    else {
+      // Handle the error case where DwmGetWindowAttribute might fail on non-DWM platforms.
+      // Fallback to using GetWindowRect for non-composited desktops.
+      PInvoke.GetWindowRect(hwnd, &windowRect);
+    }
+
+    return windowRect;
   }
 
 

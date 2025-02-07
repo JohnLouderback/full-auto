@@ -261,13 +261,15 @@ public static class NativeUtils {
       var title       = hwnd.GetWindowText();
       var className   = hwnd.GetClassName();
       var processName = hwnd.GetProcessName();
+      var processID   = hwnd.GetProcessID();
 
       result.Add(
         new Win32Window {
           Hwnd        = hwnd,
           Title       = title,
           ClassName   = className,
-          ProcessName = processName
+          ProcessName = processName,
+          ProcessID   = processID
         }
       );
 

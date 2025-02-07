@@ -207,7 +207,20 @@ public static class TsTypeGenerator {
                 }
               }
 
-              return $"{p.Identifier.Text}: {paramType}";
+              var paramName    = p.Identifier.Text;
+              var defaultValue = "";
+              if (p.Default != null) {
+                // p.Default is an EqualsValueClauseSyntax.
+                // Extract its value (e.g. "5" or "\"hello\"" etc.) without the leading '='.
+                defaultValue = p.Default.Value.ToString().Trim();
+              }
+
+              if (!string.IsNullOrEmpty(defaultValue)) {
+                // return $"{paramName}: {paramType} = {defaultValue}";
+                return $"{paramName}?: {paramType}";
+              }
+
+              return $"{paramName}: {paramType}";
             }
           )
         );
