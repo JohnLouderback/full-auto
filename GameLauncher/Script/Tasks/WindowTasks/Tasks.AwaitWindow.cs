@@ -19,14 +19,33 @@ public static partial class Tasks {
   ///   indefinitely.
   /// </param>
   /// <returns> The window that was created, or <see langword="null" /> if the timeout elapsed. </returns>
-  public static async Task<Window?> AwaitWindow(string title, int processID = 0, int timeout = 0) {
-    return await AwaitWindow(hwnd => hwnd.GetWindowText() == title, processID, timeout);
+  public static async Task<Window?> AwaitWindow(
+    WindowSearchCriteria searchCriteria,
+    int timeout = 0
+  ) {
+    return await AwaitWindow(
+             hwnd => {
+               var windowMatches = true;
+
+               // If a title was provided to match against, check if the window's title matches.
+               if (searchCriteria.Title is not null) {
+                 windowMatches &= hwnd.GetWindowText() == searchCriteria.Title;
+               }
+
+               // If a class name was provided to match against, check if the window's class name matches.
+               if (searchCriteria.ClassName is not null) {
+                 windowMatches &= hwnd.GetClassName() == searchCriteria.ClassName;
+               }
+
+               return windowMatches;
+             },
+             timeout
+           );
   }
 
 
   private static async Task<Window?> AwaitWindow(
     WindowCriteria criteria,
-    int processID = 0,
     int timeout = 0
   ) {
     var hwnd = await WinEventAwaiter.AwaitEvent(
@@ -40,7 +59,7 @@ public static partial class Tasks {
         Hwnd        = hwnd.Value,
         ClassName   = hwnd.Value.GetClassName(),
         Title       = hwnd.Value.GetWindowText(),
-        ProcessID   = processID == 0 ? hwnd.Value.GetProcessID() : (uint)processID,
+        ProcessID   = hwnd.Value.GetProcessID(),
         ProcessName = hwnd.Value.GetProcessName()
       }
     );
