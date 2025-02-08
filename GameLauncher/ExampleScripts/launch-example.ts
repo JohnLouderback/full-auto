@@ -4,7 +4,10 @@ console.log('Launching Fork...');
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-Tasks.awaitWindow('Fork', 10000).then(window => {
+Tasks.awaitWindow({
+    title: 'Fork',
+    className: 'HwndWrapper[Fork.exe;;6577e698-1421-4227-805b-5a7a96b9a05f]'
+}, 10000).then(window => {
     if (window === null) {
         console.error('Failed to find Fork window.');
     } else {

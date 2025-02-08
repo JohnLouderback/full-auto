@@ -121,6 +121,15 @@ public class GenerateTasksTs : Task {
           continue;
         }
 
+        // Skip methods marked with the HideFromTypeScript attribute.
+        if (method.AttributeLists.Any(
+              al => al.Attributes.Any(
+                a => a.Name.ToString().EndsWith("HideFromTypeScript")
+              )
+            )) {
+          continue;
+        }
+
         // Generate the JSDoc for the method.
         var jsDoc = JsDocGenerator.GenerateJsDoc(method, "    ");
         tasksTsBuilder.AppendLine(jsDoc);

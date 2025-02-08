@@ -5,6 +5,7 @@ using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript.V8;
 using Task = System.Threading.Tasks.Task;
 using TypeScriptCompiler = GameLauncher.TypeScript.Compiler;
+using static GameLauncher.Script.Utils.ErrorUtils;
 
 namespace GameLauncher.Script;
 
@@ -29,7 +30,7 @@ public class ScriptRunner {
     this.scriptPath = scriptPath;
     engine = new V8ScriptEngine(
       V8ScriptEngineFlags.EnableTaskPromiseConversion |
-      V8ScriptEngineFlags.EnableDebugging /*|
+      V8ScriptEngineFlags.EnableDebugging /* |
       V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart*/
     );
     engine.DefaultAccess           = ScriptAccess.Full;
@@ -70,21 +71,6 @@ public class ScriptRunner {
 
 
   /// <summary>
-  ///   Remove extraneous stack trace lines from the error details that would not be useful
-  ///   to an end user.
-  /// </summary>
-  /// <param name="stack"> The stack trace to clean. </param>
-  /// <returns> The stack trace with extraneous lines removed. </returns>
-  private string CleanStackTrace(string stack) {
-    var lines = stack.Split('\n');
-    var filtered = lines.Where(
-      line => !line.Contains("at tryInvoke") && !line.Contains("at V8ScriptEngine")
-    );
-    return string.Join('\n', filtered);
-  }
-
-
-  /// <summary>
   ///   Gets and stores the JavaScript code from a TypeScript source file.
   /// </summary>
   private void GetJSFromTypeScript() {
@@ -97,6 +83,7 @@ public class ScriptRunner {
   /// </summary>
   /// <param name="engine"></param>
   private void InjectGlobals(V8ScriptEngine engine) {
+    PromiseRejectionHandler.InjectIntoEngine(engine);
     ConsoleWrapper.InjectIntoEngine(engine);
     Timers.InjectIntoEngine(engine);
     Tasks.InjectIntoEngine(engine);

@@ -6,7 +6,7 @@ public static class JSInteropUtils {
   private static dynamic? _isPlainObject;
 
   private static dynamic isPlainObject => _isPlainObject ??= ScriptEngine.Current.Evaluate(
-                                            "Object.prototype.toString.call(value) === '[object Object]' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);"
+                                            "(value) => Object.prototype.toString.call(value) === '[object Object]' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);"
                                           );
 
 

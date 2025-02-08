@@ -92,6 +92,14 @@ public static class TsTypeGenerator {
     var isInterface = typeDecl is InterfaceDeclarationSyntax;
     var tsKeyword   = isInterface ? "interface" : "class";
 
+    // Check if the type is marked as an input type. This has special implications for the type
+    // generator, such as making nullable properties optional in TypeScript.
+    var isInputType = typeDecl.AttributeLists.Any(
+      al => al.Attributes.Any(
+        a => a.Name.ToString().EndsWith("IsInputType")
+      )
+    );
+
     // Generate the class-level JSDoc from the XML documentation (if any).
     var classDoc = JsDocGenerator.GenerateJsDoc(typeDecl);
     if (!string.IsNullOrWhiteSpace(classDoc)) {
@@ -107,6 +115,15 @@ public static class TsTypeGenerator {
       if (member is PropertyDeclarationSyntax prop) {
         // Only include public properties.
         if (!prop.Modifiers.Any(SyntaxKind.PublicKeyword)) {
+          continue;
+        }
+
+        // If the property has the HideFromTypeScript attribute, skip it.
+        if (prop.AttributeLists.Any(
+              al => al.Attributes.Any(
+                a => a.Name.ToString().EndsWith("HideFromTypeScript")
+              )
+            )) {
           continue;
         }
 
@@ -155,13 +172,34 @@ public static class TsTypeGenerator {
           }
         }
 
-        sb.AppendLine($"    {(isReadOnly ? "readonly " : "")}{propName}: {propType};");
+        var isNullable = prop.Type is NullableTypeSyntax;
+
+        sb.AppendLine(
+          $"    {
+            (isReadOnly ? "readonly " : "")
+          }{
+            propName
+          }{
+            (isNullable && isInputType ? "?" : "")
+          }: {
+            propType
+          };"
+        );
       }
       // Process public methods.
       else if (member is MethodDeclarationSyntax method) {
         // Skip non-public methods and constructors.
         if (!method.Modifiers.Any(SyntaxKind.PublicKeyword) ||
             method.Identifier.Text == typeName) {
+          continue;
+        }
+
+        // If the method has the HideFromTypeScript attribute, skip it.
+        if (method.AttributeLists.Any(
+              al => al.Attributes.Any(
+                a => a.Name.ToString().EndsWith("HideFromTypeScript")
+              )
+            )) {
           continue;
         }
 

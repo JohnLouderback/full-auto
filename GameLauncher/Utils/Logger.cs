@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.ClearScript;
 using Spectre.Console;
 
 namespace GameLauncher.Utils;
@@ -8,6 +9,7 @@ public static class Logger {
   ///   Logs an exception to the console.
   /// </summary>
   /// <param name="ex">The exception to log.</param>
+  [ScriptMember("exception")]
   public static void Exception(Exception ex) {
     AnsiConsole.WriteException(ex);
   }
@@ -18,29 +20,43 @@ public static class Logger {
   ///   Assumes the exception string represents a JavaScript exception.
   /// </summary>
   /// <param name="ex">The JavaScript exception string.</param>
+  [ScriptMember("exception")]
   public static void Exception(string ex) {
     if (string.IsNullOrWhiteSpace(ex)) {
       return;
     }
 
-    // Split the string into the first line (the error message) and the rest (the stack trace).
-    var newLineIndex = ex.IndexOf('\n');
-    if (newLineIndex == -1) {
-      AnsiConsole.MarkupLineInterpolated($"[red]{ex.Trim().EscapeMarkup()}[/]");
+    var lines = ex.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+    if (lines.Length == 0) {
       return;
     }
 
-    var message    = ex.Substring(0, newLineIndex).Trim();
-    var stackTrace = ex.Substring(newLineIndex + 1).Trim();
+    // Find the first line that starts with whitespace followed by "at ", marking the start of the stack trace.
+    var stackTraceStartIndex = Array.FindIndex(lines, line => line.StartsWith("    at "));
 
-    // Output the error message.
+    // If no stack trace is found, treat the entire input as the message.
+    var messageLines = stackTraceStartIndex == -1
+                         ? lines
+                         : lines.Take(stackTraceStartIndex);
+
+    var message = string.Join("\n", messageLines).Trim();
+
+    // Extract the stack trace (if present)
+    var stackTrace = stackTraceStartIndex == -1
+                       ? string.Empty
+                       : string.Join("\n", lines.Skip(stackTraceStartIndex)).Trim();
+
+    // Output the error message
     AnsiConsole.MarkupLineInterpolated($"[red]{message.EscapeMarkup()}[/]");
 
-    // Parse the stack trace and output each frame.
-    var parsedStackTrace = JsStackTraceParser.Parse(stackTrace);
-    foreach (var frame in parsedStackTrace) {
-      var line = FormatFrame(frame);
-      AnsiConsole.MarkupLine(line);
+    // Parse the stack trace and output each frame (if present)
+    if (!string.IsNullOrWhiteSpace(stackTrace)) {
+      var parsedStackTrace = JsStackTraceParser.Parse(stackTrace);
+      foreach (var frame in parsedStackTrace) {
+        var line = FormatFrame(frame);
+        AnsiConsole.MarkupLine(line);
+      }
     }
   }
 
@@ -54,6 +70,7 @@ public static class Logger {
   /// <param name="text"> The text used to interact with this link. </param>
   /// <param name="uri"> The URI to link to. </param>
   /// <returns> </returns>
+  [ScriptMember("link")]
   public static string Link(string text, string uri) {
     // If the terminal does not support links, return the text.
     if (!AnsiConsole.Profile.Capabilities.Links) {
@@ -95,7 +112,9 @@ public static class Logger {
       if (extraIndex == -1) {
         return $"[maroon]{
           (directory + Path.DirectorySeparatorChar).EscapeMarkup()
-        }[/][blue]{Link(fileName, $"file://{Path.Combine(directory, fileName)}")}[/]";
+        }[/][blue]{
+          Link(fileName, $"file://{Path.Combine(directory, fileName)}")
+        }[/]";
       }
 
       var filePart = fileName.Substring(0, extraIndex);
@@ -122,6 +141,11 @@ public static class Logger {
 
     // Type and method.
     sb.Append($"[maroon]{frame.Type.EscapeMarkup()}[/]");
+    if (!string.IsNullOrWhiteSpace(frame.Type) &&
+        !string.IsNullOrWhiteSpace(frame.Method)) {
+      sb.Append("[maroon].[/]");
+    }
+
     sb.Append($"[blue]{frame.Method.EscapeMarkup()}[/]");
 
     // Optionally include parameter list/details if a method name is provided.

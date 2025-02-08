@@ -1,19 +1,17 @@
 ﻿using Core.Models;
 using Core.Utils;
 using GameLauncher.Script.Objects;
+using GameLauncherTaskGenerator;
+using Microsoft.ClearScript;
 
 namespace GameLauncher.Script;
 
 public static partial class Tasks {
   /// <summary>
-  ///   Waits for a window to be spawned with the specified title. This only awaits new windows and
+  ///   Waits for a window to be spawned with the specified criteria. This only awaits new windows and
   ///   will not return a window that already exists at the time of calling.
   /// </summary>
-  /// <param name="title"> The title of the window to wait for. </param>
-  /// <param name="processID">
-  ///   The process ID of the window to wait for. If <c> 0 </c>, the window is allowed to be from
-  ///   any process.
-  /// </param>
+  /// <param name="searchCriteria"> The criteria to use to search for the window. </param>
   /// <param name="timeout">
   ///   The maximum time to wait for the window to be created. If <c> 0 </c>, the method waits
   ///   indefinitely.
@@ -41,6 +39,25 @@ public static partial class Tasks {
              },
              timeout
            );
+  }
+
+
+  /// <summary>
+  ///   Waits for a window to be spawned with the specified criteria. This only awaits new windows and
+  ///   will not return a window that already exists at the time of calling.
+  /// </summary>
+  /// <param name="searchCriteria"> The criteria to use to search for the window. </param>
+  /// <param name="timeout">
+  ///   The maximum time to wait for the window to be created. If <c> 0 </c>, the method waits
+  ///   indefinitely.
+  /// </param>
+  /// <returns> The window that was created, or <see langword="null" /> if the timeout elapsed. </returns>
+  [HideFromTypeScript]
+  public static async Task<Window?> AwaitWindow(
+    ScriptObject searchCriteria,
+    int timeout = 0
+  ) {
+    return await AwaitWindow((WindowSearchCriteria)searchCriteria, timeout);
   }
 
 

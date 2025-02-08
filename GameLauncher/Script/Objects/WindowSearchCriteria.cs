@@ -1,4 +1,5 @@
 ﻿using GameLauncher.Script.Utils;
+using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;
@@ -7,6 +8,8 @@ namespace GameLauncher.Script.Objects;
 ///   Represents the criteria used to search for a window. Generally, at least one of the properties
 ///   should be set to search for a window. If none are set, the search will match any window.
 /// </summary>
+[TypeScriptExport]
+[IsInputType]
 public class WindowSearchCriteria {
   [ScriptMember("title")] public string? Title { get; set; }
 
@@ -14,20 +17,13 @@ public class WindowSearchCriteria {
 
 
   public static implicit operator WindowSearchCriteria(ScriptObject obj) {
-    if (!obj.IsPlainObject()) {
-      throw new ScriptEngineException("Expected a plain object.");
+    if (JSTypeConverter.MatchesShape<WindowSearchCriteria>(obj, out var errors)) {
+      return JSTypeConverter.ConvertTo<WindowSearchCriteria>(obj);
     }
 
-    var criteria = new WindowSearchCriteria();
-
-    if (obj.HasProperty("title")) {
-      criteria.Title = obj.GetProperty<string>("title");
-    }
-
-    if (obj.HasProperty("className")) {
-      criteria.ClassName = obj.GetProperty<string>("className");
-    }
-
-    return criteria;
+    throw new ScriptEngineException(
+      "Could not convert to WindowSearchCriteria due to conversion errors:\n  " +
+      string.Join("\n  ", errors)
+    );
   }
 }
