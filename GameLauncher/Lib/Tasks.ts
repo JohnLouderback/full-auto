@@ -36,4 +36,23 @@ export class Tasks {
         return __Tasks.AwaitWindow(searchCriteria, timeout);
     }
 
+    /**
+     * Waits for a window to be spawned with the specified criteria. This only
+     * awaits new windows and
+     * will not return a window that already exists at the time of calling.
+     *
+     * @param searchCriteria A function that takes a {@link Window} and returns
+     * `true` if the
+     * window matches the criteria.
+     * @param [timeout=0
+     * ] The maximum time to wait for the window to be created. If `0`, the
+     * method waits
+     * indefinitely.
+     * @returns The window that was created, or `null` if the timeout elapsed.
+     */
+    public static async awaitWindow(searchCriteria: WindowCriteriaCallback, timeout: number = 0): Promise<Window | null> {
+        // @ts-expect-error - This function is injected into the engine dynamically.
+        return __Tasks.AwaitWindow(searchCriteria, timeout);
+    }
+
 }

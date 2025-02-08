@@ -5,8 +5,14 @@ namespace GameLauncher.Script.Utils;
 public static class JSInteropUtils {
   private static dynamic? _isPlainObject;
 
+  private static dynamic? _isValueTruthy;
+
   private static dynamic isPlainObject => _isPlainObject ??= ScriptEngine.Current.Evaluate(
                                             "(value) => Object.prototype.toString.call(value) === '[object Object]' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);"
+                                          );
+
+  private static dynamic isValueTruthy => _isValueTruthy ??= ScriptEngine.Current.Evaluate(
+                                            "(value) => !!value;"
                                           );
 
 
@@ -44,5 +50,17 @@ public static class JSInteropUtils {
   /// </returns>
   public static bool IsPlainObject(this ScriptObject obj) {
     return (bool)isPlainObject(obj);
+  }
+
+
+  /// <summary>
+  ///   Determines whether the value is truthy.
+  /// </summary>
+  /// <param name="value"> The value to check. </param>
+  /// <returns>
+  ///   <see langword="true" /> if the value is truthy; otherwise, <see langword="false" />.
+  /// </returns>
+  public static bool IsValueTruthy(this object value) {
+    return (bool)isValueTruthy(value);
   }
 }

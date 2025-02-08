@@ -1,12 +1,18 @@
-﻿using Core.Models;
+﻿using Windows.Win32.Foundation;
+using Core.Models;
 using Core.Utils;
 using GameLauncher.Script.Objects;
 using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
+using static GameLauncher.Script.Utils.JSTypeConverter;
+using static GameLauncher.Script.Utils.JSInteropUtils;
 
 namespace GameLauncher.Script;
 
 public static partial class Tasks {
+  public delegate bool WindowCriteriaCallback(Window hwnd);
+
+
   /// <summary>
   ///   Waits for a window to be spawned with the specified criteria. This only awaits new windows and
   ///   will not return a window that already exists at the time of calling.
@@ -22,7 +28,7 @@ public static partial class Tasks {
     int timeout = 0
   ) {
     return await AwaitWindow(
-             hwnd => {
+             (HWND hwnd) => {
                var windowMatches = true;
 
                // If a title was provided to match against, check if the window's title matches.
@@ -46,18 +52,61 @@ public static partial class Tasks {
   ///   Waits for a window to be spawned with the specified criteria. This only awaits new windows and
   ///   will not return a window that already exists at the time of calling.
   /// </summary>
-  /// <param name="searchCriteria"> The criteria to use to search for the window. </param>
+  /// <param name="searchCriteria">
+  ///   A function that takes a <see cref="Window" /> and returns <see langword="true" /> if the
+  ///   window matches the criteria.
+  /// </param>
   /// <param name="timeout">
   ///   The maximum time to wait for the window to be created. If <c> 0 </c>, the method waits
   ///   indefinitely.
   /// </param>
   /// <returns> The window that was created, or <see langword="null" /> if the timeout elapsed. </returns>
+  public static async Task<Window?> AwaitWindow(
+    WindowCriteriaCallback searchCriteria,
+    int timeout = 0
+  ) {
+    return await AwaitWindow(
+             hwnd => {
+               var window = new Window(
+                 new Win32Window {
+                   Hwnd        = hwnd,
+                   ClassName   = hwnd.GetClassName(),
+                   Title       = hwnd.GetWindowText(),
+                   ProcessID   = hwnd.GetProcessID(),
+                   ProcessName = hwnd.GetProcessName()
+                 }
+               );
+
+               return searchCriteria(window);
+             },
+             timeout
+           );
+  }
+
+
   [HideFromTypeScript]
   public static async Task<Window?> AwaitWindow(
     ScriptObject searchCriteria,
     int timeout = 0
   ) {
-    return await AwaitWindow((WindowSearchCriteria)searchCriteria, timeout);
+    ArgumentNullException.ThrowIfNull(searchCriteria);
+
+    if (IsFunction(searchCriteria)) {
+      return await AwaitWindow(
+               (Window window) => searchCriteria.Invoke(false, window).IsValueTruthy(),
+               timeout
+             );
+    }
+
+    if (IsPlainObject(searchCriteria)) {
+      return await AwaitWindow((WindowSearchCriteria)searchCriteria, timeout);
+    }
+
+    throw new ArgumentException(
+      $"Invalid search criteria. Expected a function or plain object, but got \"{
+        GetJSType(searchCriteria)
+      }\"."
+    );
   }
 
 
