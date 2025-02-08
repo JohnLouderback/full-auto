@@ -40,8 +40,13 @@ public class GenerateTasksTs : Task {
       // Gather all C# files.
       var csFiles      = Directory.GetFiles(SourceDirectory, "*.cs", SearchOption.AllDirectories);
       var tasksMethods = new List<MethodDeclarationSyntax>();
+      var tasksDelegates =
+        new List<DelegateDeclarationSyntax>(); // NEW: collection for delegates in Tasks class
       // Dictionary: type name => type declaration (class or interface) that is marked for export.
       var customTypes = new Dictionary<string, TypeDeclarationSyntax>(StringComparer.Ordinal);
+      // Collection for global delegates.
+      var globalDelegates =
+        new Dictionary<string, DelegateDeclarationSyntax>(StringComparer.Ordinal);
 
       // Process every file.
       foreach (var file in csFiles) {
@@ -58,6 +63,9 @@ public class GenerateTasksTs : Task {
           );
         foreach (var tasksClass in tasksClasses) {
           tasksMethods.AddRange(tasksClass.Members.OfType<MethodDeclarationSyntax>());
+          tasksDelegates.AddRange(
+            tasksClass.Members.OfType<DelegateDeclarationSyntax>()
+          ); // NEW: add delegate members
         }
 
         // Find all types (classes or interfaces) marked with the special attribute.
@@ -68,6 +76,17 @@ public class GenerateTasksTs : Task {
             if (!customTypes.ContainsKey(typeName)) {
               customTypes.Add(typeName, typeDecl);
             }
+          }
+        }
+
+        // Collect delegates declared outside of a class.
+        var delegateDecls = root.DescendantNodes()
+          .OfType<DelegateDeclarationSyntax>()
+          .Where(d => !(d.Parent is ClassDeclarationSyntax));
+        foreach (var del in delegateDecls) {
+          var delName = del.Identifier.Text;
+          if (!globalDelegates.ContainsKey(delName)) {
+            globalDelegates.Add(delName, del);
           }
         }
       }
@@ -187,7 +206,17 @@ public class GenerateTasksTs : Task {
         tasksTsBuilder.AppendLine();
       }
 
-      tasksTsBuilder.AppendLine("}");
+      tasksTsBuilder.AppendLine("}"); // close Tasks class
+
+      // Append delegates declared within Tasks.
+      if (tasksDelegates.Any()) {
+        tasksTsBuilder.AppendLine();
+        foreach (var del in tasksDelegates) {
+          // Generate TS code for delegate defined in Tasks.
+          var delTs = TsTypeGenerator.GenerateTsForDelegate(del, customTypes, out var _);
+          tasksTsBuilder.AppendLine(delTs);
+        }
+      }
 
       // Ensure the output directory exists and write Tasks.ts.
       Directory.CreateDirectory(OutputDir);
@@ -199,6 +228,18 @@ public class GenerateTasksTs : Task {
       var generatedTypes = new HashSet<string>(StringComparer.Ordinal);
       foreach (var typeName in requiredTypes) {
         GenerateCustomTypeTs(typeName, customTypes, customTypeNames, OutputDir, generatedTypes);
+      }
+
+      // Process global delegates - generate a separate TS file for each.
+      foreach (var kvp in globalDelegates) {
+        var del        = kvp.Value;
+        var tsCode     = TsTypeGenerator.GenerateTsForDelegate(del, customTypes, out var _);
+        var outputPath = Path.Combine(OutputDir, del.Identifier.Text + ".ts");
+        File.WriteAllText(outputPath, tsCode);
+        Log.LogMessage(
+          MessageImportance.High,
+          $"Generated TypeScript file for delegate {del.Identifier.Text} at {outputPath}"
+        );
       }
 
       return true;

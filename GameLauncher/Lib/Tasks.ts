@@ -56,3 +56,7 @@ export class Tasks {
     }
 
 }
+
+// Auto-generated from C# delegate WindowCriteriaCallback
+export type WindowCriteriaCallback = (hwnd: Window) => boolean;
+

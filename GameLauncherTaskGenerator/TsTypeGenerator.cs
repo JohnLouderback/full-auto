@@ -87,6 +87,7 @@ public static class TsTypeGenerator {
     out HashSet<string> dependencies
   ) {
     dependencies = new HashSet<string>(StringComparer.Ordinal);
+    var deps        = dependencies;
     var sb          = new StringBuilder();
     var typeName    = typeDecl.Identifier.Text;
     var isInterface = typeDecl is InterfaceDeclarationSyntax;
@@ -223,15 +224,18 @@ public static class TsTypeGenerator {
 
         var returnType = CSharpTypeScriptConverter.Convert(method.ReturnType);
 
+        var returnTypeDependencies = new HashSet<string>(StringComparer.Ordinal);
         foreach (var type in ExtractAllBaseTypes(returnType)) {
           if (customTypes.ContainsKey(type) &&
               type != typeName) {
-            dependencies.Add(type);
+            returnTypeDependencies.Add(type);
           }
         }
 
+        dependencies.UnionWith(returnTypeDependencies);
+
         // Use a local variable to avoid lambda capture issues.
-        var localDeps = dependencies;
+        var localDeps = new HashSet<string>(StringComparer.Ordinal);
         var parameters = string.Join(
           ", ",
           method.ParameterList.Parameters.Select(
@@ -262,11 +266,70 @@ public static class TsTypeGenerator {
             }
           )
         );
+        var allDeps = new HashSet<string>(dependencies);
+        allDeps.UnionWith(localDeps);
+        dependencies = allDeps;
         sb.AppendLine($"    {(isAsync ? "async " : "")}{methodName}({parameters}): {returnType};");
+      }
+
+      if (member is DelegateDeclarationSyntax) {
+        // Skip here — will be processed later.
       }
     }
 
     sb.AppendLine("}");
+
+    // Process any delegates defined within the type.
+    var delegateMembers = typeDecl.Members.OfType<DelegateDeclarationSyntax>();
+    foreach (var del in delegateMembers) {
+      var delTs = GenerateTsForDelegate(del, customTypes, out var delDeps);
+      dependencies.UnionWith(delDeps);
+      // Append delegate type alias after the interface.
+      sb.AppendLine();
+      sb.AppendLine(delTs);
+    }
+
+    return sb.ToString();
+  }
+
+
+  public static string GenerateTsForDelegate(
+    DelegateDeclarationSyntax delegateDecl,
+    Dictionary<string, TypeDeclarationSyntax> customTypes,
+    out HashSet<string> dependencies
+  ) {
+    dependencies = new HashSet<string>(StringComparer.Ordinal);
+    var sb           = new StringBuilder();
+    var delegateName = delegateDecl.Identifier.Text;
+    // Process parameters.
+    var localDepsAggregate = new HashSet<string>(StringComparer.Ordinal);
+    var parameters = string.Join(
+      ", ",
+      delegateDecl.ParameterList.Parameters.Select(
+        p => {
+          var paramType = CSharpTypeScriptConverter.Convert(p.Type);
+          foreach (var type in ExtractAllBaseTypes(paramType)) {
+            if (customTypes.ContainsKey(type) &&
+                type != delegateName) {
+              localDepsAggregate.Add(type);
+            }
+          }
+
+          return $"{p.Identifier.Text}: {paramType}";
+        }
+      )
+    );
+    dependencies.UnionWith(localDepsAggregate);
+    var returnType = CSharpTypeScriptConverter.Convert(delegateDecl.ReturnType);
+    foreach (var type in ExtractAllBaseTypes(returnType)) {
+      if (customTypes.ContainsKey(type) &&
+          type != delegateName) {
+        dependencies.Add(type);
+      }
+    }
+
+    sb.AppendLine($"// Auto-generated from C# delegate {delegateName}");
+    sb.AppendLine($"export type {delegateName} = ({parameters}) => {returnType};");
     return sb.ToString();
   }
 
