@@ -124,15 +124,23 @@ public class GenerateTasksTs : Task {
       // Build the Tasks.ts entry point.
       var tasksTsBuilder = new StringBuilder();
       tasksTsBuilder.AppendLine("// This file is auto-generated. Do not modify manually.");
+
+      // Insert file-level documentation taken from the Tasks class (if available).
+      // (Assumes that the Tasks class documentation is available from one of its parts.)
+      var tasksClassDoc = ""; // ...retrieve class-level JsDoc if needed...
+      if (!string.IsNullOrWhiteSpace(tasksClassDoc)) {
+        tasksTsBuilder.AppendLine(tasksClassDoc);
+      }
+
+      tasksTsBuilder.AppendLine();
       // Import all required custom types.
       foreach (var typeName in requiredTypes) {
         tasksTsBuilder.AppendLine($"import {{ {typeName} }} from \"./{typeName}\";");
       }
 
       tasksTsBuilder.AppendLine();
-      tasksTsBuilder.AppendLine("export class Tasks {");
 
-      // Instead of iterating tasksMethods individually, group them by method name.
+      // Instead of wrapping methods in a class, generate each as an exported function.
       var methodGroups = tasksMethods.GroupBy(m => m.Identifier.Text);
       foreach (var group in methodGroups) {
         var origName = group.Key;
@@ -153,20 +161,19 @@ public class GenerateTasksTs : Task {
           continue;
         }
 
-        // If only one valid overload exists, generate as before.
+        // For a single valid overload.
         if (validOverloads.Count == 1) {
           var method = validOverloads.First();
-          var jsDoc  = JsDocGenerator.GenerateJsDoc(method, "    ");
+          var jsDoc  = JsDocGenerator.GenerateJsDoc(method);
           tasksTsBuilder.AppendLine(jsDoc);
 
           var isAsync = method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword));
           var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
-          // Process parameters normally (retain initializer here for implementation).
           var parameters = string.Join(
             ", ",
             method.ParameterList.Parameters.Select(
               p => {
-                // Remove initializer; mark parameter optional if one was provided.
+                // Remove initializer; mark optional if a default value exists.
                 return $"{
                   p.Identifier.Text
                 }{
@@ -177,32 +184,30 @@ public class GenerateTasksTs : Task {
               }
             )
           );
-          tasksTsBuilder.Append("    public static ");
+          tasksTsBuilder.Append("export ");
           if (isAsync) tasksTsBuilder.Append("async ");
-          tasksTsBuilder.AppendLine($"{jsName}({parameters}): {retType} {{");
+          tasksTsBuilder.AppendLine($"function {jsName}({parameters}): {retType} {{");
           tasksTsBuilder.AppendLine(
-            "        // @ts-expect-error - This function is injected into the engine dynamically."
+            "    // @ts-expect-error - This function is injected into the engine dynamically."
           );
-          tasksTsBuilder.Append("        return __Tasks." + origName + "(");
+          tasksTsBuilder.Append("    return __Tasks." + origName + "(");
           tasksTsBuilder.Append(
             string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
           );
           tasksTsBuilder.AppendLine(");");
-          tasksTsBuilder.AppendLine("    }");
+          tasksTsBuilder.AppendLine("}");
           tasksTsBuilder.AppendLine();
         }
         else {
-          // Multiple valid overloads found.
-          // Generate an overload signature for each.
+          // Generate overload signatures.
           foreach (var method in validOverloads) {
-            var jsDoc = JsDocGenerator.GenerateJsDoc(method, "    ");
+            var jsDoc = JsDocGenerator.GenerateJsDoc(method);
             tasksTsBuilder.AppendLine(jsDoc);
             var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
             var parameters = string.Join(
               ", ",
               method.ParameterList.Parameters.Select(
                 p =>
-                  // Remove default value; mark as optional if default exists.
                   $"{
                     p.Identifier.Text
                   }{
@@ -212,20 +217,10 @@ public class GenerateTasksTs : Task {
                   }"
               )
             );
-            tasksTsBuilder.AppendLine(
-              $"    public static {
-                (method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword)) ? "async " : "")
-              }{
-                jsName
-              }({
-                parameters
-              }): {
-                retType
-              };"
-            );
+            tasksTsBuilder.AppendLine($"export function {jsName}({parameters}): {retType};");
           }
 
-          // Build the combined implementation signature based on valid overloads.
+          // Build combined implementation.
           var maxParamCount = validOverloads.Max(m => m.ParameterList.Parameters.Count);
           var unionParams   = new List<string>();
           for (var i = 0; i < maxParamCount; i++) {
@@ -252,7 +247,7 @@ public class GenerateTasksTs : Task {
               unionType += " | undefined";
             }
 
-            // Append "?" to mark the parameter as optional in the tuple type if it is optional.
+            // Mark parameter optional if needed.
             unionParams.Add($"{paramName}{(isOptional ? "?" : "")}: {unionType}");
           }
 
@@ -260,19 +255,23 @@ public class GenerateTasksTs : Task {
             validOverloads.Select(m => CSharpTypeScriptConverter.Convert(m.ReturnType))
           );
           var unionReturn = retTypes.Count == 1 ? retTypes.First() : string.Join(" | ", retTypes);
-          tasksTsBuilder.Append($"    public static async {jsName}(...args: [");
+          // Assume async if any overload is async.
+          var anyAsync = validOverloads.Any(
+            m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.AsyncKeyword))
+          );
+          tasksTsBuilder.Append("export ");
+          if (anyAsync) tasksTsBuilder.Append("async ");
+          tasksTsBuilder.Append($"function {jsName}(...args: [");
           tasksTsBuilder.Append(string.Join(", ", unionParams));
           tasksTsBuilder.AppendLine($"]): {unionReturn} {{");
           tasksTsBuilder.AppendLine(
-            "        // @ts-expect-error - This function is injected into the engine dynamically."
+            "    // @ts-expect-error - This function is injected into the engine dynamically."
           );
-          tasksTsBuilder.AppendLine($"        return __Tasks.{origName}(...args);");
-          tasksTsBuilder.AppendLine("    }");
+          tasksTsBuilder.AppendLine($"    return __Tasks.{origName}(...args);");
+          tasksTsBuilder.AppendLine("}");
           tasksTsBuilder.AppendLine();
         }
       }
-
-      tasksTsBuilder.AppendLine("}"); // close Tasks class
 
       // Append delegates declared within Tasks.
       if (tasksDelegates.Any()) {
