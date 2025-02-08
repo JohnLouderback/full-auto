@@ -41,7 +41,7 @@ public class GenerateTasksTs : Task {
       var csFiles      = Directory.GetFiles(SourceDirectory, "*.cs", SearchOption.AllDirectories);
       var tasksMethods = new List<MethodDeclarationSyntax>();
       var tasksDelegates =
-        new List<DelegateDeclarationSyntax>(); // NEW: collection for delegates in Tasks class
+        new List<DelegateDeclarationSyntax>();
       // Dictionary: type name => type declaration (class or interface) that is marked for export.
       var customTypes = new Dictionary<string, TypeDeclarationSyntax>(StringComparer.Ordinal);
       // Collection for global delegates.
@@ -65,7 +65,7 @@ public class GenerateTasksTs : Task {
           tasksMethods.AddRange(tasksClass.Members.OfType<MethodDeclarationSyntax>());
           tasksDelegates.AddRange(
             tasksClass.Members.OfType<DelegateDeclarationSyntax>()
-          ); // NEW: add delegate members
+          );
         }
 
         // Find all types (classes or interfaces) marked with the special attribute.
@@ -132,78 +132,144 @@ public class GenerateTasksTs : Task {
       tasksTsBuilder.AppendLine();
       tasksTsBuilder.AppendLine("export class Tasks {");
 
-      // Process each Tasks method.
-      foreach (var method in tasksMethods) {
-        // Exclude private methods and methods used for internal purposes.
-        if (method.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)) ||
-            method.Identifier.Text == "InjectIntoEngine") {
-          continue;
-        }
+      // Instead of iterating tasksMethods individually, group them by method name.
+      var methodGroups = tasksMethods.GroupBy(m => m.Identifier.Text);
+      foreach (var group in methodGroups) {
+        var origName = group.Key;
+        var jsName   = char.ToLower(origName[0]) + origName.Substring(1);
 
-        // Skip methods marked with the HideFromTypeScript attribute.
-        if (method.AttributeLists.Any(
-              al => al.Attributes.Any(
-                a => a.Name.ToString().EndsWith("HideFromTypeScript")
+        // Filter out overloads that are private, marked with HideFromTypeScript, or named "InjectIntoEngine".
+        var validOverloads = group.Where(
+            method =>
+              !method.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)) &&
+              origName != "InjectIntoEngine" &&
+              !method.AttributeLists.Any(
+                al => al.Attributes.Any(a => a.Name.ToString().EndsWith("HideFromTypeScript"))
               )
-            )) {
+          )
+          .ToList();
+
+        if (!validOverloads.Any()) {
           continue;
         }
 
-        // Generate the JSDoc for the method.
-        var jsDoc = JsDocGenerator.GenerateJsDoc(method, "    ");
-        tasksTsBuilder.AppendLine(jsDoc);
+        // If only one valid overload exists, generate as before.
+        if (validOverloads.Count == 1) {
+          var method = validOverloads.First();
+          var jsDoc  = JsDocGenerator.GenerateJsDoc(method, "    ");
+          tasksTsBuilder.AppendLine(jsDoc);
 
-        var isAsync    = method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword));
-        var methodName = method.Identifier.Text;
-        // Lowercase the first letter for JavaScript naming conventions.
-        var jsMethodName = char.ToLower(methodName[0]) + methodName.Substring(1);
-        var returnType   = CSharpTypeScriptConverter.Convert(method.ReturnType);
-
-        // Process parameters.
-        var parameters = string.Join(
-          ", ",
-          method.ParameterList.Parameters.Select(
-            p => {
-              var defaultValue = "";
-              if (p.Default != null) {
-                // p.Default is an EqualsValueClauseSyntax.
-                // Extract its value (e.g. "5" or "\"hello\"" etc.) without the leading '='.
-                defaultValue = p.Default.Value.ToString().Trim();
-              }
-
-              // If the parameter has a default value, provide the default value.
-              if (!string.IsNullOrEmpty(defaultValue)) {
-                // return $"{paramName}: {paramType} = {defaultValue}";
+          var isAsync = method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword));
+          var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
+          // Process parameters normally (retain initializer here for implementation).
+          var parameters = string.Join(
+            ", ",
+            method.ParameterList.Parameters.Select(
+              p => {
+                // Remove initializer; mark parameter optional if one was provided.
                 return $"{
                   p.Identifier.Text
+                }{
+                  (p.Default != null ? "?" : "")
                 }: {
                   CSharpTypeScriptConverter.Convert(p.Type)
-                } = {
-                  defaultValue
                 }";
               }
-
-              return $"{p.Identifier.Text}: {CSharpTypeScriptConverter.Convert(p.Type)}";
-            }
-          )
-        );
-
-        tasksTsBuilder.Append("    public static ");
-        if (isAsync) {
-          tasksTsBuilder.Append("async ");
+            )
+          );
+          tasksTsBuilder.Append("    public static ");
+          if (isAsync) tasksTsBuilder.Append("async ");
+          tasksTsBuilder.AppendLine($"{jsName}({parameters}): {retType} {{");
+          tasksTsBuilder.AppendLine(
+            "        // @ts-expect-error - This function is injected into the engine dynamically."
+          );
+          tasksTsBuilder.Append("        return __Tasks." + origName + "(");
+          tasksTsBuilder.Append(
+            string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
+          );
+          tasksTsBuilder.AppendLine(");");
+          tasksTsBuilder.AppendLine("    }");
+          tasksTsBuilder.AppendLine();
         }
+        else {
+          // Multiple valid overloads found.
+          // Generate an overload signature for each.
+          foreach (var method in validOverloads) {
+            var jsDoc = JsDocGenerator.GenerateJsDoc(method, "    ");
+            tasksTsBuilder.AppendLine(jsDoc);
+            var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
+            var parameters = string.Join(
+              ", ",
+              method.ParameterList.Parameters.Select(
+                p =>
+                  // Remove default value; mark as optional if default exists.
+                  $"{
+                    p.Identifier.Text
+                  }{
+                    (p.Default != null ? "?" : "")
+                  }: {
+                    CSharpTypeScriptConverter.Convert(p.Type)
+                  }"
+              )
+            );
+            tasksTsBuilder.AppendLine(
+              $"    public static {
+                (method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword)) ? "async " : "")
+              }{
+                jsName
+              }({
+                parameters
+              }): {
+                retType
+              };"
+            );
+          }
 
-        tasksTsBuilder.Append($"{jsMethodName}({parameters}): {returnType} {{\n");
-        tasksTsBuilder.AppendLine(
-          "        // @ts-expect-error - This function is injected into the engine dynamically."
-        );
-        tasksTsBuilder.Append("        return __Tasks." + method.Identifier.Text + "(");
-        tasksTsBuilder.Append(
-          string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
-        );
-        tasksTsBuilder.AppendLine(");");
-        tasksTsBuilder.AppendLine("    }");
-        tasksTsBuilder.AppendLine();
+          // Build the combined implementation signature based on valid overloads.
+          var maxParamCount = validOverloads.Max(m => m.ParameterList.Parameters.Count);
+          var unionParams   = new List<string>();
+          for (var i = 0; i < maxParamCount; i++) {
+            var paramNames = new List<string>();
+            var types      = new HashSet<string>();
+            var isOptional = false;
+            foreach (var method in validOverloads) {
+              if (method.ParameterList.Parameters.Count > i) {
+                var p = method.ParameterList.Parameters[i];
+                paramNames.Add(p.Identifier.Text);
+                types.Add(CSharpTypeScriptConverter.Convert(p.Type));
+                if (p.Default != null) {
+                  isOptional = true;
+                }
+              }
+              else {
+                isOptional = true;
+              }
+            }
+
+            var paramName = paramNames.First();
+            var unionType = string.Join(" | ", types);
+            if (isOptional && !unionType.Contains("undefined")) {
+              unionType += " | undefined";
+            }
+
+            // Append "?" to mark the parameter as optional in the tuple type if it is optional.
+            unionParams.Add($"{paramName}{(isOptional ? "?" : "")}: {unionType}");
+          }
+
+          var retTypes = new HashSet<string>(
+            validOverloads.Select(m => CSharpTypeScriptConverter.Convert(m.ReturnType))
+          );
+          var unionReturn = retTypes.Count == 1 ? retTypes.First() : string.Join(" | ", retTypes);
+          tasksTsBuilder.Append($"    public static async {jsName}(...args: [");
+          tasksTsBuilder.Append(string.Join(", ", unionParams));
+          tasksTsBuilder.AppendLine($"]): {unionReturn} {{");
+          tasksTsBuilder.AppendLine(
+            "        // @ts-expect-error - This function is injected into the engine dynamically."
+          );
+          tasksTsBuilder.AppendLine($"        return __Tasks.{origName}(...args);");
+          tasksTsBuilder.AppendLine("    }");
+          tasksTsBuilder.AppendLine();
+        }
       }
 
       tasksTsBuilder.AppendLine("}"); // close Tasks class

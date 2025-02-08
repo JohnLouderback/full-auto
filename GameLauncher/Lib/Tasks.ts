@@ -31,11 +31,7 @@ export class Tasks {
      * indefinitely.
      * @returns The window that was created, or `null` if the timeout elapsed.
      */
-    public static async awaitWindow(searchCriteria: WindowSearchCriteria, timeout: number = 0): Promise<Window | null> {
-        // @ts-expect-error - This function is injected into the engine dynamically.
-        return __Tasks.AwaitWindow(searchCriteria, timeout);
-    }
-
+    public static async awaitWindow(searchCriteria: WindowSearchCriteria, timeout?: number): Promise<Window | null>;
     /**
      * Waits for a window to be spawned with the specified criteria. This only
      * awaits new windows and
@@ -50,9 +46,10 @@ export class Tasks {
      * indefinitely.
      * @returns The window that was created, or `null` if the timeout elapsed.
      */
-    public static async awaitWindow(searchCriteria: WindowCriteriaCallback, timeout: number = 0): Promise<Window | null> {
+    public static async awaitWindow(searchCriteria: WindowCriteriaCallback, timeout?: number): Promise<Window | null>;
+    public static async awaitWindow(...args: [searchCriteria: WindowSearchCriteria | WindowCriteriaCallback, timeout?: number | undefined]): Promise<Window | null> {
         // @ts-expect-error - This function is injected into the engine dynamically.
-        return __Tasks.AwaitWindow(searchCriteria, timeout);
+        return __Tasks.AwaitWindow(...args);
     }
 
 }

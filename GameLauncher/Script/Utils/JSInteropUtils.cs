@@ -1,17 +1,25 @@
 ﻿using Microsoft.ClearScript;
+using Microsoft.ClearScript.V8;
 
 namespace GameLauncher.Script.Utils;
 
 public static class JSInteropUtils {
+  private static ScriptEngine? lastScriptEngine;
+
   private static dynamic? _isPlainObject;
 
   private static dynamic? _isValueTruthy;
 
-  private static dynamic isPlainObject => _isPlainObject ??= ScriptEngine.Current.Evaluate(
+  private static ScriptEngine currentScriptEngine =>
+    ScriptEngine.Current is not null
+      ? lastScriptEngine = ScriptEngine.Current
+      : lastScriptEngine ??= new V8ScriptEngine();
+
+  private static dynamic isPlainObject => _isPlainObject ??= currentScriptEngine.Evaluate(
                                             "(value) => Object.prototype.toString.call(value) === '[object Object]' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);"
                                           );
 
-  private static dynamic isValueTruthy => _isValueTruthy ??= ScriptEngine.Current.Evaluate(
+  private static dynamic isValueTruthy => _isValueTruthy ??= currentScriptEngine.Evaluate(
                                             "(value) => !!value;"
                                           );
 
