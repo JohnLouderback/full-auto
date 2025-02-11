@@ -86,6 +86,7 @@ public class ScriptRunner {
     PromiseRejectionHandler.InjectIntoEngine(engine);
     ConsoleWrapper.InjectIntoEngine(engine);
     Timers.InjectIntoEngine(engine);
+    Lib.Utils.InjectIntoEngine(engine);
     Tasks.InjectIntoEngine(engine);
   }
 

@@ -1,8 +1,8 @@
 // This file is auto-generated. Do not modify manually.
 
-import {Application} from "./Application";
-import {Window} from "./Window";
-import {WindowSearchCriteria} from "./WindowSearchCriteria";
+import { Application } from "./Application";
+import { Window } from "./Window";
+import { WindowSearchCriteria } from "./WindowSearchCriteria";
 
 /**
  * Launch the application at the specified path.

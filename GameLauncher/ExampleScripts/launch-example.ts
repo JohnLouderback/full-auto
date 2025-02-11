@@ -1,8 +1,11 @@
 ﻿import {awaitWindow, launch} from "@library/Tasks";
+import {wait} from "@library/Utils";
 
 console.log("Launching Fork...");
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+console.log("Waiting for 1 second...");
+await wait(1000);
+console.log("Waited for 1 second.");
 
 const app = launch(
   "C:\\Users\\John\\AppData\\Local\\Fork\\app-2.4.3\\Fork.exe"

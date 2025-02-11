@@ -34,43 +34,55 @@ public class GenerateTasksTs : Task {
   /// </summary>
   public string ExportAttributeName { get; set; } = "TypeScriptExport";
 
+  // New property to mark entry point classes.
+  public string EntryPointAttributeName { get; set; } = "EntryPointExport";
+
 
   public override bool Execute() {
     try {
-      // Gather all C# files.
-      var csFiles      = Directory.GetFiles(SourceDirectory, "*.cs", SearchOption.AllDirectories);
-      var tasksMethods = new List<MethodDeclarationSyntax>();
-      var tasksDelegates =
-        new List<DelegateDeclarationSyntax>();
-      // Dictionary: type name => type declaration (class or interface) that is marked for export.
+      var csFiles = Directory.GetFiles(SourceDirectory, "*.cs", SearchOption.AllDirectories);
+      // Dictionary: entry point class name => list of its methods
+      var entryPointClasses =
+        new Dictionary<string, List<MethodDeclarationSyntax>>(StringComparer.Ordinal);
+      // Dictionary: entry point class name => its class declaration SyntaxNode
+      var entryPointClassNodes =
+        new Dictionary<string, ClassDeclarationSyntax>(StringComparer.Ordinal);
+      var entryPointDelegates =
+        new Dictionary<string, List<DelegateDeclarationSyntax>>(StringComparer.Ordinal);
+      // Also use customTypes for non-entry-point types.
       var customTypes = new Dictionary<string, TypeDeclarationSyntax>(StringComparer.Ordinal);
-      // Collection for global delegates.
+      // Global delegates from outside any class.
       var globalDelegates =
         new Dictionary<string, DelegateDeclarationSyntax>(StringComparer.Ordinal);
 
-      // Process every file.
       foreach (var file in csFiles) {
-        var code       = File.ReadAllText(file);
-        var syntaxTree = CSharpSyntaxTree.ParseText(code);
-        var root       = syntaxTree.GetRoot();
+        var code = File.ReadAllText(file);
+        var root = CSharpSyntaxTree.ParseText(code).GetRoot();
 
-        // Find all parts of the partial "Tasks" class.
-        var tasksClasses = root.DescendantNodes()
+        // Find entry point classes: either the class is named "Tasks" or has the EntryPoint attribute.
+        var candidateClasses = root.DescendantNodes()
           .OfType<ClassDeclarationSyntax>()
           .Where(
-            cls => cls.Identifier.Text == "Tasks" &&
-                   cls.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))
+            cls =>
+              cls.Identifier.Text == "Tasks" ||
+              cls.AttributeLists.Any(
+                al => al.Attributes.Any(a => a.Name.ToString().Contains(EntryPointAttributeName))
+              )
           );
-        foreach (var tasksClass in tasksClasses) {
-          tasksMethods.AddRange(tasksClass.Members.OfType<MethodDeclarationSyntax>());
-          tasksDelegates.AddRange(
-            tasksClass.Members.OfType<DelegateDeclarationSyntax>()
-          );
+        foreach (var cls in candidateClasses) {
+          var className = cls.Identifier.Text;
+          if (!entryPointClasses.ContainsKey(className)) {
+            entryPointClasses[className]    = new List<MethodDeclarationSyntax>();
+            entryPointDelegates[className]  = new List<DelegateDeclarationSyntax>();
+            entryPointClassNodes[className] = cls; // Save the SyntaxNode.
+          }
+
+          entryPointClasses[className].AddRange(cls.Members.OfType<MethodDeclarationSyntax>());
+          entryPointDelegates[className].AddRange(cls.Members.OfType<DelegateDeclarationSyntax>());
         }
 
-        // Find all types (classes or interfaces) marked with the special attribute.
-        var typeDeclarations = root.DescendantNodes().OfType<TypeDeclarationSyntax>();
-        foreach (var typeDecl in typeDeclarations) {
+        // Also scan for types marked with ExportAttribute (non-entry point custom types).
+        foreach (var typeDecl in root.DescendantNodes().OfType<TypeDeclarationSyntax>()) {
           if (HasExportAttribute(typeDecl)) {
             var typeName = typeDecl.Identifier.Text;
             if (!customTypes.ContainsKey(typeName)) {
@@ -79,11 +91,10 @@ public class GenerateTasksTs : Task {
           }
         }
 
-        // Collect delegates declared outside of a class.
-        var delegateDecls = root.DescendantNodes()
-          .OfType<DelegateDeclarationSyntax>()
-          .Where(d => !(d.Parent is ClassDeclarationSyntax));
-        foreach (var del in delegateDecls) {
+        // Global delegates.
+        foreach (var del in root.DescendantNodes()
+                   .OfType<DelegateDeclarationSyntax>()
+                   .Where(d => !(d.Parent is ClassDeclarationSyntax))) {
           var delName = del.Identifier.Text;
           if (!globalDelegates.ContainsKey(delName)) {
             globalDelegates.Add(delName, del);
@@ -91,118 +102,76 @@ public class GenerateTasksTs : Task {
         }
       }
 
-      if (!tasksMethods.Any()) {
-        Log.LogMessage(MessageImportance.High, "No methods found in partial class Tasks.");
+      if (!entryPointClasses.Any()) {
+        Log.LogMessage(MessageImportance.High, "No entry point classes found.");
         return true;
       }
 
       // Build a quick lookup for custom type names.
       var customTypeNames = new HashSet<string>(customTypes.Keys, StringComparer.Ordinal);
 
-      // Determine which custom types are referenced by the Tasks methods.
-      var requiredTypes = new HashSet<string>(StringComparer.Ordinal);
-      foreach (var method in tasksMethods) {
-        // Process the return type.
-        var returnType = method.ReturnType.ToString();
-        foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(returnType)) {
-          if (customTypeNames.Contains(type)) {
-            requiredTypes.Add(type);
-          }
-        }
+      foreach (var kvp in entryPointClasses) {
+        var className        = kvp.Key;
+        var methods          = kvp.Value;
+        var delegatesInClass = entryPointDelegates[className];
 
-        // Process each parameter type.
-        foreach (var param in method.ParameterList.Parameters) {
-          var paramType = param.Type.ToString();
-          foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(paramType)) {
-            if (customTypeNames.Contains(type)) {
-              requiredTypes.Add(type);
+        // Determine required custom types for this entry point.
+        var requiredTypes = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var method in methods) {
+          foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(method.ReturnType.ToString())) {
+            if (customTypeNames.Contains(type)) requiredTypes.Add(type);
+          }
+
+          foreach (var param in method.ParameterList.Parameters) {
+            foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(param.Type.ToString())) {
+              if (customTypeNames.Contains(type)) requiredTypes.Add(type);
             }
           }
         }
-      }
 
-      // Build the Tasks.ts entry point.
-      var tasksTsBuilder = new StringBuilder();
-      tasksTsBuilder.AppendLine("// This file is auto-generated. Do not modify manually.");
+        // Build file content for the entry point TS file.
+        var sb = new StringBuilder();
+        sb.AppendLine("// This file is auto-generated. Do not modify manually.");
 
-      // Insert file-level documentation taken from the Tasks class (if available).
-      // (Assumes that the Tasks class documentation is available from one of its parts.)
-      var tasksClassDoc = ""; // ...retrieve class-level JsDoc if needed...
-      if (!string.IsNullOrWhiteSpace(tasksClassDoc)) {
-        tasksTsBuilder.AppendLine(tasksClassDoc);
-      }
-
-      tasksTsBuilder.AppendLine();
-      // Import all required custom types.
-      foreach (var typeName in requiredTypes) {
-        tasksTsBuilder.AppendLine($"import {{ {typeName} }} from \"./{typeName}\";");
-      }
-
-      tasksTsBuilder.AppendLine();
-
-      // Instead of wrapping methods in a class, generate each as an exported function.
-      var methodGroups = tasksMethods.GroupBy(m => m.Identifier.Text);
-      foreach (var group in methodGroups) {
-        var origName = group.Key;
-        var jsName   = char.ToLower(origName[0]) + origName.Substring(1);
-
-        // Filter out overloads that are private, marked with HideFromTypeScript, or named "InjectIntoEngine".
-        var validOverloads = group.Where(
-            method =>
-              !method.Modifiers.Any(m => m.IsKind(SyntaxKind.PrivateKeyword)) &&
-              origName != "InjectIntoEngine" &&
-              !method.AttributeLists.Any(
-                al => al.Attributes.Any(a => a.Name.ToString().EndsWith("HideFromTypeScript"))
-              )
-          )
-          .ToList();
-
-        if (!validOverloads.Any()) {
-          continue;
+        // Use the SyntaxNode for the class to generate file-level documentation.
+        var classDoc = JsDocGenerator.GenerateJsDoc(entryPointClassNodes[className]);
+        if (!string.IsNullOrWhiteSpace(classDoc)) {
+          sb.AppendLine(classDoc);
         }
 
-        // For a single valid overload.
-        if (validOverloads.Count == 1) {
-          var method = validOverloads.First();
-          var jsDoc  = JsDocGenerator.GenerateJsDoc(method);
-          tasksTsBuilder.AppendLine(jsDoc);
+        sb.AppendLine();
+        foreach (var typeName in requiredTypes) {
+          sb.AppendLine($"import {{ {typeName} }} from \"./{typeName}\";");
+        }
 
-          var isAsync = method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword));
-          var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
-          var parameters = string.Join(
-            ", ",
-            method.ParameterList.Parameters.Select(
-              p => {
-                // Remove initializer; mark optional if a default value exists.
-                return $"{
-                  p.Identifier.Text
-                }{
-                  (p.Default != null ? "?" : "")
-                }: {
-                  CSharpTypeScriptConverter.Convert(p.Type)
-                }";
-              }
+        sb.AppendLine();
+
+        // Group methods by name.
+        var methodGroups = methods.GroupBy(m => m.Identifier.Text);
+        foreach (var group in methodGroups) {
+          var origName = group.Key;
+          // Use lower-cased first letter for TS function name.
+          var tsName = char.ToLower(origName[0]) + origName.Substring(1);
+          var validOverloads = group.Where(
+              m =>
+                !m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PrivateKeyword)) &&
+                origName != "InjectIntoEngine" &&
+                !m.AttributeLists.Any(
+                  al => al.Attributes.Any(a => a.Name.ToString().EndsWith("HideFromTypeScript"))
+                )
             )
-          );
-          tasksTsBuilder.Append("export ");
-          if (isAsync) tasksTsBuilder.Append("async ");
-          tasksTsBuilder.AppendLine($"function {jsName}({parameters}): {retType} {{");
-          tasksTsBuilder.AppendLine(
-            "    // @ts-expect-error - This function is injected into the engine dynamically."
-          );
-          tasksTsBuilder.Append("    return __Tasks." + origName + "(");
-          tasksTsBuilder.Append(
-            string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
-          );
-          tasksTsBuilder.AppendLine(");");
-          tasksTsBuilder.AppendLine("}");
-          tasksTsBuilder.AppendLine();
-        }
-        else {
-          // Generate overload signatures.
-          foreach (var method in validOverloads) {
-            var jsDoc = JsDocGenerator.GenerateJsDoc(method);
-            tasksTsBuilder.AppendLine(jsDoc);
+            .ToList();
+
+          if (!validOverloads.Any()) {
+            continue;
+          }
+
+          if (validOverloads.Count == 1) {
+            var method = validOverloads.First();
+            var jsDoc  = JsDocGenerator.GenerateJsDoc(method);
+            sb.AppendLine(jsDoc);
+
+            var isAsync = method.Modifiers.Any(mod => mod.IsKind(SyntaxKind.AsyncKeyword));
             var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
             var parameters = string.Join(
               ", ",
@@ -217,85 +186,110 @@ public class GenerateTasksTs : Task {
                   }"
               )
             );
-            tasksTsBuilder.AppendLine($"export function {jsName}({parameters}): {retType};");
+            sb.Append("export ");
+            if (isAsync) sb.Append("async ");
+            sb.AppendLine($"function {tsName}({parameters}): {retType} {{");
+            sb.AppendLine(
+              "    // @ts-expect-error - This function is injected into the engine dynamically."
+            );
+            sb.Append("    return __" + className + "." + origName + "(");
+            sb.Append(
+              string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
+            );
+            sb.AppendLine(");");
+            sb.AppendLine("}");
+            sb.AppendLine();
           }
-
-          // Build combined implementation.
-          var maxParamCount = validOverloads.Max(m => m.ParameterList.Parameters.Count);
-          var unionParams   = new List<string>();
-          for (var i = 0; i < maxParamCount; i++) {
-            var paramNames = new List<string>();
-            var types      = new HashSet<string>();
-            var isOptional = false;
+          else {
             foreach (var method in validOverloads) {
-              if (method.ParameterList.Parameters.Count > i) {
-                var p = method.ParameterList.Parameters[i];
-                paramNames.Add(p.Identifier.Text);
-                types.Add(CSharpTypeScriptConverter.Convert(p.Type));
-                if (p.Default != null) {
+              var jsDoc = JsDocGenerator.GenerateJsDoc(method);
+              sb.AppendLine(jsDoc);
+              var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
+              var parameters = string.Join(
+                ", ",
+                method.ParameterList.Parameters.Select(
+                  p =>
+                    $"{
+                      p.Identifier.Text
+                    }{
+                      (p.Default != null ? "?" : "")
+                    }: {
+                      CSharpTypeScriptConverter.Convert(p.Type)
+                    }"
+                )
+              );
+              sb.AppendLine($"export function {tsName}({parameters}): {retType};");
+            }
+
+            // Combined implementation.
+            var maxParamCount = validOverloads.Max(m => m.ParameterList.Parameters.Count);
+            var unionParams   = new List<string>();
+            for (var i = 0; i < maxParamCount; i++) {
+              var paramNames = new List<string>();
+              var types      = new HashSet<string>();
+              var isOptional = false;
+              foreach (var method in validOverloads) {
+                if (method.ParameterList.Parameters.Count > i) {
+                  var p = method.ParameterList.Parameters[i];
+                  paramNames.Add(p.Identifier.Text);
+                  types.Add(CSharpTypeScriptConverter.Convert(p.Type));
+                  if (p.Default != null) isOptional = true;
+                }
+                else {
                   isOptional = true;
                 }
               }
-              else {
-                isOptional = true;
+
+              var pname     = paramNames.First();
+              var unionType = string.Join(" | ", types);
+              if (isOptional && !unionType.Contains("undefined")) {
+                unionType += " | undefined";
               }
+
+              unionParams.Add($"{pname}{(isOptional ? "?" : "")}: {unionType}");
             }
 
-            var paramName = paramNames.First();
-            var unionType = string.Join(" | ", types);
-            if (isOptional && !unionType.Contains("undefined")) {
-              unionType += " | undefined";
-            }
-
-            // Mark parameter optional if needed.
-            unionParams.Add($"{paramName}{(isOptional ? "?" : "")}: {unionType}");
+            var retTypes = new HashSet<string>(
+              validOverloads.Select(m => CSharpTypeScriptConverter.Convert(m.ReturnType))
+            );
+            var unionReturn = retTypes.Count == 1 ? retTypes.First() : string.Join(" | ", retTypes);
+            var anyAsync = validOverloads.Any(
+              m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.AsyncKeyword))
+            );
+            sb.Append("export ");
+            if (anyAsync) sb.Append("async ");
+            sb.Append(
+              $"function {tsName}(...args: [{string.Join(", ", unionParams)}]): {unionReturn} {{"
+            );
+            sb.AppendLine();
+            sb.AppendLine(
+              "    // @ts-expect-error - This function is injected into the engine dynamically."
+            );
+            sb.AppendLine($"    return __{className}.{origName}(...args);");
+            sb.AppendLine("}");
+            sb.AppendLine();
           }
-
-          var retTypes = new HashSet<string>(
-            validOverloads.Select(m => CSharpTypeScriptConverter.Convert(m.ReturnType))
-          );
-          var unionReturn = retTypes.Count == 1 ? retTypes.First() : string.Join(" | ", retTypes);
-          // Assume async if any overload is async.
-          var anyAsync = validOverloads.Any(
-            m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.AsyncKeyword))
-          );
-          tasksTsBuilder.Append("export ");
-          if (anyAsync) tasksTsBuilder.Append("async ");
-          tasksTsBuilder.Append($"function {jsName}(...args: [");
-          tasksTsBuilder.Append(string.Join(", ", unionParams));
-          tasksTsBuilder.AppendLine($"]): {unionReturn} {{");
-          tasksTsBuilder.AppendLine(
-            "    // @ts-expect-error - This function is injected into the engine dynamically."
-          );
-          tasksTsBuilder.AppendLine($"    return __Tasks.{origName}(...args);");
-          tasksTsBuilder.AppendLine("}");
-          tasksTsBuilder.AppendLine();
         }
-      }
 
-      // Append delegates declared within Tasks.
-      if (tasksDelegates.Any()) {
-        tasksTsBuilder.AppendLine();
-        foreach (var del in tasksDelegates) {
-          // Generate TS code for delegate defined in Tasks.
-          var delTs = TsTypeGenerator.GenerateTsForDelegate(del, customTypes, out var _);
-          tasksTsBuilder.AppendLine(delTs);
+        // Append delegates declared in this entry point.
+        if (delegatesInClass.Any()) {
+          sb.AppendLine();
+          foreach (var del in delegatesInClass) {
+            var delTs = TsTypeGenerator.GenerateTsForDelegate(del, customTypes, out var _);
+            sb.AppendLine(delTs);
+          }
         }
+
+        // Write the TS file for this entry point.
+        var outputPath = Path.Combine(OutputDir, className + ".ts");
+        File.WriteAllText(outputPath, sb.ToString());
+        Log.LogMessage(
+          MessageImportance.High,
+          $"Generated TypeScript entry point for {className} at {outputPath}"
+        );
       }
 
-      // Ensure the output directory exists and write Tasks.ts.
-      Directory.CreateDirectory(OutputDir);
-      var tasksTsPath = Path.Combine(OutputDir, "Tasks.ts");
-      File.WriteAllText(tasksTsPath, tasksTsBuilder.ToString());
-      Log.LogMessage(MessageImportance.High, $"Generated TypeScript entry point at {tasksTsPath}");
-
-      // Recursively generate TS files for all required custom types.
-      var generatedTypes = new HashSet<string>(StringComparer.Ordinal);
-      foreach (var typeName in requiredTypes) {
-        GenerateCustomTypeTs(typeName, customTypes, customTypeNames, OutputDir, generatedTypes);
-      }
-
-      // Process global delegates - generate a separate TS file for each.
+      // Process global delegates.
       foreach (var kvp in globalDelegates) {
         var del        = kvp.Value;
         var tsCode     = TsTypeGenerator.GenerateTsForDelegate(del, customTypes, out var _);
@@ -304,6 +298,17 @@ public class GenerateTasksTs : Task {
         Log.LogMessage(
           MessageImportance.High,
           $"Generated TypeScript file for delegate {del.Identifier.Text} at {outputPath}"
+        );
+      }
+
+      // Recursively generate TS files for all required custom types.
+      foreach (var typeName in customTypes.Keys) {
+        GenerateCustomTypeTs(
+          typeName,
+          customTypes,
+          customTypeNames,
+          OutputDir,
+          new HashSet<string>(StringComparer.Ordinal)
         );
       }
 
