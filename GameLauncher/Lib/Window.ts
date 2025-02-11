@@ -4,6 +4,10 @@ import { BoundingBox } from "./BoundingBox";
  * Represents a window of an application or another window.
  *
  */
+/**
+ * Represents a window of an application or another window.
+ *
+ */
 // Auto-generated from C# class Window
 export interface Window {
     /**
@@ -45,4 +49,20 @@ export interface Window {
      * @returns The same window this method was called on, for chaining.
      */
     setBoundingBox(x: number, y: number, width: number, height: number): Window;
+    readonly isClosed: boolean;
+    /**
+     * Resolves each time the window is shown (multiple awaits allowed).
+     *
+     */
+    readonly shownSignal: Promise<void>;
+    /**
+     * Resolves each time the window is hidden (multiple awaits allowed).
+     *
+     */
+    readonly hiddenSignal: Promise<void>;
+    /**
+     * Resolves once when the window is closed.
+     *
+     */
+    readonly closeSignal: Promise<void>;
 }

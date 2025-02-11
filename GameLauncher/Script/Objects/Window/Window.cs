@@ -10,7 +10,7 @@ namespace GameLauncher.Script.Objects;
 ///   Represents a window of an application or another window.
 /// </summary>
 [TypeScriptExport]
-public class Window {
+public partial class Window {
   private readonly HWND         hwnd;
   private readonly Win32Window  win32Window;
   private          ScriptEngine engine;
@@ -43,18 +43,20 @@ public class Window {
     engine      = ScriptEngine.Current;
     win32Window = window;
     hwnd        = window.Hwnd;
+
+    InitializeEvents();
   }
 
 
   [ScriptMember("getBoundingBox")]
   public BoundingBox GetBoundingBox() {
-    var rect = hwnd.GetWindowRect();
-    
+    var rect = win32Window.GetWindowRect();
+
     var boundingBox = new BoundingBox {
-      X      = rect.Left,
-      Y      = rect.Top,
-      Width  = rect.Right - rect.Left,
-      Height = rect.Bottom - rect.Top
+      X      = rect.left,
+      Y      = rect.top,
+      Width  = rect.right - rect.left,
+      Height = rect.bottom - rect.top
     };
 
     return boundingBox;

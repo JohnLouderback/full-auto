@@ -50,7 +50,7 @@ public class GenerateTasksTs : Task {
       var entryPointDelegates =
         new Dictionary<string, List<DelegateDeclarationSyntax>>(StringComparer.Ordinal);
       // Also use customTypes for non-entry-point types.
-      var customTypes = new Dictionary<string, TypeDeclarationSyntax>(StringComparer.Ordinal);
+      var customTypes = new Dictionary<string, List<TypeDeclarationSyntax>>(StringComparer.Ordinal);
       // Global delegates from outside any class.
       var globalDelegates =
         new Dictionary<string, DelegateDeclarationSyntax>(StringComparer.Ordinal);
@@ -83,11 +83,19 @@ public class GenerateTasksTs : Task {
 
         // Also scan for types marked with ExportAttribute (non-entry point custom types).
         foreach (var typeDecl in root.DescendantNodes().OfType<TypeDeclarationSyntax>()) {
+          var typeName = typeDecl.Identifier.Text;
           if (HasExportAttribute(typeDecl)) {
-            var typeName = typeDecl.Identifier.Text;
             if (!customTypes.ContainsKey(typeName)) {
-              customTypes.Add(typeName, typeDecl);
+              customTypes.Add(typeName, new List<TypeDeclarationSyntax> { typeDecl });
             }
+            else {
+              customTypes[typeName].Add(typeDecl);
+            }
+          }
+          // Add unmarked partial declarations if the type already exists.
+          else if (typeDecl.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PartialKeyword)) &&
+                   customTypes.ContainsKey(typeName)) {
+            customTypes[typeName].Add(typeDecl);
           }
         }
 
@@ -275,7 +283,11 @@ public class GenerateTasksTs : Task {
         if (delegatesInClass.Any()) {
           sb.AppendLine();
           foreach (var del in delegatesInClass) {
-            var delTs = TsTypeGenerator.GenerateTsForDelegate(del, customTypes, out var _);
+            var customTypesForTs = customTypes.ToDictionary(
+              kvp => kvp.Key,
+              kvp => kvp.Value.First()
+            );
+            var delTs = TsTypeGenerator.GenerateTsForDelegate(del, customTypesForTs, out var _);
             sb.AppendLine(delTs);
           }
         }
@@ -291,8 +303,9 @@ public class GenerateTasksTs : Task {
 
       // Process global delegates.
       foreach (var kvp in globalDelegates) {
-        var del        = kvp.Value;
-        var tsCode     = TsTypeGenerator.GenerateTsForDelegate(del, customTypes, out var _);
+        var del = kvp.Value;
+        var customTypesForTs = customTypes.ToDictionary(ct => ct.Key, ct => ct.Value.First());
+        var tsCode = TsTypeGenerator.GenerateTsForDelegate(del, customTypesForTs, out var _);
         var outputPath = Path.Combine(OutputDir, del.Identifier.Text + ".ts");
         File.WriteAllText(outputPath, tsCode);
         Log.LogMessage(
@@ -327,7 +340,7 @@ public class GenerateTasksTs : Task {
   /// </summary>
   private void GenerateCustomTypeTs(
     string typeName,
-    Dictionary<string, TypeDeclarationSyntax> customTypes,
+    Dictionary<string, List<TypeDeclarationSyntax>> customTypes,
     HashSet<string> customTypeNames,
     string outputDir,
     HashSet<string> generatedTypes
@@ -336,7 +349,7 @@ public class GenerateTasksTs : Task {
       return; // Already generated.
     }
 
-    if (!customTypes.TryGetValue(typeName, out var typeDecl)) {
+    if (!customTypes.TryGetValue(typeName, out var typeDeclList)) {
       Log.LogWarning(
         $"Referenced type '{
           typeName
@@ -347,16 +360,44 @@ public class GenerateTasksTs : Task {
       return;
     }
 
-    // Use TsTypeGenerator to convert the type.
-    var tsCode = TsTypeGenerator.GenerateTs(
-      typeDecl,
-      customTypes,
-      out var dependencies
-    );
+    // Build a dependency mapping that merges partial declarations.
+    var customTypesForTs = new Dictionary<string, TypeDeclarationSyntax>(StringComparer.Ordinal);
+    foreach (var kvp in customTypes) {
+      if (kvp.Value.Count > 1) {
+        // Merge members from all declarations.
+        var first         = kvp.Value.First();
+        var mergedMembers = new List<MemberDeclarationSyntax>();
+        foreach (var decl in kvp.Value) {
+          mergedMembers.AddRange(decl.Members);
+        }
+
+        var mergedDecl = first.WithMembers(SyntaxFactory.List(mergedMembers));
+        customTypesForTs[kvp.Key] = mergedDecl;
+      }
+      else {
+        customTypesForTs[kvp.Key] = kvp.Value.First();
+      }
+    }
+
+    string          tsCode;
+    HashSet<string> dependencies;
+    // If any declaration is partial, aggregate all declarations.
+    if (typeDeclList.Any(
+          decl => decl.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PartialKeyword))
+        )) {
+      tsCode = TsTypeGenerator.GenerateTsForPartialClass(
+        typeDeclList,
+        customTypesForTs,
+        out dependencies
+      );
+    }
+    else {
+      tsCode = TsTypeGenerator.GenerateTs(typeDeclList.First(), customTypesForTs, out dependencies);
+    }
+
     // Prepend import statements for any dependencies.
     var importBuilder = new StringBuilder();
     foreach (var dep in dependencies) {
-      // Only import if the dependency is also a custom type.
       if (customTypeNames.Contains(dep) &&
           dep != typeName) {
         importBuilder.AppendLine($"import {{ {dep} }} from \"./{dep}\";");

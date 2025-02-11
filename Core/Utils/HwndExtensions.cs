@@ -147,6 +147,17 @@ public static class HwndExtensions {
 
 
   /// <summary>
+  ///   Determines if the given window handle is an existing window. Useful for checking if the
+  ///   window is still open.
+  /// </summary>
+  /// <param name="hwnd"> The window handle to check. </param>
+  /// <returns> Whether the window handle is an existing window. </returns>
+  public static bool IsWindow(this HWND hwnd) {
+    return PInvoke.IsWindow(hwnd);
+  }
+
+
+  /// <summary>
   ///   Removes the owner from the given window. If the window has no owner, then this method does
   ///   nothing and returns the window.
   /// </summary>

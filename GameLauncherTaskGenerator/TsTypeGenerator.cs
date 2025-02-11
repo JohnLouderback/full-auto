@@ -295,12 +295,13 @@ public static class TsTypeGenerator {
 
   public static string GenerateTsForDelegate(
     DelegateDeclarationSyntax delegateDecl,
-    Dictionary<string, TypeDeclarationSyntax> customTypes,
+    Dictionary<string, TypeDeclarationSyntax> customTypes, // helper mapping (aggregated)
     out HashSet<string> dependencies
   ) {
     dependencies = new HashSet<string>(StringComparer.Ordinal);
     var sb           = new StringBuilder();
     var delegateName = delegateDecl.Identifier.Text;
+
     // Process parameters.
     var localDepsAggregate = new HashSet<string>(StringComparer.Ordinal);
     var parameters = string.Join(
@@ -320,6 +321,7 @@ public static class TsTypeGenerator {
       )
     );
     dependencies.UnionWith(localDepsAggregate);
+
     var returnType = CSharpTypeScriptConverter.Convert(delegateDecl.ReturnType);
     foreach (var type in ExtractAllBaseTypes(returnType)) {
       if (customTypes.ContainsKey(type) &&
@@ -331,6 +333,59 @@ public static class TsTypeGenerator {
     sb.AppendLine($"// Auto-generated from C# delegate {delegateName}");
     sb.AppendLine($"export type {delegateName} = ({parameters}) => {returnType};");
     return sb.ToString();
+  }
+
+
+  /// <summary>
+  ///   Generates TypeScript code for a partial class by merging all its parts.
+  /// </summary>
+  /// <param name="partialDeclarations">The collection of partial class declarations.</param>
+  /// <param name="customTypes">Dictionary of custom types for dependency resolution.</param>
+  /// <param name="dependencies">Outputs the set of dependency type names referenced by the merged type.</param>
+  /// <returns>The generated TypeScript code as a string.</returns>
+  public static string GenerateTsForPartialClass(
+    IEnumerable<TypeDeclarationSyntax> partialDeclarations,
+    Dictionary<string, TypeDeclarationSyntax> customTypes,
+    out HashSet<string> dependencies
+  ) {
+    dependencies = new HashSet<string>(StringComparer.Ordinal);
+    // Merge members and base lists from all partials.
+    var first               = partialDeclarations.First();
+    var mergedMembers       = new List<MemberDeclarationSyntax>();
+    var mergedClassDocLines = new List<string>();
+    var baseTypes           = new List<BaseTypeSyntax>();
+
+    foreach (var decl in partialDeclarations) {
+      mergedMembers.AddRange(decl.Members);
+      if (decl.BaseList != null) {
+        baseTypes.AddRange(decl.BaseList.Types);
+      }
+
+      var doc = JsDocGenerator.GenerateJsDoc(decl);
+      if (!string.IsNullOrWhiteSpace(doc)) {
+        mergedClassDocLines.Add(doc);
+      }
+    }
+
+    // Remove duplicate base types.
+    var distinctBaseTypes = baseTypes.GroupBy(bt => bt.Type.ToString())
+      .Select(g => g.First())
+      .ToList();
+    var mergedDecl = first
+      .WithMembers(SyntaxFactory.List(mergedMembers))
+      .WithBaseList(
+        distinctBaseTypes.Any()
+          ? SyntaxFactory.BaseList(SyntaxFactory.SeparatedList(distinctBaseTypes))
+          : null
+      );
+    var mergedClassDoc = string.Join("\n", mergedClassDocLines);
+    var tsCode         = GenerateTs(mergedDecl, customTypes, out dependencies);
+
+    if (!string.IsNullOrWhiteSpace(mergedClassDoc)) {
+      tsCode = mergedClassDoc + "\n" + tsCode;
+    }
+
+    return tsCode;
   }
 
 

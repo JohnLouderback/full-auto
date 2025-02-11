@@ -4,6 +4,7 @@ HWND
 WNDCLASSEXW
 RegisterClassExW
 GetClassNameW
+IsWindow
 GetWindow
 GetWindowText
 SetWindowTextW

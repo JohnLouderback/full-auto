@@ -48,6 +48,10 @@
         <None Remove="build-files\**"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Folder Include="Lib\"/>
+    </ItemGroup>
+
     <UsingTask AssemblyFile="build-files/dlls/GameLauncherTaskGenerator.dll" TaskName="GenerateTasksTs"/>
 
     <Target Name="GenerateTypeScript" AfterTargets="Build">
