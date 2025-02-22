@@ -106,6 +106,26 @@ public static class HwndExtensions {
   }
 
 
+  /// <summary>
+  ///   Get the window placement of the window. This includes information about the window's
+  ///   position, size, and state.
+  /// </summary>
+  /// <param name="hwnd"> The window to get the placement of. </param>
+  /// <returns> The window placement of the window. </returns>
+  /// <exception cref="Win32Exception"> Thrown when the window placement could not be retrieved. </exception>
+  public static WINDOWPLACEMENT GetWindowPlacement(this HWND hwnd) {
+    var placement = new WINDOWPLACEMENT {
+      length = (uint)Marshal.SizeOf<WINDOWPLACEMENT>()
+    };
+
+    if (PInvoke.GetWindowPlacement(hwnd, ref placement)) {
+      return placement;
+    }
+
+    throw new Win32Exception(Marshal.GetLastWin32Error());
+  }
+
+
   public static Rectangle GetWindowRect(this HWND hwnd) {
     PInvoke.GetWindowRect(hwnd, out var rect);
     return rect;
@@ -154,6 +174,16 @@ public static class HwndExtensions {
   /// <returns> Whether the window handle is an existing window. </returns>
   public static bool IsWindow(this HWND hwnd) {
     return PInvoke.IsWindow(hwnd);
+  }
+
+
+  /// <summary>
+  ///   Whether the window is visible. This implies that the window is "shown" and not minimized.
+  /// </summary>
+  /// <param name="hwnd"> The window to check. </param>
+  /// <returns> Whether the window is visible. </returns>
+  public static bool IsWindowVisible(this HWND hwnd) {
+    return PInvoke.IsWindowVisible(hwnd);
   }
 
 

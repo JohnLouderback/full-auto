@@ -25,6 +25,8 @@ GetWindowLongPtrW
 GetWindowLongW
 DefWindowProc
 CallWindowProc
+GetWindowPlacement
+IsWindowVisible
 SetWindowSubclass
 RemoveWindowSubclass
 DefSubclassProc

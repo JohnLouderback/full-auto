@@ -8,7 +8,7 @@ await wait(1000);
 console.log("Waited for 1 second.");
 
 const app = launch(
-  "C:\\Users\\John\\AppData\\Local\\Fork\\app-2.4.3\\Fork.exe"
+  "C:\\Users\\John\\AppData\\Local\\Fork\\app-2.5.0\\Fork.exe"
 );
 
 if (app === null) {
@@ -32,7 +32,19 @@ Process ID: 0x${app.process.pid.toString(16)}`
     console.error("Failed to find Fork window.");
   } else {
     console.log("Fork window found.");
-    console.log(window.getBoundingBox());
+    console.log(`Window Title: ${window.title}\nWindow Class: ${window.className}`);
+    console.log('Waiting for window to be shown...');
+    // await window.shownSignal;
+    // console.log(window.getBoundingBox());
+    window.on('shown', async () => {
+      console.log('Window shown.');
+      // Log the window's bounding box every 100 milliseconds for 1 second.
+      await wait(1000);
+      console.log(window.getBoundingBox());
+    });
+    window.on('maximized', () => {
+      console.log('Window maximized.');
+    });
   }
 
   await app.exitSignal;

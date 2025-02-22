@@ -8,6 +8,8 @@ public class WindowEvent {
   private readonly bool              _allowMultiple; // True => re-arm after each event
   private readonly CancellationToken _token; // Used to cancel if window closes
 
+  private readonly WindowCriteria _criteria; // Used to filter events
+
   // We store a “current” TCS for this event, re-creating it each time we fulfill it (if multiple).
   private Lazy<TaskCompletionSource> _currentTcs;
   private bool                       _monitoring;
@@ -37,12 +39,31 @@ public class WindowEvent {
   /// <param name="token">
   ///   Cancellation token for stopping the monitor if the window closes or is otherwise canceled.
   /// </param>
-  public WindowEvent(HWND hwnd, uint eventId, bool allowMultiple, CancellationToken token) {
+  /// <param name="eventCriteria">
+  ///   Optional criteria to filter events. If provided, the event will only trigger if this
+  ///   criteria is met. Useful when the event is too broad.
+  /// </param>
+  public WindowEvent(
+    HWND hwnd,
+    uint eventId,
+    bool allowMultiple,
+    CancellationToken token,
+    WindowCriteria? eventCriteria = null
+  ) {
     _hwnd          = hwnd;
     _eventId       = eventId;
     _allowMultiple = allowMultiple;
     _token         = token;
     _currentTcs    = CreateNewTcs();
+
+    if (eventCriteria != null) {
+      // If we have a criteria, combine it with the hwnd check.
+      _criteria = hwnd => hwnd == _hwnd && eventCriteria(hwnd);
+    }
+    else {
+      // Otherwise, just check that the hwnd.
+      _criteria = hwnd => hwnd == _hwnd;
+    }
   }
 
 
@@ -76,12 +97,19 @@ public class WindowEvent {
 
   private async void MonitorEventAsync() {
     while (!_token.IsCancellationRequested) {
-      var result = await WinEventAwaiter.AwaitEvent(
-                     new[] { _eventId },
-                     hWnd => hWnd == _hwnd,
-                     null,
-                     _token
-                   );
+      HWND? result;
+      try {
+        result = await WinEventAwaiter.AwaitEvent(
+                   [_eventId],
+                   _criteria,
+                   null,
+                   _token
+                 );
+      }
+      catch (TaskCanceledException) {
+        // This is expected if the window closes or the token is canceled.
+        return;
+      }
 
       // If the result is null => canceled/timeout => exit
       if (result == null) return;

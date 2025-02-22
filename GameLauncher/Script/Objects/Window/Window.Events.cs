@@ -1,5 +1,8 @@
-﻿using Core.Utils;
+﻿using Windows.Win32.UI.WindowsAndMessaging;
+using Core.Utils;
+using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
+using static GameLauncher.Script.Utils.JSTypeConverter;
 
 namespace GameLauncher.Script.Objects;
 
@@ -11,6 +14,16 @@ public partial class Window {
   private WindowEvent showEvent;
   private WindowEvent hideEvent;
   private WindowEvent closeEvent;
+  private WindowEvent minimizeEvent;
+  private WindowEvent maximizeEvent;
+  private WindowEvent restoreEvent;
+  private WindowEvent boundsChangeEvent;
+
+  /// <summary>
+  ///   A callback function that is called when a window event occurs. It is passed the window that
+  ///   the event occurred on.
+  /// </summary>
+  public delegate void WindowEventCallback(Window window);
 
   [ScriptMember("isClosed")]
   public bool IsClosed {
@@ -24,39 +37,55 @@ public partial class Window {
     }
   }
 
-  /// <summary>
-  ///   Resolves each time the window is shown (multiple awaits allowed).
-  /// </summary>
-  [ScriptMember("shownSignal")]
-  public Task ShownSignal {
-    get {
-      if (IsClosed) {
-        return Task.FromCanceled(new CancellationToken(true));
-      }
+  [ScriptMember("isMinimized")]
+  public bool IsMinimized => hwnd.GetWindowPlacement().showCmd == SHOW_WINDOW_CMD.SW_MINIMIZE;
 
-      return showEvent.Signal;
-    }
-  }
+  [ScriptMember("isMaximized")]
+  public bool IsMaximized => hwnd.GetWindowPlacement().showCmd == SHOW_WINDOW_CMD.SW_MAXIMIZE;
+
+  [ScriptMember("isShowing")] public bool IsShowing => hwnd.IsWindowVisible();
 
   /// <summary>
-  ///   Resolves each time the window is hidden (multiple awaits allowed).
+  ///   Resolves the next time the window is shown.
   /// </summary>
-  [ScriptMember("hiddenSignal")]
-  public Task HiddenSignal {
-    get {
-      if (IsClosed) {
-        return Task.FromCanceled(new CancellationToken(true));
-      }
+  [ScriptMember("shown")]
+  public Task Shown => showEvent.Signal;
 
-      return hideEvent.Signal;
-    }
-  }
+  /// <summary>
+  ///   Resolves the next time the window is hidden.
+  /// </summary>
+  [ScriptMember("hidden")]
+  public Task Hidden => hideEvent.Signal;
+
+  /// <summary>
+  ///   Resolves the next time the window is minimized.
+  /// </summary>
+  [ScriptMember("minimized")]
+  public Task Minimized => minimizeEvent.Signal;
+
+  /// <summary>
+  ///   Resolves the next time the window is maximized.
+  /// </summary>
+  [ScriptMember("maximized")]
+  public Task Maximized => maximizeEvent.Signal;
+
+  /// <summary>
+  ///   Resolves the next time the window is restored. When the window is "un-minimized."
+  /// </summary>
+  [ScriptMember("restored")]
+  public Task Restored => restoreEvent.Signal;
+
+  /// <summary>
+  ///   Resolves the next time the window's bounds change.
+  /// </summary>
+  [ScriptMember("boundsChanged")]
+  public Task BoundsChanged => boundsChangeEvent.Signal;
 
   /// <summary>
   ///   Resolves once when the window is closed.
   /// </summary>
-  [ScriptMember("closeSignal")]
-  public Task CloseSignal {
+  [ScriptMember("closed")]
+  public Task Closed {
     get {
       if (IsClosed) {
         // If we discover it's already closed, we can just
@@ -73,8 +102,140 @@ public partial class Window {
   }
 
 
+  [HideFromTypeScript]
+  public void On(string eventName, ScriptObject callback) {
+    ArgumentNullException.ThrowIfNull(callback);
+
+    if (IsFunction(callback)) {
+      On(eventName, window => callback.Invoke(false, window));
+    }
+    else {
+      throw new ArgumentException("Callback must be a function.");
+    }
+  }
+
+
+  /// <summary>
+  ///   Binds a callback to an event.
+  /// </summary>
+  /// <param name="eventName"> The name of the event to bind the callback to. </param>
+  /// <param name="callback"> The callback to execute when the event occurs. </param>
+  /// <exception cref="ArgumentException">
+  ///   Thrown when the event name is not the name of a known event.
+  /// </exception>
+  [ScriptMember("on")]
+  public void On(string eventName, WindowEventCallback callback) {
+    switch (eventName) {
+      case "shown":
+        BindEvent(eventName, callback);
+        break;
+      case "hidden":
+        BindEvent(eventName, callback);
+        break;
+      case "minimized":
+        BindEvent(eventName, callback);
+        break;
+      case "maximized":
+        BindEvent(eventName, callback);
+        break;
+      case "restored":
+        BindEvent(eventName, callback);
+        break;
+      case "boundsChanged":
+        BindEvent(eventName, callback);
+        break;
+      case "close":
+        // Close is a special case because it only occurs once.
+        Closed.ContinueWith(
+          t => {
+            if (t.Status == TaskStatus.RanToCompletion) {
+              callback(this);
+            }
+          },
+          TaskScheduler.Default
+        );
+        break;
+      default:
+        throw new ArgumentException($"Unknown event name: {eventName}");
+    }
+  }
+
+
+  /// <summary>
+  ///   Ensures that the event remains bound to the signal after every occurrence by rebinding it.
+  /// </summary>
+  /// <param name="signal">
+  ///   The signal to bind the event to. The name maps like:
+  ///   <c> shown => Shown, hidden => Hidden, close => Close. </c>
+  /// </param>
+  /// <param name="callback"> The callback to execute when the event occurs. </param>
+  private void BindEvent(string signal, WindowEventCallback callback) {
+    // Dynamically get the signal by name.
+    var signalTask = GetSignalByName(signal);
+
+    // Ensures that the event remains bound to the signal after every occurrence.
+    signalTask.ContinueWith(
+      t => {
+        if (t.Status == TaskStatus.RanToCompletion) {
+          callback(this);
+          BindEvent(signal, callback);
+        }
+      },
+      TaskScheduler.Default
+    );
+  }
+
+
+  /// <summary>
+  ///   Gets the signal by name. This is useful for binding events to signals because the signals
+  ///   are lazily evaluated and, when they resolve, they create a new TaskCompletionSource. This
+  ///   means that the signal will not be the same object every time it resolves.
+  /// </summary>
+  /// <param name="signalName"> The name of the signal to get. </param>
+  /// <returns> The Task represented signal requested. </returns>
+  /// <exception cref="ArgumentException"> Thrown when the signal name is not the name of a known signal. </exception>
+  private Task GetSignalByName(string signalName) {
+    return signalName switch {
+      "shown"         => Shown,
+      "hidden"        => Hidden,
+      "closed"        => Closed,
+      "minimized"     => Minimized,
+      "maximized"     => Maximized,
+      "restored"      => Restored,
+      "boundsChanged" => BoundsChanged,
+      _               => throw new ArgumentException($"Unknown signal name: {signalName}")
+    };
+  }
+
+
   private void InitializeEvents() {
     // Use the same class for all signals, just with different event IDs & multiple flags.
+    minimizeEvent = new WindowEvent(
+      hwnd,
+      WinEvent.EVENT_SYSTEM_MINIMIZESTART,
+      true,
+      cancellationToken.Token
+    );
+    maximizeEvent = new WindowEvent(
+      hwnd,
+      WinEvent.EVENT_OBJECT_LOCATIONCHANGE,
+      true,
+      cancellationToken.Token,
+      // Only trigger if the window is maximized.
+      hwnd => hwnd.GetWindowPlacement().showCmd == SHOW_WINDOW_CMD.SW_MAXIMIZE
+    );
+    restoreEvent = new WindowEvent(
+      hwnd,
+      WinEvent.EVENT_SYSTEM_MINIMIZEEND,
+      true,
+      cancellationToken.Token
+    );
+    boundsChangeEvent = new WindowEvent(
+      hwnd,
+      WinEvent.EVENT_OBJECT_LOCATIONCHANGE,
+      true,
+      cancellationToken.Token
+    );
     showEvent = new WindowEvent(hwnd, WinEvent.EVENT_OBJECT_SHOW, true, cancellationToken.Token);
     hideEvent = new WindowEvent(hwnd, WinEvent.EVENT_OBJECT_HIDE, true, cancellationToken.Token);
     closeEvent = new WindowEvent(
@@ -92,7 +253,7 @@ public partial class Window {
           isClosed = true;
 
           // Cancel ongoing show/hide monitors
-          cancellationToken.Cancel();
+          //cancellationToken.Cancel();
         }
       },
       TaskScheduler.Default
