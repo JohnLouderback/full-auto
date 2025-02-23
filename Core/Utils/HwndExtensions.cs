@@ -167,6 +167,16 @@ public static class HwndExtensions {
 
 
   /// <summary>
+  ///   Whether the window is the foreground window.
+  /// </summary>
+  /// <param name="hwnd"> The window handle to check. </param>
+  /// <returns> Whether the window is the foreground window. </returns>
+  public static bool IsForegroundWindow(this HWND hwnd) {
+    return hwnd == PInvoke.GetForegroundWindow();
+  }
+
+
+  /// <summary>
   ///   Determines if the given window handle is an existing window. Useful for checking if the
   ///   window is still open.
   /// </summary>

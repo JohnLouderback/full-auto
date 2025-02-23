@@ -9,6 +9,10 @@ public delegate bool WindowCriteria(HWND hwnd);
 ///   A utility class for awaiting window events using the Win32 API.
 /// </summary>
 public static class WinEventAwaiter {
+  // Refers to the hwnd of the window that is the source of the event, but not any of its child objects.
+  private const int CHILDID_SELF = 0;
+  private const int OBJID_WINDOW = 0;
+
   // Constants for the hook and message loop.
   private const uint EVENT_MIN             = 0x00000001;
   private const uint EVENT_MAX             = 0x7FFFFFFF;
@@ -149,7 +153,9 @@ public static class WinEventAwaiter {
     uint idEventThread,
     uint dwmsEventTime
   ) {
-    if (hWnd == nint.Zero) {
+    if (hWnd == nint.Zero ||
+        idChild != CHILDID_SELF ||
+        idObject != OBJID_WINDOW) {
       return;
     }
 
@@ -159,7 +165,8 @@ public static class WinEventAwaiter {
       for (var i = awaiters.Count - 1; i >= 0; i--) {
         var entry = awaiters[i];
         try {
-          if (entry.Criteria(hWnd)) {
+          if (entry.Events.Contains(@event) &&
+              entry.Criteria(hWnd)) {
             entry.Tcs.TrySetResult(hWnd);
             awaiters.RemoveAt(i);
           }

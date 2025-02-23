@@ -50,20 +50,42 @@ export interface Window {
      */
     setBoundingBox(x: number, y: number, width: number, height: number): Window;
     readonly isClosed: boolean;
+    isMinimized: boolean;
+    isMaximized: boolean;
+    isShowing: boolean;
+    isFocused: boolean;
     /**
-     * Resolves each time the window is shown (multiple awaits allowed).
+     * Resolves the next time the window is shown.
      *
      */
     shown: Promise<void>;
     /**
-     * Resolves each time the window is hidden (multiple awaits allowed).
+     * Resolves the next time the window is hidden.
      *
      */
     hidden: Promise<void>;
-    Minimized: Promise<void>;
-    Maximized: Promise<void>;
-    Restored: Promise<void>;
-    BoundsChanged: Promise<void>;
+    /**
+     * Resolves the next time the window is minimized.
+     *
+     */
+    minimized: Promise<void>;
+    /**
+     * Resolves the next time the window is maximized.
+     *
+     */
+    maximized: Promise<void>;
+    /**
+     * Resolves the next time the window is restored. When the window is
+     * "un-minimized."
+     *
+     */
+    restored: Promise<void>;
+    focused: Promise<void>;
+    /**
+     * Resolves the next time the window's bounds change.
+     *
+     */
+    boundsChanged: Promise<void>;
     /**
      * Resolves once when the window is closed.
      *

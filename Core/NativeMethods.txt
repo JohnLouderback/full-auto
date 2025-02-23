@@ -56,6 +56,7 @@ RegisterRawInputDevices
 GetRawInputData
 GetCursorPos
 SetForegroundWindow
+GetForegroundWindow
 GetFocus
 GetWindowRect
 GetWindow
@@ -78,6 +79,7 @@ EnumDisplayDevices
 EnumDisplayMonitors
 MONITORINFOF_PRIMARY
 SetWinEventHook
+CHILDID_SELF
 UnhookWinEvent
 PostThreadMessage
 GetThreadId

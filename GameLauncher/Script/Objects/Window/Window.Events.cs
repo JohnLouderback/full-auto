@@ -10,6 +10,9 @@ public partial class Window {
   private readonly CancellationTokenSource cancellationToken = new();
   private          bool                    isClosed;
 
+  // The last known state of the window:
+  private WindowState lastKnownWindowState;
+
   // Show/hide are repeating events; close is one-shot:
   private WindowEvent showEvent;
   private WindowEvent hideEvent;
@@ -17,6 +20,7 @@ public partial class Window {
   private WindowEvent minimizeEvent;
   private WindowEvent maximizeEvent;
   private WindowEvent restoreEvent;
+  private WindowEvent focusEvent;
   private WindowEvent boundsChangeEvent;
 
   /// <summary>
@@ -44,6 +48,8 @@ public partial class Window {
   public bool IsMaximized => hwnd.GetWindowPlacement().showCmd == SHOW_WINDOW_CMD.SW_MAXIMIZE;
 
   [ScriptMember("isShowing")] public bool IsShowing => hwnd.IsWindowVisible();
+
+  [ScriptMember("isFocused")] public bool IsFocused => hwnd.IsForegroundWindow();
 
   /// <summary>
   ///   Resolves the next time the window is shown.
@@ -74,6 +80,8 @@ public partial class Window {
   /// </summary>
   [ScriptMember("restored")]
   public Task Restored => restoreEvent.Signal;
+
+  [ScriptMember("focused")] public Task Focused => focusEvent.Signal;
 
   /// <summary>
   ///   Resolves the next time the window's bounds change.
@@ -127,24 +135,15 @@ public partial class Window {
   public void On(string eventName, WindowEventCallback callback) {
     switch (eventName) {
       case "shown":
-        BindEvent(eventName, callback);
-        break;
       case "hidden":
-        BindEvent(eventName, callback);
-        break;
       case "minimized":
-        BindEvent(eventName, callback);
-        break;
       case "maximized":
-        BindEvent(eventName, callback);
-        break;
       case "restored":
-        BindEvent(eventName, callback);
-        break;
+      case "focused":
       case "boundsChanged":
         BindEvent(eventName, callback);
         break;
-      case "close":
+      case "closed":
         // Close is a special case because it only occurs once.
         Closed.ContinueWith(
           t => {
@@ -187,6 +186,32 @@ public partial class Window {
 
 
   /// <summary>
+  ///   Gets the current state of the window.
+  /// </summary>
+  /// <returns> The current state of the window. </returns>
+  private WindowState GetCurrentWindowState() {
+    var state = WindowState.NONE;
+
+    if (IsShowing) {
+      state |= WindowState.SHOWN;
+    }
+    else {
+      state |= WindowState.HIDDEN;
+    }
+
+    if (IsMinimized) {
+      state |= WindowState.MINIMIZED;
+    }
+
+    if (IsMaximized) {
+      state |= WindowState.MAXIMIZED;
+    }
+
+    return state;
+  }
+
+
+  /// <summary>
   ///   Gets the signal by name. This is useful for binding events to signals because the signals
   ///   are lazily evaluated and, when they resolve, they create a new TaskCompletionSource. This
   ///   means that the signal will not be the same object every time it resolves.
@@ -202,6 +227,7 @@ public partial class Window {
       "minimized"     => Minimized,
       "maximized"     => Maximized,
       "restored"      => Restored,
+      "focused"       => Focused,
       "boundsChanged" => BoundsChanged,
       _               => throw new ArgumentException($"Unknown signal name: {signalName}")
     };
@@ -209,6 +235,8 @@ public partial class Window {
 
 
   private void InitializeEvents() {
+    lastKnownWindowState = GetCurrentWindowState();
+
     // Use the same class for all signals, just with different event IDs & multiple flags.
     minimizeEvent = new WindowEvent(
       hwnd,
@@ -216,28 +244,51 @@ public partial class Window {
       true,
       cancellationToken.Token
     );
+
     maximizeEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_OBJECT_LOCATIONCHANGE,
       true,
       cancellationToken.Token,
       // Only trigger if the window is maximized.
-      hwnd => hwnd.GetWindowPlacement().showCmd == SHOW_WINDOW_CMD.SW_MAXIMIZE
+      _ => IsMaximized
     );
+
     restoreEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_SYSTEM_MINIMIZEEND,
       true,
       cancellationToken.Token
     );
+
+    focusEvent = new WindowEvent(
+      hwnd,
+      WinEvent.EVENT_SYSTEM_FOREGROUND,
+      true,
+      cancellationToken.Token
+    );
+
     boundsChangeEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_OBJECT_LOCATIONCHANGE,
       true,
       cancellationToken.Token
     );
-    showEvent = new WindowEvent(hwnd, WinEvent.EVENT_OBJECT_SHOW, true, cancellationToken.Token);
-    hideEvent = new WindowEvent(hwnd, WinEvent.EVENT_OBJECT_HIDE, true, cancellationToken.Token);
+
+    showEvent = new WindowEvent(
+      hwnd,
+      WinEvent.EVENT_OBJECT_SHOW,
+      true,
+      cancellationToken.Token
+    );
+
+    hideEvent = new WindowEvent(
+      hwnd,
+      WinEvent.EVENT_OBJECT_HIDE,
+      true,
+      cancellationToken.Token
+    );
+
     closeEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_OBJECT_DESTROY,
@@ -251,9 +302,6 @@ public partial class Window {
         if (t.Status == TaskStatus.RanToCompletion) {
           // Mark as closed
           isClosed = true;
-
-          // Cancel ongoing show/hide monitors
-          //cancellationToken.Cancel();
         }
       },
       TaskScheduler.Default

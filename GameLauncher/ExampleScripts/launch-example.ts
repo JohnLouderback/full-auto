@@ -41,9 +41,24 @@ Process ID: 0x${app.process.pid.toString(16)}`
       // Log the window's bounding box every 100 milliseconds for 1 second.
       await wait(1000);
       console.log(window.getBoundingBox());
+      window.on('boundsChanged', () => {
+        console.log(window.getBoundingBox());
+      });
     });
     window.on('maximized', () => {
       console.log('Window maximized.');
+    });
+    window.on('minimized', () => {
+      console.log('Window minimized.');
+    });
+    window.on('restored', () => {
+      console.log('Window restored.');
+    });
+    window.on('closed', () => {
+      console.log('Window closed.');
+    });
+    window.on('focused', () => {
+      console.log('Window focused.');
     });
   }
 
