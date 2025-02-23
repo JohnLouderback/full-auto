@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.5.89-alpha">
+    <PropertyGroup>
+        <!--Command to run on project build-->
+        <BuildCommand>npm run build</BuildCommand>
+        <!--Command to run on project clean-->
+        <CleanCommand>npm run clean</CleanCommand>
+        <BuildOutputFolder>./build</BuildOutputFolder>
+    </PropertyGroup>
+    <ItemGroup>
+        <Script Include="tsconfig.json"/>
+    </ItemGroup>
+</Project>

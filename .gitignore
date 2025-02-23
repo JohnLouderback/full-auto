@@ -340,3 +340,7 @@ ASALocalRun/
 healthchecksdb!
 
 /GameLauncher/build-files/*
+/ScriptEditor.WebView/build/
+/ScriptEditor.WebView/dist/
+/ScriptEditor.WebView/vite-cache/
+/ScriptEditor.WebView/vsix/*.vsix

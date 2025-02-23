@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ScriptEditor.WebView\ScriptEditor.WebView.esproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Web.WebView2"
+                          Version="1.0.3116-prerelease" />
+    </ItemGroup>
+    <Target Name="CopyExampleScripts"
+            AfterTargets="Build">
+        <!-- Remove the build directory if it exists -->
+        <RemoveDir Directories="$(OutputPath)\wwwroot\"
+                   Condition="Exists('$(OutputPath)\wwwroot\')" />
+        <ItemGroup>
+            <BuildFiles Include="..\ScriptEditor.Webview\dist\**\*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(BuildFiles)"
+              DestinationFolder="$(OutputPath)\wwwroot\%(RecursiveDir)"
+              SkipUnchangedFiles="true" />
+    </Target>
+</Project>
