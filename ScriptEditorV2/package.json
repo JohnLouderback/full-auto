@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "engines": {
+    "yarn": ">=1.7.0 <2",
+    "node": ">=18"
+  },
+  "scripts": {
+    "build:electron": "yarn --cwd electron-app bundle",
+    "prepare": "lerna run prepare",
+    "postinstall": "theia check:theia-version",
+    "start:electron": "yarn --cwd electron-app start",
+    "watch:electron": "lerna run --parallel watch --ignore browser-app"
+  },
+  "devDependencies": {
+    "lerna": "2.4.0"
+  },
+  "workspaces": [
+    "script-ed",
+    "browser-app",
+    "electron-app"
+  ]
+}

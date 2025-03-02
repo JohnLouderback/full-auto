@@ -1,5 +1,5 @@
-﻿import {awaitWindow, launch} from "@library/Tasks";
-import {wait} from "@library/Utils";
+﻿import { awaitWindow, launch } from "@library/Tasks";
+import { wait } from "@library/Utils";
 
 console.log "Launching Fork..."
 

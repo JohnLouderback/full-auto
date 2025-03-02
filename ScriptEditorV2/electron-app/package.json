@@ -1,0 +1,71 @@
+{
+  "private": true,
+  "name": "electron-app",
+  "version": "0.0.0",
+  "main": "lib/backend/electron-main.js",
+  "dependencies": {
+    "@theia/core": "1.59.0",
+    "@theia/debug": "^1.59.0",
+    "@theia/editor": "1.59.0",
+    "@theia/electron": "^1.59.0",
+    "@theia/filesystem": "1.59.0",
+    "@theia/markers": "1.59.0",
+    "@theia/memory-inspector": "^1.59.0",
+    "@theia/messages": "1.59.0",
+    "@theia/monaco": "1.59.0",
+    "@theia/navigator": "^1.59.0",
+    "@theia/output": "1.59.0",
+    "@theia/plugin-ext": "^1.59.0",
+    "@theia/plugin-ext-vscode": "1.59.0",
+    "@theia/preferences": "1.59.0",
+    "@theia/process": "1.59.0",
+    "@theia/terminal": "1.59.0",
+    "@theia/vsx-registry": "^1.59.0",
+    "@theia/workspace": "1.59.0",
+    "script-ed": "0.0.0"
+  },
+  "devDependencies": {
+    "@theia/cli": "1.59.0",
+    "electron": "^34.2.0"
+  },
+  "scripts": {
+    "bundle": "yarn rebuild && theia build --mode development",
+    "rebuild": "theia rebuild:electron --cacheRoot ..",
+    "start": "theia start --plugins=local-dir:./plugins",
+    "watch": "yarn rebuild && theia build --watch --mode development",
+    "prepare": "yarn bundle && yarn run download:plugins",
+    "download:plugins": "theia download:plugins"
+  },
+  "theia": {
+    "target": "electron",
+    "frontend": {
+      "config": {
+        "applicationName": "Script Editor",
+        "electron": {
+          "showWindowEarly": false,
+          "windowOptions": {
+            "backgroundColor": "#FFF"
+          }
+        },
+        "preferences": {
+          "workbench.colorTheme": "Electric Mirror"
+        }
+      }
+    }
+  },
+  "theiaPluginsDir": "./plugins",
+  "theiaPlugins": {
+    "vscode.typescript": "https://open-vsx.org/api/vscode/typescript/1.95.3/file/vscode.typescript-1.95.3.vsix",
+    "vscode.typescript-language-features": "https://open-vsx.org/api/vscode/typescript-language-features/1.95.3/file/vscode.typescript-language-features-1.95.3.vsix",
+    "vscode.json": "https://open-vsx.org/api/vscode/json/1.95.3/file/vscode.json-1.95.3.vsix",
+    "vscode.json-language-features": "https://open-vsx.org/api/vscode/json-language-features/1.95.3/file/vscode.json-language-features-1.95.3.vsix",
+    "vscode.javascript": "https://open-vsx.org/api/vscode/javascript/1.95.3/file/vscode.javascript-1.95.3.vsix",
+    "vscode.yaml": "https://open-vsx.org/api/vscode/yaml/1.95.3/file/vscode.yaml-1.95.3.vsix",
+    "vscode.markdown": "https://open-vsx.org/api/vscode/markdown/1.95.3/file/vscode.markdown-1.95.3.vsix",
+    "vscode.xml": "https://open-vsx.org/api/vscode/xml/1.95.3/file/vscode.xml-1.95.3.vsix",
+    "DanielX.civet": "https://open-vsx.org/api/DanielX/civet/0.3.28/file/DanielX.civet-0.3.28.vsix",
+    "vscode.coffeescript": "https://open-vsx.org/api/vscode/coffeescript/1.95.3/file/vscode.coffeescript-1.95.3.vsix",
+    "phil294.coffeesense": "https://open-vsx.org/api/phil294/coffeesense/1.15.0/file/phil294.coffeesense-1.15.0.vsix",
+    "MuTsunTsai.jsdoc-link": "https://open-vsx.org/api/MuTsunTsai/jsdoc-link/0.2.1/file/MuTsunTsai.jsdoc-link-0.2.1.vsix"
+  }
+}

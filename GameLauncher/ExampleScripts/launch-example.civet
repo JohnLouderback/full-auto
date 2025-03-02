@@ -7,7 +7,7 @@ console.log "Waiting for 1 second..."
 await wait 1000
 console.log "Waited for 1 second."
 
-app := launch("C:\\Users\\John\\AppData\\Local\\Fork\\app-2.5.0\\Fork.exe")
+app := launch "C:\\Users\\John\\AppData\\Local\\Fork\\app-2.5.0\\Fork.exe"
 
 if not app?
   console.error "Failed to launch Fork."
@@ -20,7 +20,7 @@ else
   """
 
   window := await awaitWindow(
-    (window) => window.title is "Fork" and window.className.startsWith("HwndWrapper[Fork.exe;;"),
+    (window) => window.title is "Fork" and window.className.startsWith "HwndWrapper[Fork.exe;;",
     10000
   )
 

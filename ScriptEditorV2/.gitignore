@@ -1,0 +1,12 @@
+node_modules
+.browser_modules
+lib
+*.log
+*-app/*
+!*-app/package.json
+
+# Allow only electron-app/plugins/electric-mirror, but keep other plugins ignored
+!electron-app/plugins/
+electron-app/plugins/*
+!electron-app/plugins/electric-mirror/
+!electron-app/plugins/electric-mirror/*

@@ -1,0 +1,33 @@
+{
+  "name": "script-ed",
+  "keywords": [
+    "theia-extension"
+  ],
+  "version": "0.0.0",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@theia/core": "1.59.0",
+    "@theia/electron": "^1.59.0",
+    "ffi-napi": "^4.0.3"
+  },
+  "devDependencies": {
+    "electron": "^34.2.0",
+    "rimraf": "^5.0.0",
+    "typescript": "~5.4.5"
+  },
+  "scripts": {
+    "prepare": "yarn run clean && yarn run build",
+    "clean": "rimraf lib",
+    "build": "node ./build.js",
+    "watch": "tsc -w"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/browser/script-ed-frontend-module",
+      "electronMain": "lib/electron-main/script-ed-main-module"
+    }
+  ]
+}
