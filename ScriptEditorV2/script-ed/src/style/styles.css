@@ -1,17 +1,19 @@
 .windows {
   --theia-ui-font-family: Tahoma, sans-serif;
-  --theia-ui-font-size0: 12px;
+  --theia-ui-font-size0: 10px;
   --theia-ui-font-size1: 12px;
-  --theia-statusBar-background: #2ECC71;
+  --theia-statusBar-background: #7380f9;
   --theia-statusBar-foreground: #000;
-  --theia-activityBar-foreground: #2ECC71;
-  --theia-tab-activeBorder: #2ECC71;
-  --theia-mainToolbar-foreground: #2ECC71;
-  --theia-notificationsInfoIcon-foreground: #2ECC71;
-  --theia-button-background: #2ECC71;
+  --theia-activityBar-foreground: #7380f9;
+  --theia-tab-activeBorder: #7380f9;
+  --theia-mainToolbar-foreground: #7380f9;
+  --theia-notificationsInfoIcon-foreground: #7380f9;
+  --theia-button-background: #7380f9;
   --theia-button-foreground: #000;
-  --theia-menu-selectionBackground: #2fa862;
+  --theia-menu-selectionBackground: #7380f9;
   --theia-menu-selectionForeground: #000;
+  --theia-tab-activeBackground: var(--theia-editor-background);
+  --theia-menu-border: #7380f9;
 
 
   -webkit-font-smoothing: none !important;
@@ -34,7 +36,8 @@
 .theia-button {
   background: var(--theia-button-background) !important;
   border-radius: 0px !important;
-  clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+  clip-path: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%);
+  font-style:italic;
 }
 
 .p-Menu {
@@ -50,4 +53,51 @@
 .p-Menu-item.p-mod-active > div:last-child {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
+}
+
+#theia-main-content-panel .p-TabBar .p-TabBar-tab.p-mod-current {
+  background: var(--theia-tab-activeBackground) !important;
+  border-bottom: none !important;
+  border-top: 2px solid var(--theia-tab-activeBorder) !important;
+}
+
+.p-Menu {
+  padding: 0px !important;
+  transform: translate(0px, -1px);
+}
+
+.p-Menu-item {
+  padding: 4px 0px !important;
+  z-index: calc(var(--theia-menu-z-index) + 2);
+}
+
+.p-MenuBar-item {
+  border: 1px solid transparent;
+}
+
+.p-MenuBar-item.p-mod-active {
+  border-radius: 0 !important;
+  border: 1px solid var(--theia-menu-border);
+  background: var(--theia-menu-background);
+}
+
+.p-MenuBar.p-mod-active .p-MenuBar-item.p-mod-active {
+  z-index: calc(var(--theia-menu-z-index) + 1);
+  border-radius: 0 !important;
+  background: var(--theia-menu-background);
+  border: 1px solid var(--theia-menu-border);
+  border-bottom: 0;
+}
+
+.dialogTitle {
+  color: white !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  font-family: "Trebuchet MS" !important;
+  background: linear-gradient(180deg, #0997ff, #0053ee 8%, #0050ee 40%, #06f 88%, #06f 93%, #005bff 95%, #003dd7 96%, #003dd7) !important;
+  border-top: 1px solid #0831d9 !important;
+  border-left: 1px solid #0831d9 !important;
+  border-right: 1px solid #001ea0   !important;
+  font-size: 13px !important;
+  text-shadow: 1px 1px #0f1089 !important;
+  height: 21px !important;
 }

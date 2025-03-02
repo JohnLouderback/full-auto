@@ -19,11 +19,10 @@ else
     Process ID: 0x#{app.process.pid.toString(16)}
   """
 
-  window := await awaitWindow(
+  window := await awaitWindow
     (window) => window.title is "Fork" and window.className.startsWith "HwndWrapper[Fork.exe;;",
     10000
-  )
-
+    
   if not window?
     console.error "Failed to find Fork window."
   else
