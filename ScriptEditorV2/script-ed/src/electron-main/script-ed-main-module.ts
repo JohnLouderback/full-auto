@@ -1,8 +1,10 @@
-import { ElectronMainApplicationContribution } from "@theia/core/lib/electron-main/electron-main-application";
-import { ContainerModule } from "@theia/core/shared/inversify";
-import { app } from "@theia/electron/shared/electron";
+import {
+  ElectronMainApplicationContribution,
+} from '@theia/core/lib/electron-main/electron-main-application';
+import { ContainerModule } from '@theia/core/shared/inversify';
+import { app } from '@theia/electron/shared/electron';
 
-import { CustomElectronMainContribution } from "./electron-main-contribution";
+import { CustomElectronMainContribution } from './electron-main-contribution';
 
 //electron.app.commandLine.appendSwitch("disable-lcd-text");
 // app.commandLine.appendSwitch("disable-font-subpixel-positioning");
@@ -16,7 +18,10 @@ app.commandLine.appendSwitch("disable-directwrite-for-ui");
 app.commandLine.appendSwitch("use-angle", "d3d9");
 app.commandLine.appendSwitch("enable-fontations-backend", "false");
 app.commandLine.appendSwitch("disable-gpu-rasterization");
-app.disableHardwareAcceleration();
+app.commandLine.appendSwitch("force-gdi");
+app.commandLine.appendSwitch("disable-lcd-text");
+app.commandLine.appendSwitch("disable-browser-font-smoothing-win");
+//app.disableHardwareAcceleration();
 
 export default new ContainerModule((bind) => {
   bind(ElectronMainApplicationContribution)

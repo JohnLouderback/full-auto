@@ -7,7 +7,7 @@
   "scripts": {
     "build:electron": "yarn --cwd electron-app bundle",
     "prepare": "lerna run prepare",
-    "postinstall": "theia check:theia-version",
+    "postinstall": "node scripts/replace-electron.js && theia check:theia-version",
     "start:electron": "yarn --cwd electron-app start",
     "watch:electron": "lerna run --parallel watch --ignore browser-app"
   },
@@ -18,5 +18,8 @@
     "script-ed",
     "browser-app",
     "electron-app"
-  ]
+  ],
+  "dependencies": {
+    "adm-zip": "^0.5.16"
+  }
 }

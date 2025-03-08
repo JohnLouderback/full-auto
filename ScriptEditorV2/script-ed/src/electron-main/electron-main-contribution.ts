@@ -1,11 +1,11 @@
-import { injectable } from "inversify";
+import { injectable } from 'inversify';
 
 import {
   ElectronMainApplication,
   ElectronMainApplicationContribution,
-} from "@theia/core/lib/electron-main/electron-main-application";
+} from '@theia/core/lib/electron-main/electron-main-application';
 
-//import * as electron from "@theia/electron/shared/electron";
+//import * as electron from '@theia/electron/shared/electron';
 
 @injectable()
 export class CustomElectronMainContribution
@@ -22,6 +22,10 @@ export class CustomElectronMainContribution
   onStart(application: ElectronMainApplication): void {
     console.log("CustomElectronMainContribution started");
     //electron.app.commandLine.appendSwitch("disable-lcd-text");
+    // electron.app.commandLine.appendSwitch("disable-lcd-text");
+    // electron.app.commandLine.appendSwitch("disable-direct-write");
+    // electron.app.commandLine.appendSwitch("force-gdi");
+    // electron.app.commandLine.appendSwitch("force-gdi", "true");
     //    electron.app.disableHardwareAcceleration();
     // Add other command-line switches or initialization code here
   }
