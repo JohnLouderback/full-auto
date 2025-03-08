@@ -48,7 +48,17 @@
           }
         },
         "preferences": {
-          "workbench.colorTheme": "Electric Mirror"
+          "workbench.colorTheme": "Electric Mirror",
+          "window.titleBarStyle": "custom",
+          "workbench.iconTheme": "let-icons",
+          "editor.smoothScrolling": true,
+          "editor.cursorSmoothCaretAnimation": "on",
+          "window.tabbar.enhancedPreview": "enhanced",
+          "workbench.tab.shrinkToFit.enabled": true,
+          "editor.scrollbar.verticalScrollbarSize": 16,
+          "workbench.statusBar.visible": true,
+          "workbench.editor.highlightModifiedTabs": false,
+          "window.zoomLevel": 0
         }
       }
     }
