@@ -11,6 +11,7 @@
   "dependencies": {
     "@theia/core": "1.59.0",
     "@theia/electron": "^1.59.0",
+    "@theia/filesystem": "^1.59.0",
     "ffi-napi": "^4.0.3"
   },
   "devDependencies": {
@@ -27,7 +28,8 @@
   "theiaExtensions": [
     {
       "frontend": "lib/browser/script-ed-frontend-module",
-      "electronMain": "lib/electron-main/script-ed-main-module"
+      "electronMain": "lib/electron-main/script-ed-main-module",
+      "backend": "lib/node/script-ed-backend-module"
     }
   ]
 }

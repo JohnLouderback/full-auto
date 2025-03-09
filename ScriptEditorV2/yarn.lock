@@ -1485,9 +1485,9 @@
     "@vscode/ripgrep" "^1.14.2"
     tslib "^2.6.2"
 
-"@theia/filesystem@1.59.0":
+"@theia/filesystem@1.59.0", "@theia/filesystem@^1.59.0":
   version "1.59.0"
-  resolved "https://registry.npmjs.org/@theia/filesystem/-/filesystem-1.59.0.tgz"
+  resolved "https://registry.yarnpkg.com/@theia/filesystem/-/filesystem-1.59.0.tgz#be916e757f1fc5f8dfaa6e41102a602773104e1f"
   integrity sha512-4OiO+Kial6QLQL7DE+r5j+eITz0fmE1cBM8OOjPK5vjLo2jTuU4XYzQLkmuhFL9AaeDEfzxEVO0IhzHB0Af6vQ==
   dependencies:
     "@theia/core" "1.59.0"
