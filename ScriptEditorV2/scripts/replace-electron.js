@@ -1,4 +1,4 @@
-/*
+/**
  * This script downloads the Supermium-Electron binaries and replaces the Electron
  * binaries in the node_modules folder. This allows us to support Windows 7 and GDI
  * rendering. The script downloads the binaries from the Supermium-Electron GitHub

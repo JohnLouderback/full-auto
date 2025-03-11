@@ -7,7 +7,7 @@
   "scripts": {
     "build:electron": "yarn --cwd electron-app bundle",
     "prepare": "lerna run prepare",
-    "postinstall": "node scripts/replace-electron.js && theia check:theia-version",
+    "postinstall": "./scripts/link-packages.bat && node scripts/replace-electron.js && node scripts/patch-app-manager-check.js && theia check:theia-version",
     "start:electron": "yarn --cwd electron-app start",
     "watch:electron": "lerna run --parallel watch --ignore browser-app"
   },
@@ -16,6 +16,8 @@
   },
   "workspaces": [
     "script-ed",
+    "script-ed-ts-vfs",
+    "script-ed-ts-vfs-plugin",
     "browser-app",
     "electron-app"
   ],

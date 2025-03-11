@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "alwaysStrict": true,
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "target": "ES6",
+        "module": "commonjs",
+        "outDir": "dist",
+        "declaration": true,
+        "sourceMap": true
+    },
+    "include": [
+        "src"
+    ]
+}
