@@ -1,11 +1,10 @@
-import { ContainerModule } from '@theia/core/shared/inversify';
-import { FileSystemProvider } from '@theia/filesystem/lib/common/files';
+import "../utils/install-child-proc-hooks";
 
-import { VirtualDiskFileSystemProvider } from './virtual-project-fs';
+import { ContainerModule } from "@theia/core/shared/inversify";
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
-  bind(VirtualDiskFileSystemProvider).toSelf().inSingletonScope();
-  rebind(FileSystemProvider).toService(VirtualDiskFileSystemProvider);
+  //bind(VirtualDiskFileSystemProvider).toSelf().inSingletonScope();
+  //rebind(FileSystemProvider).toService(VirtualDiskFileSystemProvider);
   // bind(VirtualDiskFileSystemContribution).toSelf().inSingletonScope();
   // bind(FileServiceContribution).toService(VirtualDiskFileSystemContribution);
 });

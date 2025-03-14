@@ -78,6 +78,7 @@
     "phil294.coffeesense": "https://open-vsx.org/api/phil294/coffeesense/1.15.0/file/phil294.coffeesense-1.15.0.vsix",
     "MuTsunTsai.jsdoc-link": "https://open-vsx.org/api/MuTsunTsai/jsdoc-link/0.2.1/file/MuTsunTsai.jsdoc-link-0.2.1.vsix",
     "scalet.let-icons": "https://open-vsx.org/api/scalet/let-icons/2.0.2/file/scalet.let-icons-2.0.2.vsix",
-    "yoavbls.pretty-ts-errors": "https://open-vsx.org/api/yoavbls/pretty-ts-errors/0.5.3/file/yoavbls.pretty-ts-errors-0.5.3.vsix"
+    "yoavbls.pretty-ts-errors": "https://open-vsx.org/api/yoavbls/pretty-ts-errors/0.5.3/file/yoavbls.pretty-ts-errors-0.5.3.vsix",
+    "ms-vscode.js-debug": "https://open-vsx.org/api/ms-vscode/js-debug/1.97.1/file/ms-vscode.js-debug-1.97.1.vsix"
   }
 }

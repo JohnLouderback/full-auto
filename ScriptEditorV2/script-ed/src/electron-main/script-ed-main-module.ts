@@ -1,10 +1,12 @@
-import {
-  ElectronMainApplicationContribution,
-} from '@theia/core/lib/electron-main/electron-main-application';
-import { ContainerModule } from '@theia/core/shared/inversify';
-import { app } from '@theia/electron/shared/electron';
+import "../utils/install-child-proc-hooks";
 
-import { CustomElectronMainContribution } from './electron-main-contribution';
+import { ElectronMainApplicationContribution } from "@theia/core/lib/electron-main/electron-main-application";
+import { ContainerModule } from "@theia/core/shared/inversify";
+import { app } from "@theia/electron/shared/electron";
+
+import { CustomElectronMainContribution } from "./electron-main-contribution";
+
+//import { VirtualDiskFileSystemProvider } from './virtual-project-fs';
 
 //electron.app.commandLine.appendSwitch("disable-lcd-text");
 // app.commandLine.appendSwitch("disable-font-subpixel-positioning");

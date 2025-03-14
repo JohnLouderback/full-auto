@@ -10,6 +10,8 @@ import {
   ScriptEdMenuContribution,
 } from "./script-ed-contribution";
 
+//import { VirtualDiskFileSystemProvider } from './virtual-project-fs';
+
 export default new ContainerModule((bind) => {
   bind(FrontendApplicationContribution).to(CustomCssContribution);
   bind(CommandContribution).to(ScriptEdCommandContribution);
