@@ -49,14 +49,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Lib\"/>
+        <Folder Include="Libs\"/>
     </ItemGroup>
 
     <UsingTask AssemblyFile="build-files/dlls/GameLauncherTaskGenerator.dll" TaskName="GenerateTasksTs"/>
 
     <Target Name="GenerateTypeScript" AfterTargets="Build">
         <GenerateTasksTs SourceDirectory="$(ProjectDir)"
-                         OutputDir="$(ProjectDir)Lib"/>
+                         OutputDir="$(ProjectDir)Libs"/>
     </Target>
 
     <Target Name="CopyTypeScriptFiles" AfterTargets="Build">
@@ -80,14 +80,14 @@
 
     <Target Name="CopyLibs" AfterTargets="Build">
         <!-- Remove the ExampleScripts directory if it exists -->
-        <RemoveDir Directories="$(OutputPath)\Lib" Condition="Exists('$(OutputPath)\Lib')"/>
+        <RemoveDir Directories="$(OutputPath)\Lib" Condition="Exists('$(OutputPath)\Libs')"/>
         <Delete Files="$(OutputPath)\tsconfig.json" Condition="Exists('$(OutputPath)\tsconfig.json')"/>
 
         <ItemGroup>
-            <LibFiles Include=".\Lib\**\*"/>
+            <LibFiles Include=".\Libs\**\*"/>
         </ItemGroup>
 
-        <Copy SourceFiles="@(LibFiles)" DestinationFolder="$(OutputPath)\Lib\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(LibFiles)" DestinationFolder="$(OutputPath)\Libs\%(RecursiveDir)" SkipUnchangedFiles="true"/>
         <Copy SourceFiles=".\tsconfig.json" DestinationFolder="$(OutputPath)\" SkipUnchangedFiles="true"/>
     </Target>
 

@@ -73,12 +73,14 @@
     "vscode.yaml": "https://open-vsx.org/api/vscode/yaml/1.95.3/file/vscode.yaml-1.95.3.vsix",
     "vscode.markdown": "https://open-vsx.org/api/vscode/markdown/1.95.3/file/vscode.markdown-1.95.3.vsix",
     "vscode.xml": "https://open-vsx.org/api/vscode/xml/1.95.3/file/vscode.xml-1.95.3.vsix",
-    "DanielX.civet": "https://open-vsx.org/api/DanielX/civet/0.3.28/file/DanielX.civet-0.3.28.vsix",
     "vscode.coffeescript": "https://open-vsx.org/api/vscode/coffeescript/1.95.3/file/vscode.coffeescript-1.95.3.vsix",
     "phil294.coffeesense": "https://open-vsx.org/api/phil294/coffeesense/1.15.0/file/phil294.coffeesense-1.15.0.vsix",
     "MuTsunTsai.jsdoc-link": "https://open-vsx.org/api/MuTsunTsai/jsdoc-link/0.2.1/file/MuTsunTsai.jsdoc-link-0.2.1.vsix",
     "scalet.let-icons": "https://open-vsx.org/api/scalet/let-icons/2.0.2/file/scalet.let-icons-2.0.2.vsix",
     "yoavbls.pretty-ts-errors": "https://open-vsx.org/api/yoavbls/pretty-ts-errors/0.5.3/file/yoavbls.pretty-ts-errors-0.5.3.vsix",
-    "ms-vscode.js-debug": "https://open-vsx.org/api/ms-vscode/js-debug/1.97.1/file/ms-vscode.js-debug-1.97.1.vsix"
+    "ms-vscode.js-debug": "https://open-vsx.org/api/ms-vscode/js-debug/1.97.1/file/ms-vscode.js-debug-1.97.1.vsix",
+    "usernamehw.errorlens": "https://open-vsx.org/api/usernamehw/errorlens/3.24.0/file/usernamehw.errorlens-3.24.0.vsix",
+    "esbenp.prettier-vscode": "https://open-vsx.org/api/esbenp/prettier-vscode/11.0.0/file/esbenp.prettier-vscode-11.0.0.vsix",
+    "mattpocock.ts-error-translator": "https://open-vsx.org/api/mattpocock/ts-error-translator/0.10.1/file/mattpocock.ts-error-translator-0.10.1.vsix"
   }
 }

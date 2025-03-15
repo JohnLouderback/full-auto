@@ -3,7 +3,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
 
-import * as vfs from "./virtual-fs";
+import { Directory, File } from "./vfs/schema";
+import * as vfs from "./vfs/utils";
 
 (() => {
   if ((globalThis as Record<string, unknown>).fsHooksInstalled) {
@@ -81,10 +82,26 @@ import * as vfs from "./virtual-fs";
           "withFileTypes" in (args[1] as Record<string, unknown>) &&
           (args[1] as Record<string, unknown>).withFileTypes
         ) {
-          return contents.map(
+          const dirEnts = contents.map(
             (name) => new VFSPathDirEnt(path.join(dirPath, name))
           );
+          console.log(
+            JSON.stringify(
+              dirEnts.map((dirent) => {
+                return {
+                  name: dirent.name,
+                  path: dirent.path,
+                  isFile: dirent.isFile(),
+                  isDirectory: dirent.isDirectory(),
+                };
+              }),
+              null,
+              2
+            )
+          );
+          return dirEnts;
         }
+        console.log(JSON.stringify(contents, null, 2));
         return contents;
       }
       // Because the VFS is relative to every real directory, we should always concatenate
@@ -102,20 +119,38 @@ import * as vfs from "./virtual-fs";
           "withFileTypes" in (args[1] as Record<string, unknown>) &&
           (args[1] as Record<string, unknown>).withFileTypes
         ) {
-          return realContents.concat(
+          const dirEnts = realContents.concat(
             virtualContents.map((name) => new VFSPathDirEnt(name))
           );
+          console.log(
+            JSON.stringify(
+              dirEnts.map((dirent) => {
+                return {
+                  name: dirent.name,
+
+                  path: dirent.path,
+                  isFile: dirent.isFile(),
+                  isDirectory: dirent.isDirectory(),
+                };
+              }),
+              null,
+              2
+            )
+          );
+          return dirEnts;
         }
 
         // Otherwise, just return the names as strings.
-        return realContents.concat(virtualContents);
+        const combinedContents = realContents.concat(virtualContents);
+        console.log(JSON.stringify(combinedContents, null, 2));
+        return combinedContents;
       }
     }
     // @ts-expect-error
     return oldReaddirSync(...args);
   };
 
-  function fileStatFromEntry(entry: vfs.File | vfs.Directory): fs.Stats {
+  function fileStatFromEntry(entry: File | Directory): fs.Stats {
     const now = new Date();
     const nowMs = now.getTime();
     return {
@@ -303,7 +338,7 @@ import * as vfs from "./virtual-fs";
   let nextVirtualFd = 10000;
   const virtualFdMap = new Map<
     number,
-    { entry: vfs.File | vfs.Directory; pos: number; path: string }
+    { entry: File | Directory; pos: number; path: string }
   >();
 
   // --- Asynchronous functions (wrapped with __promisify__ preservation) ---
@@ -564,8 +599,23 @@ import * as vfs from "./virtual-fs";
           const dirents = virtualContents.map((name) => {
             return new VFSPathDirEnt(path.join(dirPath, name));
           });
+          console.log(
+            JSON.stringify(
+              dirents.map((dirent) => {
+                return {
+                  name: dirent.name,
+                  path: dirent.path,
+                  isFile: dirent.isFile(),
+                  isDirectory: dirent.isDirectory(),
+                };
+              }),
+              null,
+              2
+            )
+          );
           process.nextTick(() => callback(null, dirents));
         } else {
+          console.log(JSON.stringify(virtualContents, null, 2));
           process.nextTick(() => callback(null, virtualContents));
         }
         return;
@@ -590,12 +640,27 @@ import * as vfs from "./virtual-fs";
               const virtualDirents = virtualRootContents.map(
                 (name) => new VFSPathDirEnt(name)
               );
-              return callback(null, realDirents.concat(virtualDirents));
-            } else {
-              return callback(
-                null,
-                (realContents as string[]).concat(virtualRootContents)
+              const combinedDirents = realDirents.concat(virtualDirents);
+              console.log(
+                JSON.stringify(
+                  combinedDirents.map((dirent) => {
+                    return {
+                      name: dirent.name,
+
+                      path: dirent.path,
+                      isFile: dirent.isFile(),
+                      isDirectory: dirent.isDirectory(),
+                    };
+                  }),
+                  null,
+                  2
+                )
               );
+              return callback(null, combinedDirents);
+            } else {
+              const combinedContents = realContents.concat(virtualRootContents);
+              console.log(JSON.stringify(combinedContents, null, 2));
+              return callback(null, combinedContents as string[]);
             }
           }
           return callback(null, realContents);

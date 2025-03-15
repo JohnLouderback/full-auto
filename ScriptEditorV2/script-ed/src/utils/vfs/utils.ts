@@ -1,34 +1,7 @@
 import * as path from "path";
 
-export type File = string;
-
-export interface Directory {
-  [key: string]: File | Directory;
-}
-
-const virtualFileSystem: Directory = {
-  "tsconfig.json": `{
-  "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
-    "lib": ["es6", "WebWorker"],
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "typeRoots": ["../Schema/"],
-    "paths": {
-      "@library/*": ["./Libs/*"]
-    }
-  },
-  "include": ["./Schema/**/*.d.ts", "./**/*.ts"],
-  "exclude": ["node_modules"]
-}`,
-  Libs: {
-    "Application.ts": `export class Application
-{
-    constructor() {}
-}`,
-  },
-};
+import { Directory, File } from "./schema";
+import { virtualFileSystem } from "./vfs";
 
 const lookupCache = new Map<string, File | Directory | null>();
 

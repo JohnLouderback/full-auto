@@ -12,3 +12,6 @@ dist
 electron-app/plugins/*
 !electron-app/plugins/electric-mirror/
 !electron-app/plugins/electric-mirror/*
+
+# Ignore generated files
+script-ed/src/utils/vfs/vfs.ts
