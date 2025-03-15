@@ -77,9 +77,14 @@ const flatVFS = flattenVFS(virtualFileSystem);
  * It tries every possible relative suffix of the provided filePath.
  */
 export function getEntry(filePath: string): File | Directory | undefined {
-  console.log(`getEntry called with: ${filePath}`);
+  // Handle the special case of the root directory.
+  if (filePath.trim() === "/" || filePath.trim() === ".") {
+    return virtualFileSystem;
+  }
+
+  // console.log(`getEntry called with: ${filePath}`);
   if (lookupCache.has(filePath)) {
-    console.log(`Cache hit for: ${filePath}`);
+    // console.log(`Cache hit for: ${filePath}`);
     const cached = lookupCache.get(filePath);
     return cached === null ? undefined : cached;
   }
@@ -92,15 +97,15 @@ export function getEntry(filePath: string): File | Directory | undefined {
   // Try every possible suffix.
   for (let i = 0; i < parts.length; i++) {
     const candidate = parts.slice(i).join(path.sep);
-    console.log(`Checking candidate: ${candidate}`);
+    // console.log(`Checking candidate: ${candidate}`);
     if (flatVFS.has(candidate)) {
-      console.log(`Found candidate: ${candidate}`);
+      console.log(`getEntry candidate found: ${candidate}`);
       const entry = flatVFS.get(candidate)!;
       lookupCache.set(filePath, entry);
       return entry;
     }
   }
-  console.log(`No entry found for: ${filePath}`);
+  // console.log(`No entry found for: ${filePath}`);
   lookupCache.set(filePath, null);
   return undefined;
 }

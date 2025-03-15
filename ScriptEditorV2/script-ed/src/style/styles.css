@@ -3,8 +3,11 @@
   --theia-ui-font-size0: 10px;
   --theia-ui-font-size1: 12px;
   --theia-statusBar-background: #7380f9;
+  --theia-statusBar-noFolderBackground: #7380f9;
   --theia-statusBar-foreground: #000;
+  --theia-statusBar-noFolderForeground: #000;
   --theia-activityBar-foreground: #7380f9;
+
   --theia-tab-activeBorder: #7380f9;
   --theia-mainToolbar-foreground: #7380f9;
   --theia-notificationsInfoIcon-foreground: #7380f9;

@@ -7,6 +7,7 @@ const configs = require('./gen-webpack.config.js');
 const nodeConfig = require('./gen-webpack.node.config.js');
 const CopyPlugin = require("copy-webpack-plugin");
 const path = require('path');
+const webpack = require('webpack');
 
 /**
  * Expose bundled modules on window.theia.moduleName namespace, e.g.
@@ -23,7 +24,14 @@ nodeConfig.config.plugins.push(
             { from: path.resolve(__dirname, '../script-ed/lib/utils'), to: path.resolve(__dirname, './lib/backend') },
         ]
     })
-)
+);
+
+nodeConfig.config.plugins.push(
+    new webpack.BannerPlugin({
+        banner: 'require("./install-all-hooks");\n',
+        raw: true
+    })
+);
 
 module.exports = [
     ...configs,
