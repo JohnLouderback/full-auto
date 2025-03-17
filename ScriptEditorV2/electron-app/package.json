@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@theia/cli": "1.59.0",
-    "electron": "^28.0.0"
+    "electron": "^34.2.0"
   },
   "scripts": {
     "bundle": "yarn rebuild && theia build --mode development",

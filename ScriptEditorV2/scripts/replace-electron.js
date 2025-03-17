@@ -99,6 +99,7 @@ function extractZip(zipPath, destPath) {
 
 // Main Logic
 (async () => {
+  return; // Bypass the update for now.
   const storedHash = readStoredHash();
   const currentHash = await getFileHash(ELECTRON_EXE_PATH);
 
