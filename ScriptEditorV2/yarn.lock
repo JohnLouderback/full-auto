@@ -2080,6 +2080,25 @@
     "@theia/navigator" "1.59.0"
     tslib "^2.6.2"
 
+"@theia/toolbar@1.59.0":
+  version "1.59.0"
+  resolved "https://registry.yarnpkg.com/@theia/toolbar/-/toolbar-1.59.0.tgz#fd217e1be15a708b0b7ffcde056489510831fc17"
+  integrity sha512-u1hnjdGVecaTAy4Xb3S4jv1hTWPuXQbDV7UGy7UsRSRD2iZGZa1qnCGRgDQsHpv4miWY7ZBtk4XZ69AEJEAZ4A==
+  dependencies:
+    "@theia/core" "1.59.0"
+    "@theia/editor" "1.59.0"
+    "@theia/file-search" "1.59.0"
+    "@theia/filesystem" "1.59.0"
+    "@theia/monaco" "1.59.0"
+    "@theia/monaco-editor-core" "1.96.302"
+    "@theia/search-in-workspace" "1.59.0"
+    "@theia/userstorage" "1.59.0"
+    "@theia/workspace" "1.59.0"
+    ajv "^6.5.3"
+    jsonc-parser "^2.2.0"
+    perfect-scrollbar "^1.5.5"
+    tslib "^2.6.2"
+
 "@theia/typehierarchy@1.59.0":
   version "1.59.0"
   resolved "https://registry.npmjs.org/@theia/typehierarchy/-/typehierarchy-1.59.0.tgz"

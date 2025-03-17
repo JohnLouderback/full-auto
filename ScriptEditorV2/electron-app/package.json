@@ -22,6 +22,7 @@
     "@theia/terminal": "1.59.0",
     "@theia/vsx-registry": "^1.59.0",
     "@theia/workspace": "1.59.0",
+    "@theia/toolbar": "1.59.0",
     "script-ed": "0.0.0"
   },
   "devDependencies": {
