@@ -7,6 +7,7 @@
       "WebWorker"
     ],
     "inlineSourceMap": true,
+    "strictNullChecks": true,
     "inlineSources": true,
     "typeRoots": [
       "../Schema/"
