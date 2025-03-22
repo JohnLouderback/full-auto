@@ -1,6 +1,6 @@
 ﻿using Core.Utils;
-using GameLauncher.Script;
-using Microsoft.ClearScript.V8;
+using GameLauncher.Cli;
+using Spectre.Console.Cli;
 
 // Initialize a win 32 message loop.
 MessageLoop.Start();
@@ -10,12 +10,5 @@ TaskScheduler.UnobservedTaskException += (sender, e) => {
   e.SetObserved();
 };
 
-using var engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableTaskPromiseConversion);
-
-var exampleScriptPath = Path.Combine(
-  AppContext.BaseDirectory,
-  "ExampleScripts",
-  "launch-example.ts"
-);
-var scriptRunner = new ScriptRunner(exampleScriptPath);
-await scriptRunner.RunScript();
+var app = new CommandApp<RunCommand>();
+return await app.RunAsync(args);

@@ -80,7 +80,7 @@
 
     <Target Name="CopyLibs" AfterTargets="Build">
         <!-- Remove the ExampleScripts directory if it exists -->
-        <RemoveDir Directories="$(OutputPath)\Lib" Condition="Exists('$(OutputPath)\Libs')"/>
+        <RemoveDir Directories="$(OutputPath)\Libs" Condition="Exists('$(OutputPath)\Libs')"/>
         <Delete Files="$(OutputPath)\tsconfig.json" Condition="Exists('$(OutputPath)\tsconfig.json')"/>
 
         <ItemGroup>
