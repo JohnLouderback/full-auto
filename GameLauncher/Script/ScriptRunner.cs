@@ -48,7 +48,7 @@ public class ScriptRunner {
 
     try {
       await engine.Evaluate(
-          new DocumentInfo(scriptPath) {
+          new DocumentInfo(new Uri(scriptPath)) {
             Category = ModuleCategory.Standard
           },
           jsScriptContent
