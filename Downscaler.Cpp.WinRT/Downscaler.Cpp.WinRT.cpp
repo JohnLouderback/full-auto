@@ -5,7 +5,7 @@
 
 #include <intsafe.h>
 #include "framework.h"
-#include "DownscalerV3.Cpp.WinRT.h"
+#include "Downscaler.Cpp.WinRT.h"
 #include <winrt/Windows.Graphics.Capture.h>
 #include <windows.graphics.capture.h>
 #include <windows.graphics.capture.interop.h>
