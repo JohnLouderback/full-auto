@@ -14,7 +14,7 @@ public class ScriptDocumentLoader : DocumentLoader {
   ) {
     if (specifier.StartsWith("@library/")) {
       // Get the path for the library file.
-      var libraryPath = Path.Combine(AppContext.BaseDirectory, "Lib", specifier[9..]);
+      var libraryPath = Path.Combine(AppContext.BaseDirectory, "Libs", specifier[9..]);
 
       // First, we'll check if there's a compiled JS version of the library.
       var jsLibraryPath = Path.ChangeExtension(libraryPath, ".js");
