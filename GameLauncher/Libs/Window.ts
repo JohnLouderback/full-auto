@@ -99,7 +99,7 @@ export interface Window {
      * @throws ArgumentException Thrown when the event name is not the name of a
      * known event.
      */
-    on(eventName: string, callback: WindowEventCallback): void;
+    on(eventName: "shown" | "hidden" | "minimized" | "maximized" | "restored" | "focused" | "boundsChanged" | "closed", callback: WindowEventCallback): void;
 }
 
 // Auto-generated from C# delegate WindowEventCallback

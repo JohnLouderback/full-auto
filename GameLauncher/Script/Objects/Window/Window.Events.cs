@@ -132,7 +132,13 @@ public partial class Window {
   ///   Thrown when the event name is not the name of a known event.
   /// </exception>
   [ScriptMember("on")]
-  public void On(string eventName, WindowEventCallback callback) {
+  public void On(
+    [TsTypeOverride(
+      """ "shown" | "hidden" | "minimized" | "maximized" | "restored" | "focused" | "boundsChanged" | "closed" """
+    )]
+    string eventName,
+    WindowEventCallback callback
+  ) {
     switch (eventName) {
       case "shown":
       case "hidden":

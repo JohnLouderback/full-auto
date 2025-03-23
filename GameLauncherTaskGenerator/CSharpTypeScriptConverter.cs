@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace GameLauncherTaskGenerator;
@@ -10,6 +11,41 @@ namespace GameLauncherTaskGenerator;
 /// </summary>
 public static class CSharpTypeScriptConverter {
   public static string Convert(TypeSyntax type) {
+    // Check to see if the type is a type with a "AttributeLists" property. If it is, we'll check
+    // for any attributes that override the TypeScript type. Because this is a type, we'll need to 
+    // get the node that this is a part of, which is the parent of the type.
+    var parent = type.Parent;
+    if (parent is MemberDeclarationSyntax or ParameterSyntax) {
+      // If the parent is a member declaration (like a class or method) or a parameter, we can check
+      // for the "TsTypeOverride" attribute. We'll obtain a reference to the "AttributeLists" property
+      // via reflection since "MemberDeclarationSyntax" and "ParameterSyntax" both have the property,
+      // but do not share a common base type that exposes it.
+      var attributeLists =
+        (SyntaxList<AttributeListSyntax>)
+        (parent.GetType()
+           .GetProperty("AttributeLists")
+           ?.GetValue(parent) ??
+         throw new InvalidOperationException(
+           "Unable to get AttributeLists property"
+         ));
+
+      // Check for the "TsTypeOverride" attribute in the attribute lists.
+      var attribute = attributeLists
+        .SelectMany(list => list.Attributes)
+        .FirstOrDefault(attr => attr.Name.ToString() == "TsTypeOverride");
+
+      if (attribute != null) {
+        var tsType = attribute.ArgumentList?.Arguments.FirstOrDefault()
+          ?.ToString()
+          .Trim('"') // Trim the quotes from the string literal
+          .Trim(); // Remove any whitespace
+        if (!string.IsNullOrEmpty(tsType)) {
+          // If we found a "TsTypeOverride" attribute with a valid TypeScript type, return it.
+          return tsType;
+        }
+      }
+    }
+
     return Convert(type.ToString());
   }
 
