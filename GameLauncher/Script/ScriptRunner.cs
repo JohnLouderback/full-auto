@@ -1,4 +1,5 @@
 ﻿using GameLauncher.Script.Globals;
+using GameLauncher.Script.Objects;
 using GameLauncher.Utils;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.JavaScript;
@@ -47,13 +48,25 @@ public class ScriptRunner {
     InjectGlobals(engine);
 
     try {
-      await engine.Evaluate(
-          new DocumentInfo(new Uri(scriptPath)) {
-            Category = ModuleCategory.Standard
-          },
-          jsScriptContent
-        )
-        .ToTask();
+      var obj = engine.Evaluate(
+        new DocumentInfo(new Uri(scriptPath)) {
+          Category = ModuleCategory.Standard
+        },
+        jsScriptContent
+      );
+
+      // If the script uses top-level await, we need to wait for the promise to resolve before
+      // continuing.
+      //if (obj is not null and not VoidResult && IsPromise(obj)) {
+      if (obj is Task promise) {
+        await promise.ToTask();
+      }
+
+      // Once the script has completed running, we need to undo any tasks that were executed that
+      // were intended to be reversed. For example, if the user sets the screen resolution, we need
+      // to restore the original resolution when the script completes (unless they chose to persist
+      // the change).
+      await UndoableResult.ReverseAll();
     }
     catch (Exception exception) {
       if (exception is IScriptEngineException scriptException) {

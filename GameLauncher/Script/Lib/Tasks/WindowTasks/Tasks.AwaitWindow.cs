@@ -10,7 +10,13 @@ using static GameLauncher.Script.Utils.JSInteropUtils;
 namespace GameLauncher.Script;
 
 public static partial class Tasks {
-  public delegate bool WindowCriteriaCallback(Window hwnd);
+  /// <summary>
+  ///   A function whose purpose is to determine whether a given window matches the criteria. If the
+  ///   window matches the criteria, the function should return <see langword="true" />; otherwise,
+  ///   <see langword="false" />.
+  /// </summary>
+  /// <param name="window"> The window to check. </param>
+  public delegate bool WindowCriteriaCallback(Window window);
 
 
   /// <summary>

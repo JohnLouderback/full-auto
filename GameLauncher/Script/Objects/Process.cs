@@ -8,7 +8,7 @@ namespace GameLauncher.Script.Objects;
 ///   Represents a process that is or was running on the system.
 /// </summary>
 [TypeScriptExport]
-public class Process {
+public class Process : ObjectBase {
   private readonly System.Diagnostics.Process process;
   private readonly ScriptEngine               engine;
 

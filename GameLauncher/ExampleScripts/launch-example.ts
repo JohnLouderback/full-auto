@@ -8,12 +8,13 @@ await wait(1000);
 console.log("Waited for 1 second.");
 
 const app = launch(
-  "C:\\Users\\John\\AppData\\Local\\Fork\\app-2.5.0\\Fork.exe"
+  "C:\\Users\\John\\AppData\\Local\\Fork\\current\\Fork.exe"
 );
 
 if (app === null) {
   console.error("Failed to launch Fork.");
 } else {
+  console.log(app);
   console.log("Fork launched.");
   console.log(
     `Process Name: ${app.process.name},
@@ -31,6 +32,7 @@ Process ID: 0x${app.process.pid.toString(16)}`
   if (window === null) {
     console.error("Failed to find Fork window.");
   } else {
+    console.log(window); // Log the window object for debugging
     console.log("Fork window found.");
     console.log(`Window Title: ${window.title}\nWindow Class: ${window.className}`);
     console.log('Waiting for window to be shown...');
@@ -45,6 +47,7 @@ Process ID: 0x${app.process.pid.toString(16)}`
         console.log(window.getBoundingBox());
       });
     });
+
     window.on('maximized', () => {
       console.log('Window maximized.');
     });
@@ -63,5 +66,6 @@ Process ID: 0x${app.process.pid.toString(16)}`
   }
 
   await app.exitSignal;
+  console.log(app);
   console.log("Fork exited.");
 }

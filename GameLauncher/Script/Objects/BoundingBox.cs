@@ -9,7 +9,7 @@ namespace GameLauncher.Script.Objects;
 ///   to the origin of the space. The origin is context-specific.
 /// </summary>
 [TypeScriptExport]
-public class BoundingBox {
+public class BoundingBox : ObjectBase {
   [ScriptMember("x")] public int X { get; set; }
 
   [ScriptMember("y")] public int Y { get; set; }

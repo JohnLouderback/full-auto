@@ -1,6 +1,7 @@
 // This file is auto-generated. Do not modify manually.
 
 import { Application } from "./Application";
+import { Monitor } from "./Monitor";
 import { Window } from "./Window";
 import { WindowSearchCriteria } from "./WindowSearchCriteria";
 
@@ -17,6 +18,22 @@ import { WindowSearchCriteria } from "./WindowSearchCriteria";
 export function launch(path: string): Application | null {
     // @ts-expect-error - This function is injected into the engine dynamically.
     return __Tasks.Launch(path);
+}
+
+
+export function changeResolution(width: number, height: number, refreshRate: number): void {
+    // @ts-expect-error - This function is injected into the engine dynamically.
+    return __Tasks.ChangeResolution(width, height, refreshRate);
+}
+
+/**
+ * Retrieves a list of all monitors on the system.
+ *
+ * @returns An array of all monitors on the system.
+ */
+export function getAllMonitors(): Array<Monitor> {
+    // @ts-expect-error - This function is injected into the engine dynamically.
+    return __Tasks.GetAllMonitors();
 }
 
 /**
@@ -54,5 +71,5 @@ export async function awaitWindow(...args: [searchCriteria: WindowSearchCriteria
 
 
 // Auto-generated from C# delegate WindowCriteriaCallback
-export type WindowCriteriaCallback = (hwnd: Window) => boolean;
+export type WindowCriteriaCallback = (window: Window) => boolean;
 

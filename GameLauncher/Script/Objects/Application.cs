@@ -10,7 +10,7 @@ namespace GameLauncher.Script.Objects;
 ///   Abstractly represents an executable application that is or was running on the system.
 /// </summary>
 [TypeScriptExport]
-public class Application {
+public class Application : ObjectBase {
   private readonly ScriptEngine engine;
 
   /// <summary>

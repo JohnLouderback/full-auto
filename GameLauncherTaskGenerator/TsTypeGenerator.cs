@@ -93,6 +93,28 @@ public static class TsTypeGenerator {
     var isInterface = typeDecl is InterfaceDeclarationSyntax;
     var tsKeyword   = isInterface ? "interface" : "class";
 
+    // Find the types that this type extends that also have the "[TypeScriptExport]" attribute.
+    var extends = typeDecl.BaseList?.Types
+      .Select(t => t.Type.ToString())
+      .Where(t => customTypes.ContainsKey(t))
+      .ToList();
+
+    var extendsStr = extends != null && extends.Any()
+                       ? $" extends {string.Join(", ", extends)}"
+                       : "";
+
+    // If the type extends another custom type, add it to the dependencies so that we can ensure
+    // we import it in the generated TypeScript file.
+    if (extends is not null) {
+      foreach (var ext in extends) {
+        var baseType = ExtractBaseType(ext);
+        if (customTypes.ContainsKey(baseType) &&
+            baseType != typeName) {
+          deps.Add(baseType);
+        }
+      }
+    }
+
     // Check if the type is marked as an input type. This has special implications for the type
     // generator, such as making nullable properties optional in TypeScript.
     var isInputType = typeDecl.AttributeLists.Any(
@@ -108,7 +130,7 @@ public static class TsTypeGenerator {
     }
 
     sb.AppendLine($"// Auto-generated from C# {(isInterface ? "interface" : "class")} {typeName}");
-    sb.AppendLine($"export interface {typeName} {{");
+    sb.AppendLine($"export interface {typeName}{extendsStr} {{");
 
     // Process public members.
     foreach (var member in typeDecl.Members) {
@@ -269,7 +291,9 @@ public static class TsTypeGenerator {
         var allDeps = new HashSet<string>(dependencies);
         allDeps.UnionWith(localDeps);
         dependencies = allDeps;
-        sb.AppendLine($"    {(isAsync ? "async " : "")}{methodName}({parameters}): {returnType};");
+        //sb.AppendLine($"    {(isAsync ? "async " : "")}{methodName}({parameters}): {returnType};");
+        // ^ TS Interfaces don't allow async modifiers on methods. You're meant to only return promises.
+        sb.AppendLine($"    {methodName}({parameters}): {returnType};");
       }
 
       if (member is DelegateDeclarationSyntax) {

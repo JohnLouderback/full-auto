@@ -2,6 +2,7 @@
 using System.Dynamic;
 using System.Reflection;
 using Microsoft.ClearScript;
+using static GameLauncher.Script.Utils.ObjectUtils;
 
 namespace GameLauncher.Script.Utils;
 
@@ -51,6 +52,9 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
       """
     );
 
+  private dynamic ToStringFunc =>
+    ScriptEngine.Current.Evaluate("(obj) => ('ToString' in obj ? obj.ToString() : String(obj))");
+
   /// <inheritdoc />
   public object? this[int index] {
     get => jsArray.InvokeMethod("at", index);
@@ -59,8 +63,8 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
 
   /// <inheritdoc />
   T IList<T>.this[int index] {
-    get => throw new NotImplementedException();
-    set => throw new NotImplementedException();
+    get => (T)jsArray.InvokeMethod("at", index);
+    set => jsArray.InvokeMethod("Insert", index, value);
   }
 
 
@@ -235,6 +239,11 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
   /// <inheritdoc />
   public void RemoveAt(int index) {
     jsArray.InvokeMethod("splice", index, 1);
+  }
+
+
+  public override string ToString() {
+    return ToJsonLikeString(this);
   }
 
 

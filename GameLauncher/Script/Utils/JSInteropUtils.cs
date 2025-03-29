@@ -32,7 +32,7 @@ public static class JSInteropUtils {
   /// <typeparam name="T"> The type to cast the property to. </typeparam>
   /// <returns> The value of the property, cast to the specified type. </returns>
   public static T GetProperty<T>(this ScriptObject obj, string name) {
-    return (T)obj.GetProperty(name);
+    return (T)obj.GetProperty(name); 
   }
 
 

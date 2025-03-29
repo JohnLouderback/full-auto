@@ -10,7 +10,7 @@ namespace GameLauncher.Script.Objects;
 /// </summary>
 [TypeScriptExport]
 [IsInputType]
-public class WindowSearchCriteria {
+public class WindowSearchCriteria : ObjectBase {
   [ScriptMember("title")] public string? Title { get; set; }
 
   [ScriptMember("className")] public string? ClassName { get; set; }

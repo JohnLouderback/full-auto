@@ -10,7 +10,7 @@ namespace GameLauncher.Script.Objects;
 ///   Represents a window of an application or another window.
 /// </summary>
 [TypeScriptExport]
-public partial class Window {
+public partial class Window : ObjectBase {
   private readonly HWND         hwnd;
   private readonly Win32Window  win32Window;
   private          ScriptEngine engine;

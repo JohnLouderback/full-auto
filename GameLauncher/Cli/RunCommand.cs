@@ -20,12 +20,8 @@ public class RunCommand : AsyncCommand<RunCommand.Settings> {
                  ? settings.ScriptPath
                  : GetFullPath(settings.ScriptPath);
 
-    var exampleScriptPath = Combine(
-      AppContext.BaseDirectory,
-      "ExampleScripts",
-      "launch-example.ts"
-    );
-    var scriptRunner = new ScriptRunner(exampleScriptPath);
+
+    var scriptRunner = new ScriptRunner(path);
     await scriptRunner.RunScript();
     return 0;
   }

@@ -77,8 +77,11 @@ MONITORINFOEXW
 DISPLAY_DEVICE
 EnumDisplayDevices
 EnumDisplayMonitors
+EnumDisplaySettings
+ChangeDisplaySettingsEx
 MONITORINFOF_PRIMARY
 SetWinEventHook
+DEVMODEW
 CHILDID_SELF
 UnhookWinEvent
 PostThreadMessage
