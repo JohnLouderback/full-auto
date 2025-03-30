@@ -17,28 +17,34 @@ public class Screen : ObjectBase {
   private readonly HMONITOR     hMonitor;
   private readonly Win32Monitor win32Monitor;
 
-  /// <summary>
-  ///   The current display mode of the monitor. The display mode includes the screen resolution,
-  ///   color depth, and refresh rate.
-  /// </summary>
-  [ScriptMember("currentDisplayMode")]
-  public DisplayMode CurrentDisplayMode {
-    get {
-      var displayMode = win32Monitor.GetCurrentDisplayMode();
-      return new DisplayMode {
-        Width        = (int)displayMode.dmPelsWidth,
-        Height       = (int)displayMode.dmPelsHeight,
-        ColorDepth   = (int)displayMode.dmBitsPerPel,
-        RefreshRate  = (int)displayMode.dmDisplayFrequency,
-        IsInterlaced = displayMode.IsInterlaced()
-      };
-    }
-  }
-
 
   internal Screen(Win32Monitor monitor) {
     win32Monitor = monitor;
     hMonitor     = monitor.HMonitor;
+  }
+
+
+  /// <summary>
+  ///   <para>
+  ///     Gets the current display mode of the monitor. The display mode includes the screen resolution,
+  ///     color depth, and refresh rate.
+  ///   </para>
+  ///   <para>
+  ///     The value returned is a "snapshot" of the current display mode at the time of calling this
+  ///     method. If the display mode changes after this method is called, you will need to call this
+  ///     method again to get the updated display mode.
+  ///   </para>
+  /// </summary>
+  [ScriptMember("currentDisplayMode")]
+  public DisplayMode GetCurrentDisplayMode() {
+    var displayMode = win32Monitor.GetCurrentDisplayMode();
+    return new DisplayMode {
+      Width        = (int)displayMode.dmPelsWidth,
+      Height       = (int)displayMode.dmPelsHeight,
+      ColorDepth   = (int)displayMode.dmBitsPerPel,
+      RefreshRate  = (int)displayMode.dmDisplayFrequency,
+      IsInterlaced = displayMode.IsInterlaced()
+    };
   }
 
 
@@ -99,7 +105,7 @@ public class Screen : ObjectBase {
 
     // We need to store the current display mode before changing it so we can revert back to it
     // later.
-    var currentDisplayMode = CurrentDisplayMode;
+    var currentDisplayMode = GetCurrentDisplayMode();
 
     // Set the display mode to the specified display mode and as temporary. Temporary display modes
     // are not saved to the registry and are reset when the system is restarted.
@@ -143,7 +149,7 @@ public class Screen : ObjectBase {
       throw new ArgumentException("The display mode must have a width and height.");
     }
 
-    var currentDisplayMode = CurrentDisplayMode;
+    var currentDisplayMode = GetCurrentDisplayMode();
 
     var width  = displayMode.GetProperty<int>("width");
     var height = displayMode.GetProperty<int>("height");
@@ -206,7 +212,7 @@ public class Screen : ObjectBase {
     int? colorDepth = null,
     bool shouldPersist = false
   ) {
-    var currentDisplayMode = CurrentDisplayMode;
+    var currentDisplayMode = GetCurrentDisplayMode();
 
     return SetDisplayMode(
       new DisplayMode {
