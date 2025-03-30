@@ -53,6 +53,123 @@ public static class Win32MonitorExtensions {
 
 
   /// <summary>
+  ///   Sets the specified monitor as the primary monitor. This will move the primary monitor to the
+  ///   specified monitor and reposition all other monitors accordingly, as setting the primary monitor
+  ///   will move the primary monitor to (0, 0) and all other monitors will be moved relative to that.
+  /// </summary>
+  /// <param name="monitor"> The monitor to set as the primary monitor. </param>
+  /// <returns> The previous primary monitor. </returns>
+  /// <exception cref="InvalidOperationException">
+  ///   Thrown if the specified monitor is not found or if there are no monitors connected.
+  /// </exception>
+  public static unsafe Win32Monitor SetAsPrimaryMonitor(
+    this Win32Monitor monitor
+  ) {
+    var           targetDeviceName = monitor.GetDeviceName();
+    var           displays         = NativeUtils.EnumerateMonitors().ToList();
+    Win32Monitor? previousPrimary  = null;
+
+    var devModes = new List<(string DeviceName, DEVMODEW DevMode, bool IsPrimary)>();
+
+    foreach (var display in displays) {
+      var deviceName = display.GetDeviceName();
+
+      var mode = new DEVMODEW();
+      mode.dmSize = (ushort)Marshal.SizeOf<DEVMODEW>();
+
+      // Get the current display settings for the monitor.
+      if (!EnumDisplaySettings(
+            deviceName,
+            ENUM_DISPLAY_SETTINGS_MODE.ENUM_CURRENT_SETTINGS,
+            ref mode
+          )) {
+        // If we can't get the current display settings, skip this monitor. This can happen if the
+        // monitor is not connected or if the device name is invalid.
+        continue;
+      }
+
+      var isPrimary = display.IsPrimary;
+
+      if (isPrimary) {
+        // If this is the primary monitor, store it so we can revert back to it later.
+        previousPrimary = display;
+      }
+
+      devModes.Add((deviceName, mode, isPrimary));
+    }
+
+    // If we don't have any monitors, throw an exception.
+    if (devModes.Count == 0) {
+      throw new InvalidOperationException(
+        "No monitors found when attempting to set a new primary."
+      );
+    }
+
+    // If a previous primary monitor was not found, throw an exception.
+    if (previousPrimary == null) {
+      throw new InvalidOperationException(
+        "No primary monitor found when attempting to set a new primary."
+      );
+    }
+
+    var target = devModes.FirstOrDefault(
+      m => m.DeviceName.Equals(targetDeviceName, StringComparison.OrdinalIgnoreCase)
+    );
+    if (target.DeviceName == null) {
+      throw new InvalidOperationException($"Target device {targetDeviceName} not found.");
+    }
+
+    // Store the original position of the new primary (so we can calculate relative deltas)
+    var deltaX = target.DevMode.Anonymous1.Anonymous2.dmPosition.x;
+    var deltaY = target.DevMode.Anonymous1.Anonymous2.dmPosition.y;
+
+    // Step 1: Set new primary to (0, 0)
+    target.DevMode.dmFields                           |= DEVMODE_FIELD_FLAGS.DM_POSITION;
+    target.DevMode.Anonymous1.Anonymous2.dmPosition.x =  0;
+    target.DevMode.Anonymous1.Anonymous2.dmPosition.y =  0;
+
+    // Apply it as primary (but don't reset yet)
+    ChangeDisplaySettingsEx(
+      target.DeviceName,
+      target.DevMode,
+      CDS_TYPE.CDS_SET_PRIMARY | CDS_TYPE.CDS_UPDATEREGISTRY | CDS_TYPE.CDS_NORESET,
+      (void*)NULL
+    );
+
+    // Step 2: Reposition all other displays
+    var offsetX = target.DevMode.dmPelsWidth;
+    for (var i = 0; i < devModes.Count; i++) {
+      var (deviceName, devMode, isPrimary) = devModes[i];
+
+      if (deviceName == target.DeviceName) {
+        continue;
+      }
+
+      devMode.dmFields                           |= DEVMODE_FIELD_FLAGS.DM_POSITION;
+      devMode.Anonymous1.Anonymous2.dmPosition.x -= deltaX;
+      devMode.Anonymous1.Anonymous2.dmPosition.y -= deltaY;
+
+      // Apply updated display mode, setting the position.
+      ChangeDisplaySettingsEx(
+        deviceName,
+        devMode,
+        CDS_TYPE.CDS_UPDATEREGISTRY | CDS_TYPE.CDS_NORESET,
+        (void*)NULL
+      );
+
+      // If you need to persist the change back to the list, do it like this:
+      devModes[i] = (deviceName, devMode, isPrimary);
+    }
+
+    // Step 3: Apply all changes
+    ChangeDisplaySettingsEx(null, null, 0, (void*)NULL);
+
+    // Return the previous primary monitor.
+    return (Win32Monitor)previousPrimary;
+  }
+
+
+  /// <summary>
   ///   Sets the display mode for the monitor. This will throw if the specified mode is not valid for
   ///   the monitor or if the system fails to apply the change.
   /// </summary>

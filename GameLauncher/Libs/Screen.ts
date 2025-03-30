@@ -10,12 +10,18 @@ import { ChangeDisplayModeResult } from "./ChangeDisplayModeResult";
 // Auto-generated from C# class Screen
 export interface Screen {
     /**
-     * The current display mode of the monitor. The display mode includes the
-     * screen resolution,
+     * Gets the current display mode of the monitor. The display mode includes
+     * the screen resolution,
      * color depth, and refresh rate.
      *
+     * The value returned is a "snapshot" of the current display mode at the
+     * time of calling this
+     * method. If the display mode changes after this method is called, you will
+     * need to call this
+     * method again to get the updated display mode.
+     *
      */
-    readonly currentDisplayMode: DisplayMode;
+    currentDisplayMode(): DisplayMode;
     /**
      * Gets the available display modes for the monitor. The display modes
      * include available

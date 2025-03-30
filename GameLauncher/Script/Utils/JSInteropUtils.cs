@@ -31,8 +31,11 @@ public static class JSInteropUtils {
   /// <param name="name"> The name of the property. </param>
   /// <typeparam name="T"> The type to cast the property to. </typeparam>
   /// <returns> The value of the property, cast to the specified type. </returns>
-  public static T GetProperty<T>(this ScriptObject obj, string name) {
-    return (T)obj.GetProperty(name); 
+  public static T? GetProperty<T>(this ScriptObject obj, string name) {
+    // We treat undefined as null (implicitly meaning that we treat null and undefined as the same).
+    // So, if the value comes back as undefined, we return null.
+    var value = obj.GetProperty(name);
+    return (T?)(value is null or Undefined ? null : value);
   }
 
 
@@ -45,7 +48,7 @@ public static class JSInteropUtils {
   ///   <see langword="true" /> if the object has the property; otherwise, <see langword="false" />.
   /// </returns>
   public static bool HasProperty(this ScriptObject obj, string name) {
-    return obj.GetProperty(name) != null;
+    return obj.GetProperty(name) is not Undefined;
   }
 
 

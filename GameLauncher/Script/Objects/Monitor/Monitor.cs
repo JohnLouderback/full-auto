@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Windows.Win32.Graphics.Gdi;
 using Core.Models;
+using Core.Utils;
 using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
 
@@ -138,6 +139,32 @@ public partial class Monitor : ObjectBase {
 
     IsPrimary = monitor.IsPrimary;
     Screen    = new Screen(monitor);
+  }
+
+
+  /// <summary>
+  ///   Sets this monitor as the primary monitor. The primary monitor is the one that is used to display
+  ///   the taskbar and the desktop. It is typically the monitor that fullscreen applications are
+  ///   displayed
+  ///   on by default.
+  /// </summary>
+  /// <param name="shouldPersist">
+  ///   Whether to persist the change to the registry. If <c>false</c>, the change is temporary and
+  ///   will be reset when the script finishes executing. If <c>true</c>, the change is permanent
+  ///   and will persist after the script finishes executing and across system restarts.
+  /// </param>
+  /// <returns>
+  ///   The result of making the monitor primary. If you need to revert back to the previous primary
+  ///   monitor, you can call the <see cref="MakeMonitorPrimaryResult.Undo" /> method on the result.
+  /// </returns>
+  [ScriptMember("makePrimary")]
+  public MakeMonitorPrimaryResult MakePrimary(bool shouldPersist = false) {
+    var previousPrimary = win32Monitor.SetAsPrimaryMonitor();
+
+    return new MakeMonitorPrimaryResult(
+      previousPrimary,
+      !shouldPersist
+    );
   }
 
 

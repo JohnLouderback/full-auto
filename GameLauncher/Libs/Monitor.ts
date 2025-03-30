@@ -1,4 +1,5 @@
 import { Screen } from "./Screen";
+import { MakeMonitorPrimaryResult } from "./MakeMonitorPrimaryResult";
 
 /**
  * Represents a monitor (e.g. a display) connected to the system.
@@ -101,4 +102,20 @@ export interface Monitor {
      *
      */
     readonly deviceKey: string;
+    /**
+     * Sets this monitor as the primary monitor. The primary monitor is the one
+     * that is used to display
+     * the taskbar and the desktop. It is typically the monitor that fullscreen
+     * applications are
+     * displayed
+     * on by default.
+     *
+     * @param [shouldPersist=false] Whether to persist the change to the
+     * registry. If `false`, the change is temporary and
+     * will be reset when the script finishes executing. If `true`, the change
+     * is permanent
+     * and will persist after the script finishes executing and across system
+     * restarts.
+     */
+    makePrimary(shouldPersist?: boolean): MakeMonitorPrimaryResult;
 }

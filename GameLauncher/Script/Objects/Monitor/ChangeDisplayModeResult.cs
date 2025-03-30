@@ -6,6 +6,11 @@ using GameLauncherTaskGenerator;
 
 namespace GameLauncher.Script.Objects;
 
+/// <summary>
+///   Represents the result of changing the display mode of a monitor. Calling the
+///   <see cref="ChangeDisplayModeResult.Undo" /> method will revert the display mode to the previous
+///   mode.
+/// </summary>
 [TypeScriptExport]
 public class ChangeDisplayModeResult : UndoableResult {
   private readonly DisplayMode  originalDisplayMode;

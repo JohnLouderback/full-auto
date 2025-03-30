@@ -35,6 +35,7 @@ public class Screen : ObjectBase {
   ///     method again to get the updated display mode.
   ///   </para>
   /// </summary>
+  /// <returns> The current display mode of the monitor. </returns>
   [ScriptMember("currentDisplayMode")]
   public DisplayMode GetCurrentDisplayMode() {
     var displayMode = win32Monitor.GetCurrentDisplayMode();
