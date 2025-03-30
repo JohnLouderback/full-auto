@@ -198,6 +198,34 @@ public static class HwndExtensions {
 
 
   /// <summary>
+  ///   Post a message to the window. This is a wrapper around the PostMessage function. This differs
+  ///   from SendMessage in that it does not wait for the message to be processed before returning.
+  ///   This is useful for sending messages that do not require a response or that can be processed
+  ///   later.
+  /// </summary>
+  /// <param name="hwnd"> The window to post the message to. </param>
+  /// <param name="message"> The message to post. </param>
+  /// <param name="wParam">
+  ///   The word parameter. Typically used for sending information such as the control ID or
+  ///   the state of a control.
+  /// </param>
+  /// <param name="lParam">
+  ///   The long parameter. Typically used for sending information such as the position of a mouse
+  ///   click or the state of a key.
+  /// </param>
+  public static void PostMessage(
+    this HWND hwnd,
+    Msg message,
+    WPARAM wParam = default,
+    LPARAM lParam = default
+  ) {
+    if (PInvoke.PostMessage(hwnd, (uint)message, wParam, lParam) == 0) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
+  }
+
+
+  /// <summary>
   ///   Removes the owner from the given window. If the window has no owner, then this method does
   ///   nothing and returns the window.
   /// </summary>
@@ -217,6 +245,33 @@ public static class HwndExtensions {
     window.SetWindowPosition();
 
     return window;
+  }
+
+
+  /// <summary>
+  ///   Send a message to the window. This is a wrapper around the SendMessage function. This differs
+  ///   from PostMessage in that it waits for the message to be processed before returning. This is
+  ///   useful for sending messages that require a response or that need to be processed immediately.
+  /// </summary>
+  /// <param name="hwnd"> The window to send the message to. </param>
+  /// <param name="message"> The message to send. </param>
+  /// <param name="wParam">
+  ///   The word parameter. Typically used for sending information such as the control ID or
+  ///   the state of a control.
+  /// </param>
+  /// <param name="lParam">
+  ///   The long parameter. Typically used for sending information such as the position of a mouse
+  ///   click or the state of a key.
+  /// </param>
+  public static void SendMessage(
+    this HWND hwnd,
+    Msg message,
+    WPARAM wParam = default,
+    LPARAM lParam = default
+  ) {
+    if (PInvoke.SendMessage(hwnd, (uint)message, wParam, lParam) == 0) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
   }
 
 
@@ -244,6 +299,28 @@ public static class HwndExtensions {
     }
 
     return hwnd;
+  }
+
+
+  /// <summary>
+  ///   Set the window placement command of the window. Such as minimizing, maximizing, or restoring the
+  ///   window.
+  /// </summary>
+  /// <param name="hwnd"> The window to set the placement command of. </param>
+  /// <param name="showCmd"> The command to set the window to. </param>
+  /// <exception cref="Win32Exception"> Thrown when the window placement could not be set. </exception>
+  public static void SetWindowPlacementCommand(
+    this HWND hwnd,
+    SHOW_WINDOW_CMD showCmd
+  ) {
+    var placement = new WINDOWPLACEMENT {
+      length  = (uint)Marshal.SizeOf<WINDOWPLACEMENT>(),
+      showCmd = showCmd
+    };
+
+    if (!PInvoke.SetWindowPlacement(hwnd, in placement)) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
   }
 
 

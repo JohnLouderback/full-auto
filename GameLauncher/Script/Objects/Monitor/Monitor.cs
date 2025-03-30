@@ -117,7 +117,7 @@ public partial class Monitor : ObjectBase {
       );
     }
 
-    // Get the short device string. For example "Generic PnP Monitor (HDMI)" becomes
+    // Get the short device string. For example "Generic PnP Monitor(HDMI)" becomes
     // "Generic PnP Monitor".
     DeviceString = DeviceStringRegex().Replace(monitor.DeviceString, "");
 
