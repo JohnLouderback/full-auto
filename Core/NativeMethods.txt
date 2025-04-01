@@ -87,3 +87,4 @@ CHILDID_SELF
 UnhookWinEvent
 PostThreadMessage
 GetThreadId
+SetProcessDpiAwarenessContext

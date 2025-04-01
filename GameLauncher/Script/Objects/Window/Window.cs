@@ -44,52 +44,9 @@ public partial class Window : ObjectBase {
     win32Window = window;
     hwnd        = window.Hwnd;
 
-    InitializeEvents();
-  }
-
-
-  [ScriptMember("getBoundingBox")]
-  public BoundingBox GetBoundingBox() {
-    var rect = win32Window.GetWindowRect();
-
-    var boundingBox = new BoundingBox {
-      X      = rect.left,
-      Y      = rect.top,
-      Width  = rect.right - rect.left,
-      Height = rect.bottom - rect.top
-    };
-
-    return boundingBox;
-  }
-
-
-  /// <summary>
-  ///   Sets the position and size of the window.
-  /// </summary>
-  /// <param name="boundingBox"> The bounding box to set the window to. </param>
-  /// <returns> The same window this method was called on, for chaining. </returns>
-  [ScriptMember("setBoundingBox")]
-  public Window SetBoundingBox(BoundingBox boundingBox) {
-    hwnd.SetWindowPosition(boundingBox.X, boundingBox.Y, boundingBox.Width, boundingBox.Height);
-    return this;
-  }
-
-
-  /// <summary>
-  ///   Sets the position and size of the window.
-  /// </summary>
-  /// <param name="x">
-  ///   The x-coordinate of the window.
-  /// </param>
-  /// <param name="y">
-  ///   The y-coordinate of the window.
-  /// </param>
-  /// <param name="width"> The width of the window. </param>
-  /// <param name="height"> The height of the window. </param>
-  /// <returns> The same window this method was called on, for chaining. </returns>
-  [ScriptMember("setBoundingBox")]
-  public Window SetBoundingBox(int x, int y, int width, int height) {
-    hwnd.SetWindowPosition(x, y, width, height);
-    return this;
+    // Ensure the window still exists at this point before trying to initialize events.
+    if (!IsClosed) {
+      InitializeEvents();
+    }
   }
 }

@@ -20,6 +20,7 @@ export interface Screen {
      * need to call this
      * method again to get the updated display mode.
      *
+     * @returns The current display mode of the monitor.
      */
     currentDisplayMode(): DisplayMode;
     /**

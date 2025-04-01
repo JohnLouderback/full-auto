@@ -73,6 +73,12 @@ public static partial class Tasks {
   ) {
     return await AwaitWindow(
              hwnd => {
+               // Because this runs across threads, we need to check if the window is still valid.
+               // If the window is closed, we can't use it, so we continue our search.
+               if (!hwnd.IsWindow()) {
+                 return false;
+               }
+
                var window = new Window(
                  new Win32Window {
                    Hwnd        = hwnd,

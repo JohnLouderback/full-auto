@@ -219,22 +219,8 @@ public static class NativeUtils {
   /// <returns> A <see cref="MONITORENUMPROC" /> that can be used to enumerate monitors. </returns>
   public static unsafe MONITORENUMPROC GetMonitorEnumProc(ICollection<Win32Monitor> result) {
     return (hMonitor, hdcMonitor, lprcMonitor, dwData) => {
-      var monitorInfo = hMonitor.GetMonitorInfoEx();
-      var szDevice    = monitorInfo.szDevice.ToString();
-      var device      = hMonitor.GetDisplayDeviceById(szDevice);
-
       result.Add(
-        new Win32Monitor {
-          HMonitor     = hMonitor,
-          DeviceId     = device.DeviceID.ToString(),
-          DeviceName   = device.DeviceName.ToString(),
-          DeviceString = device.DeviceString.ToString(),
-          DeviceKey    = device.DeviceKey.ToString(),
-          MonitorRect  = monitorInfo.monitorInfo.rcMonitor,
-          WorkArea     = monitorInfo.monitorInfo.rcWork,
-          Dpi          = hMonitor.GetDpi(),
-          IsPrimary    = (monitorInfo.monitorInfo.dwFlags & MONITORINFOF_PRIMARY) != 0
-        }
+        hMonitor.ToWin32Monitor()
       );
       return true;
     };

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
+using Core.Models;
 using static Windows.Win32.PInvoke;
 using static Core.Utils.Macros;
 
@@ -66,5 +67,31 @@ public static class HMonitorExtensions {
     throw new Win32Exception(
       $"Failed to get the monitor information for the monitor with handle \"{monitor}\"."
     );
+  }
+
+
+  /// <summary>
+  ///   Converts the HMONITOR to a Win32Monitor object. The Win32Monitor object contains the
+  ///   monitor's device ID, device name, device string, device key, monitor rectangle, work area,
+  ///   DPI, and whether the monitor is the primary monitor.
+  /// </summary>
+  /// <param name="monitor"></param>
+  /// <returns></returns>
+  public static Win32Monitor ToWin32Monitor(this HMONITOR monitor) {
+    var monitorInfo = monitor.GetMonitorInfoEx();
+    var szDevice    = monitorInfo.szDevice.ToString();
+    var device      = monitor.GetDisplayDeviceById(szDevice);
+
+    return new Win32Monitor {
+      HMonitor     = monitor,
+      DeviceId     = device.DeviceID.ToString(),
+      DeviceName   = device.DeviceName.ToString(),
+      DeviceString = device.DeviceString.ToString(),
+      DeviceKey    = device.DeviceKey.ToString(),
+      MonitorRect  = monitorInfo.monitorInfo.rcMonitor,
+      WorkArea     = monitorInfo.monitorInfo.rcWork,
+      Dpi          = monitor.GetDpi(),
+      IsPrimary    = (monitorInfo.monitorInfo.dwFlags & MONITORINFOF_PRIMARY) != 0
+    };
   }
 }

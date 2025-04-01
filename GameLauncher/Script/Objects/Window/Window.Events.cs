@@ -32,6 +32,9 @@ public partial class Window {
   [ScriptMember("isClosed")]
   public bool IsClosed {
     get {
+      // If we haven't previously determined that the window is closed, check if it is closed. The
+      // reason we do this is because, if we have previously determined that the window is closed, we
+      // know it can never be _not_ closed again.
       if (!isClosed) {
         // If it's not forcibly marked closed, check the OS for safety:
         isClosed = !hwnd.IsWindow();

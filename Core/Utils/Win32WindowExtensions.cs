@@ -226,21 +226,8 @@ public static class Win32WindowExtensions {
   /// <param name="window"> The window to get the monitor of. </param>
   /// <returns> The monitor that this window is on. </returns>
   public static Win32Monitor GetMonitor(this Win32Window window) {
-    var hMonitor    = window.Hwnd.GetMonitor();
-    var monitorInfo = hMonitor.GetMonitorInfoEx();
-    var szDevice    = monitorInfo.szDevice.ToString();
-    var device      = hMonitor.GetDisplayDeviceById(szDevice);
-    return new Win32Monitor {
-      HMonitor     = hMonitor,
-      DeviceId     = device.DeviceID.ToString(),
-      DeviceName   = device.DeviceName.ToString(),
-      DeviceString = device.DeviceString.ToString(),
-      DeviceKey    = device.DeviceKey.ToString(),
-      MonitorRect  = monitorInfo.monitorInfo.rcMonitor,
-      WorkArea     = monitorInfo.monitorInfo.rcWork,
-      Dpi          = hMonitor.GetDpi(),
-      IsPrimary    = (monitorInfo.monitorInfo.dwFlags & MONITORINFOF_PRIMARY) != 0
-    };
+    var hMonitor = window.Hwnd.GetMonitor();
+    return hMonitor.ToWin32Monitor();
   }
 
 

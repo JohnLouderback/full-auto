@@ -116,6 +116,10 @@ export interface Monitor {
      * is permanent
      * and will persist after the script finishes executing and across system
      * restarts.
+     * @returns The result of making the monitor primary. If you need to revert
+     * back to the previous primary
+     * monitor, you can call the {@link MakeMonitorPrimaryResult.Undo} method on
+     * the result.
      */
     makePrimary(shouldPersist?: boolean): MakeMonitorPrimaryResult;
 }

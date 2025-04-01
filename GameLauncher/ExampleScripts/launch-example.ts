@@ -46,6 +46,8 @@ Process ID: 0x${app.process.pid.toString(16)}`
       window.on('boundsChanged', () => {
         console.log(window.getBoundingBox());
       });
+      window.makeBorderless();
+      window.makeFullscreen();
     });
 
     window.on('maximized', () => {
