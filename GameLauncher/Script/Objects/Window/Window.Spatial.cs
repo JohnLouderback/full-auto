@@ -1,10 +1,19 @@
 ﻿using Core.Utils;
+using GameLauncher.Utils.SendKeys;
 using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;
 
 public partial class Window {
+  private static readonly IEnumerable<Keystroke> altEnterShortcut = new List<Keystroke> {
+    new("Alt", true),
+    new("Enter", true),
+    new("Enter", false),
+    new("Alt", false)
+  };
+
+
   /// <summary>
   ///   Gets the bounding box of the window. This is the rectangle that contains the window's
   ///   position and size on the screen. The pixels are in screen coordinates, with the origin
@@ -64,6 +73,7 @@ public partial class Window {
           Width  = (int)displayMode.dmPelsWidth,
           Height = (int)displayMode.dmPelsHeight
         };
+        
         hwnd.SetWindowPosition(
           boundingBox.X,
           boundingBox.Y,
@@ -73,9 +83,11 @@ public partial class Window {
         return;
       }
       case "alt enter": {
-        throw new NotImplementedException(
-          "The method 'alt enter' is not implemented yet. Please use 'resize' instead."
-        );
+        // Focus the window.
+        Focus();
+        // Send it the Alt + Enter key combination.
+        KeySender.Send(altEnterShortcut);
+        return;
       }
       default: {
         throw new ArgumentException(

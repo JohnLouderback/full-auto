@@ -47,7 +47,7 @@ Process ID: 0x${app.process.pid.toString(16)}`
         console.log(window.getBoundingBox());
       });
       window.makeBorderless();
-      window.makeFullscreen();
+      window.makeFullscreen("alt enter");
     });
 
     window.on('maximized', () => {

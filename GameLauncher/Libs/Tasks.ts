@@ -20,6 +20,21 @@ export function launch(path: string): Application | null {
     return __Tasks.Launch(path);
 }
 
+/**
+ * Synthesizes keystrokes from a SendKeys-style string.
+ * For example:
+ * SendKeys("^a"); will send Ctrl + A.
+ * SendKeys("{Enter}"); will send Enter.
+ * SendKeys("{Del 4}"); will send Del 4 times.
+ * SendKeys("Hello World!"); will send Hello World!.
+ *
+ * @param keys
+ */
+export function sendKeys(keys: string): void {
+    // @ts-expect-error - This function is injected into the engine dynamically.
+    return __Tasks.SendKeys(keys);
+}
+
 
 export function changeResolution(width: number, height: number, refreshRate: number): void {
     // @ts-expect-error - This function is injected into the engine dynamically.
