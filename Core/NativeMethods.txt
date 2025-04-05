@@ -90,3 +90,4 @@ GetThreadId
 SetProcessDpiAwarenessContext
 SendInput
 KEYBD_EVENT_FLAGS
+SetPriorityClass

@@ -9,7 +9,7 @@ namespace GameLauncher.Script.Utils;
 public static class JSTypeConverter {
   private static dynamic? _getJSType;
 
-  private static dynamic getJSType => _getJSType ??= ScriptEngine.Current.Evaluate(
+  private static dynamic getJSType => _getJSType ??= AppState.ScriptEngine.Evaluate(
                                         """
                                         (() => {
                                           function getTypeName(value) {

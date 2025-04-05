@@ -1,5 +1,4 @@
 ﻿using Microsoft.ClearScript;
-using Microsoft.ClearScript.V8;
 
 namespace GameLauncher.Script.Utils;
 
@@ -11,9 +10,10 @@ public static class JSInteropUtils {
   private static dynamic? _isValueTruthy;
 
   private static ScriptEngine currentScriptEngine =>
-    ScriptEngine.Current is not null
-      ? lastScriptEngine = ScriptEngine.Current
-      : lastScriptEngine ??= new V8ScriptEngine();
+    AppState.ScriptEngine ??
+    throw new InvalidOperationException(
+      "The script engine is not initialized. Please initialize the script engine before using this method."
+    );
 
   private static dynamic isPlainObject => _isPlainObject ??= currentScriptEngine.Evaluate(
                                             "(value) => Object.prototype.toString.call(value) === '[object Object]' && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);"

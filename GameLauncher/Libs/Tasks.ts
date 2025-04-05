@@ -21,12 +21,21 @@ export function launch(path: string): Application | null {
 }
 
 /**
- * Synthesizes keystrokes from a SendKeys-style string.
- * For example:
- * SendKeys("^a"); will send Ctrl + A.
- * SendKeys("{Enter}"); will send Enter.
- * SendKeys("{Del 4}"); will send Del 4 times.
- * SendKeys("Hello World!"); will send Hello World!.
+ * Synthesizes keystrokes from a SendKeys-style string. These are either handled
+ * by the
+ * currently focused window or the system.
+ * Examples of input:`SendKeys("^a");` will send Ctrl + A.`SendKeys("{F1}");`
+ * will send F1.`SendKeys("#!^a");` will send Windows + Alt + Ctrl +
+ * A.`SendKeys("abcd");` will send a, b, c, d.`SendKeys("{Enter}");` will send
+ * Enter.`SendKeys("{Del 4}");` will send Del 4 times.`SendKeys("Hello
+ * World!");` will send Hello World!.
+ * Note that, while this method cannot be awaited, there is an inherent
+ * asynchronicity in
+ * synthesizing keystrokes. The keystrokes are sent to the system's input queue,
+ * and the
+ * synthesized keystrokes may not be processed immediately. This is due to the
+ * nature of the
+ * input queue and the way the operating system handles input events.
  *
  * @param keys
  */
@@ -82,6 +91,91 @@ export function awaitWindow(searchCriteria: WindowCriteriaCallback, timeout?: nu
 export async function awaitWindow(...args: [searchCriteria: WindowSearchCriteria | WindowCriteriaCallback, timeout?: number | undefined]): Promise<Window | null> {
     // @ts-expect-error - This function is injected into the engine dynamically.
     return __Tasks.AwaitWindow(...args);
+}
+
+/**
+ * Searches for any windows that match the specified criteria. If no windows are
+ * found, it
+ * waits for a new window to be created that matches the criteria. If a window
+ * is found, it is
+ * returned immediately. If no window is found within the specified timeout, an
+ * empty array is
+ * returned.
+ *
+ * @param searchCriteria The criteria to use to search for the window.
+ * @param [timeout=0
+ * ] The maximum time to wait for the window to be created, if none were found
+ * initially. If
+ * `0`, the method waits indefinitely.
+ * @returns An array of windows that match the criteria if any exist at the time
+ * of calling. If no
+ * windows are found, it will return an array containing the first newly created
+ * window that
+ * matches the criteria. If no window is found within the specified timeout, an
+ * empty array is
+ * returned.
+ */
+export function findOrAwaitWindow(searchCriteria: WindowSearchCriteria, timeout?: number): Promise<Array<Window>>;
+/**
+ * Waits for a window to be spawned with the specified criteria. This only
+ * awaits new windows and
+ * will not return a window that already exists at the time of calling.
+ *
+ * @param searchCriteria A function that takes a {@link Window} and returns
+ * `true` if the
+ * window matches the criteria.
+ * @param [timeout=0
+ * ] The maximum time to wait for the window to be created, if none were found
+ * initially. If
+ * `0`, the method waits indefinitely.
+ * @returns An array of windows that match the criteria if any exist at the time
+ * of calling. If no
+ * windows are found, it will return an array containing the first newly created
+ * window that
+ * matches the criteria. If no window is found within the specified timeout, an
+ * empty array is
+ * returned.
+ */
+export function findOrAwaitWindow(searchCriteria: WindowCriteriaCallback, timeout?: number): Promise<Array<Window>>;
+export async function findOrAwaitWindow(...args: [searchCriteria: WindowSearchCriteria | WindowCriteriaCallback, timeout?: number | undefined]): Promise<Array<Window>> {
+    // @ts-expect-error - This function is injected into the engine dynamically.
+    return __Tasks.FindOrAwaitWindow(...args);
+}
+
+/**
+ * Searches for any windows that match the specified criteria. If no windows are
+ * found, it
+ * returns an empty array.
+ *
+ * @param searchCriteria The criteria to use to search for the windows.
+ * @returns The window that was created, or `null` if the timeout elapsed.
+ */
+export function findWindows(searchCriteria: WindowSearchCriteria): Array<Window>;
+/**
+ * Searches for any windows that match the specified criteria. If no windows are
+ * found, it
+ * returns an empty array.
+ *
+ * @param searchCriteria A function that takes a {@link Window} and returns
+ * `true` if the
+ * window matches the criteria.
+ * @returns The window that was created, or `null` if the timeout elapsed.
+ */
+export function findWindows(searchCriteria: WindowCriteriaCallback): Array<Window>;
+export function findWindows(...args: [searchCriteria: WindowSearchCriteria | WindowCriteriaCallback]): Array<Window> {
+    // @ts-expect-error - This function is injected into the engine dynamically.
+    return __Tasks.FindWindows(...args);
+}
+
+/**
+ * Gets all the windows that are currently open on the system. This includes all
+ * windows,
+ * including hidden ones.
+ *
+ */
+export function getAllWindows(): Array<Window> {
+    // @ts-expect-error - This function is injected into the engine dynamically.
+    return __Tasks.GetAllWindows();
 }
 
 

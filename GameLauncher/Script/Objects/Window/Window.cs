@@ -40,7 +40,7 @@ public partial class Window : ObjectBase {
 
 
   internal Window(Win32Window window) {
-    engine      = ScriptEngine.Current;
+    engine      = AppState.ScriptEngine;
     win32Window = window;
     hwnd        = window.Hwnd;
 

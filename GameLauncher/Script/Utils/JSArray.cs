@@ -13,12 +13,20 @@ namespace GameLauncher.Script.Utils;
 ///   IList&lt;object&gt; interfaces.
 /// </summary>
 /// <typeparam name="T"> The type of the array. </typeparam>
-public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
+public class JSArray<T> : DynamicHostObject, IList, IList<T> {
   private readonly ScriptObject jsArray;
 
   private dynamic? _hasMemberFunc;
 
   private dynamic? _getMemberFunc;
+
+  private dynamic? _getMemberNamesFunc;
+
+  /// <summary>
+  ///   Creates an empty JSArray. This is a static property that returns a new instance of
+  ///   JSArray.
+  /// </summary>
+  public static JSArray<T> Empty => new(GetEmptyArrayFunc());
 
   /// <inheritdoc />
   public int Count => (int)jsArray.GetProperty("length");
@@ -36,10 +44,11 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
   public bool IsReadOnly { get; } = false;
 
   private dynamic HasMemberFunc =>
-    _hasMemberFunc ??= ScriptEngine.Current.Evaluate("(name, obj) => name in obj");
+    _hasMemberFunc ??= AppState.ScriptEngine.Evaluate("(name, obj) => name in obj");
 
-  private dynamic GetMemberFunc =>
-    _getMemberFunc ??= ScriptEngine.Current.Evaluate(
+  private dynamic
+    GetMemberFunc =>
+    _getMemberFunc ??= AppState.ScriptEngine.Evaluate(
       """
       (name, obj) => {
         const returnVal = obj[name];
@@ -52,8 +61,32 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
       """
     );
 
+  private static dynamic GetEmptyArrayFunc =>
+    AppState.ScriptEngine.Evaluate("() => []");
+
+  private dynamic GetMemberNamesFunc =>
+    _getMemberNamesFunc ??= AppState.ScriptEngine.Evaluate(
+      """
+      (obj) => {
+        const members = new Set();
+        let current = obj;
+      
+        while (current && current !== Object.prototype) {
+          for (const key of Reflect.ownKeys(current)) {
+            if (typeof key === 'string') {
+              members.add(key);
+            }
+          }
+          current = Object.getPrototypeOf(current);
+        }
+      
+        return Array.from(members);
+      }
+      """
+    );
+
   private dynamic ToStringFunc =>
-    ScriptEngine.Current.Evaluate("(obj) => ('ToString' in obj ? obj.ToString() : String(obj))");
+    AppState.ScriptEngine.Evaluate("(obj) => ('ToString' in obj ? obj.ToString() : String(obj))");
 
   /// <inheritdoc />
   public object? this[int index] {
@@ -80,8 +113,19 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
   /// <typeparam name="T"> The type of the enumerable. </typeparam>
   /// <returns> The new JSArray instance. </returns>
   public static JSArray<T> FromIEnumerable<T>(IEnumerable<T> list) {
-    var engine = ScriptEngine.Current;
-    return new JSArray<T>(engine.Script.Array.from(list));
+    // If the enumerable is already a JSArray, return it.
+    if (list is JSArray<T> jsArray) {
+      return jsArray;
+    }
+
+    var engine = AppState.ScriptEngine;
+
+    var enumerable = list as T[] ?? list.ToArray();
+    if (enumerable.Length == 0) {
+      return JSArray<T>.Empty;
+    }
+
+    return new JSArray<T>(engine.Script.Array.from(enumerable));
   }
 
 
@@ -149,6 +193,11 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
     foreach (var item in this) {
       array[i++] = item;
     }
+  }
+
+
+  public override IEnumerable<string> GetDynamicMemberNames() {
+    return ((IList<object>)GetMemberNamesFunc(jsArray)).Cast<string>();
   }
 
 
@@ -263,6 +312,7 @@ public class JSArray<T> : DynamicHostObject, IEnumerable<T>, IList, IList<T> {
         (jsArray is DynamicObject dynObj && dynObj.TryGetMember(binder, out result)
            ? result
            : null);
+
       return result != null;
     }
     catch {

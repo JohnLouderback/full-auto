@@ -17,11 +17,6 @@ public class ScriptRunner {
   private readonly string scriptPath;
 
   /// <summary>
-  ///   The ClearScript engine used to run the script.
-  /// </summary>
-  private readonly V8ScriptEngine engine;
-
-  /// <summary>
   ///   The JavaScript code to be executed.
   /// </summary>
   private string jsScriptContent;
@@ -29,13 +24,13 @@ public class ScriptRunner {
 
   public ScriptRunner(string scriptPath) {
     this.scriptPath = scriptPath;
-    engine = new V8ScriptEngine(
+    AppState.ScriptEngine = new V8ScriptEngine(
       V8ScriptEngineFlags.EnableTaskPromiseConversion |
       V8ScriptEngineFlags.EnableDebugging /* |
       V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart*/
     );
-    engine.DefaultAccess           = ScriptAccess.Full;
-    engine.DocumentSettings.Loader = new ScriptDocumentLoader();
+    AppState.ScriptEngine.DefaultAccess           = ScriptAccess.Full;
+    AppState.ScriptEngine.DocumentSettings.Loader = new ScriptDocumentLoader();
   }
 
 
@@ -45,10 +40,10 @@ public class ScriptRunner {
   /// </summary>
   public async Task RunScript() {
     ProcessSourceFile();
-    InjectGlobals(engine);
+    InjectGlobals(AppState.ScriptEngine);
 
     try {
-      var obj = engine.Evaluate(
+      var obj = AppState.ScriptEngine.Evaluate(
         new DocumentInfo(new Uri(scriptPath)) {
           Category = ModuleCategory.Standard
         },

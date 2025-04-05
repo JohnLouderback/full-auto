@@ -9,7 +9,7 @@ public static partial class Tasks {
   ///   Retrieves a list of all monitors on the system.
   /// </summary>
   /// <returns> An array of all monitors on the system. </returns>
-  public static IList<Monitor> GetAllMonitors() {
+  public static JSArray<Monitor> GetAllMonitors() {
     return JSArray<Monitor>.FromIEnumerable(
       NativeUtils.EnumerateMonitors().Select(monitor => new Monitor(monitor)).ToList()
     );

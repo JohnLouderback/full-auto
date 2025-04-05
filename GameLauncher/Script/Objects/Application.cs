@@ -27,7 +27,7 @@ public class Application : ObjectBase {
 
 
   internal Application() {
-    engine = ScriptEngine.Current;
+    engine = AppState.ScriptEngine;
   }
 
 
@@ -37,7 +37,7 @@ public class Application : ObjectBase {
   /// </summary>
   /// <returns> A list of windows. </returns>
   [ScriptMember("listWindows", ScriptMemberFlags.ExposeRuntimeType)]
-  public IList<Window> ListWindows() {
+  public JSArray<Window> ListWindows() {
     var list = EnumerateWindows()
       .Where(
         // Where the window is a top-level window. i.e. has no owner and is not a child window.
@@ -63,7 +63,7 @@ public class Application : ObjectBase {
   /// </param>
   /// <returns> A list of windows. </returns>
   [ScriptMember("listWindowsDeep", ScriptMemberFlags.ExposeRuntimeType)]
-  public IList<Window> ListWindowsDeep(bool includeChildProcesses = false) {
+  public JSArray<Window> ListWindowsDeep(bool includeChildProcesses = false) {
     var list = EnumerateWindows(includeChildProcesses)
       .Select<Win32Window, Window>(
         win =>
