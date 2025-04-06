@@ -39,25 +39,55 @@ public class GenerateTasksTs : Task {
 
 
   public override bool Execute() {
+    // if (!Debugger.IsAttached) {
+    //   Debugger.Launch();
+    // }
+
     try {
-      var csFiles = Directory.GetFiles(SourceDirectory, "*.cs", SearchOption.AllDirectories);
+      var csFiles     = Directory.GetFiles(SourceDirectory, "*.cs", SearchOption.AllDirectories);
+      var syntaxTrees = new List<SyntaxTree>();
       // Dictionary: entry point class name => list of its methods
       var entryPointClasses =
-        new Dictionary<string, List<MethodDeclarationSyntax>>(StringComparer.Ordinal);
+        new Dictionary<string,
+          List<(MethodDeclarationSyntax method, SemanticModel? semanticModel)>>(
+          StringComparer.Ordinal
+        );
       // Dictionary: entry point class name => its class declaration SyntaxNode
       var entryPointClassNodes =
-        new Dictionary<string, ClassDeclarationSyntax>(StringComparer.Ordinal);
+        new Dictionary<string, (ClassDeclarationSyntax cls, SemanticModel? semanticModel)>(
+          StringComparer.Ordinal
+        );
       var entryPointDelegates =
-        new Dictionary<string, List<DelegateDeclarationSyntax>>(StringComparer.Ordinal);
+        new Dictionary<string, List<(DelegateDeclarationSyntax del, SemanticModel? semanticModel)>>(
+          StringComparer.Ordinal
+        );
       // Also use customTypes for non-entry-point types.
-      var customTypes = new Dictionary<string, List<TypeDeclarationSyntax>>(StringComparer.Ordinal);
+      var customTypes =
+        new Dictionary<string, List<(TypeDeclarationSyntax type, SemanticModel? semanticModel)>>(
+          StringComparer.Ordinal
+        );
       // Global delegates from outside any class.
       var globalDelegates =
-        new Dictionary<string, DelegateDeclarationSyntax>(StringComparer.Ordinal);
+        new Dictionary<string, (DelegateDeclarationSyntax del, SemanticModel? semanticModel)>(
+          StringComparer.Ordinal
+        );
 
       foreach (var file in csFiles) {
         var code = File.ReadAllText(file);
-        var root = CSharpSyntaxTree.ParseText(code).GetRoot();
+        var tree = CSharpSyntaxTree.ParseText(code);
+        syntaxTrees.Add(tree);
+      }
+
+      var compilation = CSharpCompilation.Create(
+        "DocGenTemp",
+        syntaxTrees,
+        new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
+        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+      );
+
+      foreach (var tree in syntaxTrees) {
+        var root          = tree.GetRoot();
+        var semanticModel = compilation.GetSemanticModel(tree);
 
         // Find entry point classes: either the class is named "Tasks" or has the EntryPoint attribute.
         var candidateClasses = root.DescendantNodes()
@@ -72,13 +102,20 @@ public class GenerateTasksTs : Task {
         foreach (var cls in candidateClasses) {
           var className = cls.Identifier.Text;
           if (!entryPointClasses.ContainsKey(className)) {
-            entryPointClasses[className]    = new List<MethodDeclarationSyntax>();
-            entryPointDelegates[className]  = new List<DelegateDeclarationSyntax>();
-            entryPointClassNodes[className] = cls; // Save the SyntaxNode.
+            entryPointClasses[className]    = [];
+            entryPointDelegates[className]  = [];
+            entryPointClassNodes[className] = (cls, semanticModel); // Save the SyntaxNode.
           }
 
-          entryPointClasses[className].AddRange(cls.Members.OfType<MethodDeclarationSyntax>());
-          entryPointDelegates[className].AddRange(cls.Members.OfType<DelegateDeclarationSyntax>());
+          entryPointClasses[className]
+            .AddRange(
+              cls.Members.OfType<MethodDeclarationSyntax>()
+                .Select(method => (method, semanticModel))!
+            );
+          entryPointDelegates[className]
+            .AddRange(
+              cls.Members.OfType<DelegateDeclarationSyntax>().Select(del => (del, semanticModel))!
+            );
         }
 
         // Also scan for types marked with ExportAttribute (non-entry point custom types).
@@ -86,16 +123,16 @@ public class GenerateTasksTs : Task {
           var typeName = typeDecl.Identifier.Text;
           if (HasExportAttribute(typeDecl)) {
             if (!customTypes.ContainsKey(typeName)) {
-              customTypes.Add(typeName, new List<TypeDeclarationSyntax> { typeDecl });
+              customTypes.Add(typeName, [(typeDecl, semanticModel)]);
             }
             else {
-              customTypes[typeName].Add(typeDecl);
+              customTypes[typeName].Add((typeDecl, semanticModel));
             }
           }
           // Add unmarked partial declarations if the type already exists.
           else if (typeDecl.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PartialKeyword)) &&
                    customTypes.ContainsKey(typeName)) {
-            customTypes[typeName].Add(typeDecl);
+            customTypes[typeName].Add((typeDecl, semanticModel));
           }
         }
 
@@ -105,7 +142,7 @@ public class GenerateTasksTs : Task {
                    .Where(d => !(d.Parent is ClassDeclarationSyntax))) {
           var delName = del.Identifier.Text;
           if (!globalDelegates.ContainsKey(delName)) {
-            globalDelegates.Add(delName, del);
+            globalDelegates.Add(delName, (del, semanticModel));
           }
         }
       }
@@ -126,11 +163,13 @@ public class GenerateTasksTs : Task {
         // Determine required custom types for this entry point.
         var requiredTypes = new HashSet<string>(StringComparer.Ordinal);
         foreach (var method in methods) {
-          foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(method.ReturnType.ToString())) {
+          foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(
+                     method.method.ReturnType.ToString()
+                   )) {
             if (customTypeNames.Contains(type)) requiredTypes.Add(type);
           }
 
-          foreach (var param in method.ParameterList.Parameters) {
+          foreach (var param in method.method.ParameterList.Parameters) {
             foreach (var type in TsTypeGenerator.ExtractAllBaseTypes(param.Type.ToString())) {
               if (customTypeNames.Contains(type)) requiredTypes.Add(type);
             }
@@ -142,7 +181,10 @@ public class GenerateTasksTs : Task {
         sb.AppendLine("// This file is auto-generated. Do not modify manually.");
 
         // Use the SyntaxNode for the class to generate file-level documentation.
-        var classDoc = JsDocGenerator.GenerateJsDoc(entryPointClassNodes[className]);
+        var classDoc = JsDocGenerator.GenerateJsDoc(
+          entryPointClassNodes[className].cls,
+          entryPointClassNodes[className].semanticModel
+        );
         if (!string.IsNullOrWhiteSpace(classDoc)) {
           sb.AppendLine(classDoc);
         }
@@ -155,16 +197,16 @@ public class GenerateTasksTs : Task {
         sb.AppendLine();
 
         // Group methods by name.
-        var methodGroups = methods.GroupBy(m => m.Identifier.Text);
+        var methodGroups = methods.GroupBy(m => m.method.Identifier.Text);
         foreach (var group in methodGroups) {
           var origName = group.Key;
           // Use lower-cased first letter for TS function name.
           var tsName = char.ToLower(origName[0]) + origName.Substring(1);
           var validOverloads = group.Where(
               m =>
-                !m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PrivateKeyword)) &&
+                !m.method.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PrivateKeyword)) &&
                 origName != "InjectIntoEngine" &&
-                !m.AttributeLists.Any(
+                !m.method.AttributeLists.Any(
                   al => al.Attributes.Any(a => a.Name.ToString().EndsWith("HideFromTypeScript"))
                 )
             )
@@ -176,14 +218,14 @@ public class GenerateTasksTs : Task {
 
           if (validOverloads.Count == 1) {
             var method = validOverloads.First();
-            var jsDoc  = JsDocGenerator.GenerateJsDoc(method);
+            var jsDoc  = JsDocGenerator.GenerateJsDoc(method.method, method.semanticModel);
             sb.AppendLine(jsDoc);
 
-            var isAsync = method.Modifiers.Any(mod => mod.IsKind(SyntaxKind.AsyncKeyword));
-            var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
+            var isAsync = method.method.Modifiers.Any(mod => mod.IsKind(SyntaxKind.AsyncKeyword));
+            var retType = CSharpTypeScriptConverter.Convert(method.method.ReturnType);
             var parameters = string.Join(
               ", ",
-              method.ParameterList.Parameters.Select(
+              method.method.ParameterList.Parameters.Select(
                 p =>
                   $"{
                     p.Identifier.Text
@@ -202,7 +244,10 @@ public class GenerateTasksTs : Task {
             );
             sb.Append("    return __" + className + "." + origName + "(");
             sb.Append(
-              string.Join(", ", method.ParameterList.Parameters.Select(p => p.Identifier.Text))
+              string.Join(
+                ", ",
+                method.method.ParameterList.Parameters.Select(p => p.Identifier.Text)
+              )
             );
             sb.AppendLine(");");
             sb.AppendLine("}");
@@ -210,12 +255,12 @@ public class GenerateTasksTs : Task {
           }
           else {
             foreach (var method in validOverloads) {
-              var jsDoc = JsDocGenerator.GenerateJsDoc(method);
+              var jsDoc = JsDocGenerator.GenerateJsDoc(method.method, method.semanticModel);
               sb.AppendLine(jsDoc);
-              var retType = CSharpTypeScriptConverter.Convert(method.ReturnType);
+              var retType = CSharpTypeScriptConverter.Convert(method.method.ReturnType);
               var parameters = string.Join(
                 ", ",
-                method.ParameterList.Parameters.Select(
+                method.method.ParameterList.Parameters.Select(
                   p =>
                     $"{
                       p.Identifier.Text
@@ -230,15 +275,15 @@ public class GenerateTasksTs : Task {
             }
 
             // Combined implementation.
-            var maxParamCount = validOverloads.Max(m => m.ParameterList.Parameters.Count);
+            var maxParamCount = validOverloads.Max(m => m.method.ParameterList.Parameters.Count);
             var unionParams   = new List<string>();
             for (var i = 0; i < maxParamCount; i++) {
               var paramNames = new List<string>();
               var types      = new HashSet<string>();
               var isOptional = false;
               foreach (var method in validOverloads) {
-                if (method.ParameterList.Parameters.Count > i) {
-                  var p = method.ParameterList.Parameters[i];
+                if (method.method.ParameterList.Parameters.Count > i) {
+                  var p = method.method.ParameterList.Parameters[i];
                   paramNames.Add(p.Identifier.Text);
                   types.Add(CSharpTypeScriptConverter.Convert(p.Type));
                   if (p.Default != null) isOptional = true;
@@ -258,11 +303,11 @@ public class GenerateTasksTs : Task {
             }
 
             var retTypes = new HashSet<string>(
-              validOverloads.Select(m => CSharpTypeScriptConverter.Convert(m.ReturnType))
+              validOverloads.Select(m => CSharpTypeScriptConverter.Convert(m.method.ReturnType))
             );
             var unionReturn = retTypes.Count == 1 ? retTypes.First() : string.Join(" | ", retTypes);
             var anyAsync = validOverloads.Any(
-              m => m.Modifiers.Any(mod => mod.IsKind(SyntaxKind.AsyncKeyword))
+              m => m.method.Modifiers.Any(mod => mod.IsKind(SyntaxKind.AsyncKeyword))
             );
             sb.Append("export ");
             if (anyAsync) sb.Append("async ");
@@ -287,7 +332,7 @@ public class GenerateTasksTs : Task {
               kvp => kvp.Key,
               kvp => kvp.Value.First()
             );
-            var delTs = TsTypeGenerator.GenerateTsForDelegate(del, customTypesForTs, out var _);
+            var delTs = TsTypeGenerator.GenerateTsForDelegate(del.del, customTypesForTs, out var _);
             sb.AppendLine(delTs);
           }
         }
@@ -305,12 +350,12 @@ public class GenerateTasksTs : Task {
       foreach (var kvp in globalDelegates) {
         var del = kvp.Value;
         var customTypesForTs = customTypes.ToDictionary(ct => ct.Key, ct => ct.Value.First());
-        var tsCode = TsTypeGenerator.GenerateTsForDelegate(del, customTypesForTs, out var _);
-        var outputPath = Path.Combine(OutputDir, del.Identifier.Text + ".ts");
+        var tsCode = TsTypeGenerator.GenerateTsForDelegate(del.del, customTypesForTs, out var _);
+        var outputPath = Path.Combine(OutputDir, del.del.Identifier.Text + ".ts");
         File.WriteAllText(outputPath, tsCode);
         Log.LogMessage(
           MessageImportance.High,
-          $"Generated TypeScript file for delegate {del.Identifier.Text} at {outputPath}"
+          $"Generated TypeScript file for delegate {del.del.Identifier.Text} at {outputPath}"
         );
       }
 
@@ -340,7 +385,8 @@ public class GenerateTasksTs : Task {
   /// </summary>
   private void GenerateCustomTypeTs(
     string typeName,
-    Dictionary<string, List<TypeDeclarationSyntax>> customTypes,
+    Dictionary<string, List<(TypeDeclarationSyntax decl, SemanticModel? semanticModel)>>
+      customTypes,
     HashSet<string> customTypeNames,
     string outputDir,
     HashSet<string> generatedTypes
@@ -361,18 +407,21 @@ public class GenerateTasksTs : Task {
     }
 
     // Build a dependency mapping that merges partial declarations.
-    var customTypesForTs = new Dictionary<string, TypeDeclarationSyntax>(StringComparer.Ordinal);
+    var customTypesForTs =
+      new Dictionary<string, (TypeDeclarationSyntax, SemanticModel? semanticModel)>(
+        StringComparer.Ordinal
+      );
     foreach (var kvp in customTypes) {
       if (kvp.Value.Count > 1) {
         // Merge members from all declarations.
         var first         = kvp.Value.First();
         var mergedMembers = new List<MemberDeclarationSyntax>();
         foreach (var decl in kvp.Value) {
-          mergedMembers.AddRange(decl.Members);
+          mergedMembers.AddRange(decl.decl.Members);
         }
 
-        var mergedDecl = first.WithMembers(SyntaxFactory.List(mergedMembers));
-        customTypesForTs[kvp.Key] = mergedDecl;
+        var mergedDecl = first.decl.WithMembers(SyntaxFactory.List(mergedMembers));
+        customTypesForTs[kvp.Key] = (mergedDecl, first.semanticModel);
       }
       else {
         customTypesForTs[kvp.Key] = kvp.Value.First();
@@ -383,7 +432,7 @@ public class GenerateTasksTs : Task {
     HashSet<string> dependencies;
     // If any declaration is partial, aggregate all declarations.
     if (typeDeclList.Any(
-          decl => decl.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PartialKeyword))
+          decl => decl.decl.Modifiers.Any(mod => mod.IsKind(SyntaxKind.PartialKeyword))
         )) {
       tsCode = TsTypeGenerator.GenerateTsForPartialClass(
         typeDeclList,

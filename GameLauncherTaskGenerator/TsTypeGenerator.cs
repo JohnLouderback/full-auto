@@ -82,19 +82,19 @@ public static class TsTypeGenerator {
   ///   Returns the generated TS code and an output set of dependency type names referenced by the type.
   /// </summary>
   public static string GenerateTs(
-    TypeDeclarationSyntax typeDecl,
-    Dictionary<string, TypeDeclarationSyntax> customTypes,
+    (TypeDeclarationSyntax decl, SemanticModel? semanticModel) typeDecl,
+    Dictionary<string, (TypeDeclarationSyntax, SemanticModel? semanticModel)> customTypes,
     out HashSet<string> dependencies
   ) {
     dependencies = new HashSet<string>(StringComparer.Ordinal);
     var deps        = dependencies;
     var sb          = new StringBuilder();
-    var typeName    = typeDecl.Identifier.Text;
-    var isInterface = typeDecl is InterfaceDeclarationSyntax;
+    var typeName    = typeDecl.decl.Identifier.Text;
+    var isInterface = typeDecl.decl is InterfaceDeclarationSyntax;
     var tsKeyword   = isInterface ? "interface" : "class";
 
     // Find the types that this type extends that also have the "[TypeScriptExport]" attribute.
-    var extends = typeDecl.BaseList?.Types
+    var extends = typeDecl.decl.BaseList?.Types
       .Select(t => t.Type.ToString())
       .Where(t => customTypes.ContainsKey(t))
       .ToList();
@@ -117,14 +117,14 @@ public static class TsTypeGenerator {
 
     // Check if the type is marked as an input type. This has special implications for the type
     // generator, such as making nullable properties optional in TypeScript.
-    var isInputType = typeDecl.AttributeLists.Any(
+    var isInputType = typeDecl.decl.AttributeLists.Any(
       al => al.Attributes.Any(
         a => a.Name.ToString().EndsWith("IsInputType")
       )
     );
 
     // Generate the class-level JSDoc from the XML documentation (if any).
-    var classDoc = JsDocGenerator.GenerateJsDoc(typeDecl);
+    var classDoc = JsDocGenerator.GenerateJsDoc(typeDecl.decl, typeDecl.semanticModel);
     if (!string.IsNullOrWhiteSpace(classDoc)) {
       sb.AppendLine(classDoc);
     }
@@ -133,7 +133,7 @@ public static class TsTypeGenerator {
     sb.AppendLine($"export interface {typeName}{extendsStr} {{");
 
     // Process public members.
-    foreach (var member in typeDecl.Members) {
+    foreach (var member in typeDecl.decl.Members) {
       // Process public properties.
       if (member is PropertyDeclarationSyntax prop) {
         // Only include public properties.
@@ -150,7 +150,7 @@ public static class TsTypeGenerator {
           continue;
         }
 
-        var propDoc = JsDocGenerator.GenerateJsDoc(prop, "    ");
+        var propDoc = JsDocGenerator.GenerateJsDoc(prop, typeDecl.semanticModel, "    ");
         if (!string.IsNullOrWhiteSpace(propDoc)) {
           sb.AppendLine(propDoc);
         }
@@ -226,7 +226,7 @@ public static class TsTypeGenerator {
           continue;
         }
 
-        var methodDoc = JsDocGenerator.GenerateJsDoc(method, "    ");
+        var methodDoc = JsDocGenerator.GenerateJsDoc(method, typeDecl.semanticModel, "    ");
         if (!string.IsNullOrWhiteSpace(methodDoc)) {
           sb.AppendLine(methodDoc);
         }
@@ -304,7 +304,7 @@ public static class TsTypeGenerator {
     sb.AppendLine("}");
 
     // Process any delegates defined within the type.
-    var delegateMembers = typeDecl.Members.OfType<DelegateDeclarationSyntax>();
+    var delegateMembers = typeDecl.decl.Members.OfType<DelegateDeclarationSyntax>();
     foreach (var del in delegateMembers) {
       var delTs = GenerateTsForDelegate(del, customTypes, out var delDeps);
       dependencies.UnionWith(delDeps);
@@ -319,7 +319,8 @@ public static class TsTypeGenerator {
 
   public static string GenerateTsForDelegate(
     DelegateDeclarationSyntax delegateDecl,
-    Dictionary<string, TypeDeclarationSyntax> customTypes, // helper mapping (aggregated)
+    Dictionary<string, (TypeDeclarationSyntax, SemanticModel? semanticModel)>
+      customTypes, // helper mapping (aggregated)
     out HashSet<string> dependencies
   ) {
     dependencies = new HashSet<string>(StringComparer.Ordinal);
@@ -368,8 +369,8 @@ public static class TsTypeGenerator {
   /// <param name="dependencies">Outputs the set of dependency type names referenced by the merged type.</param>
   /// <returns>The generated TypeScript code as a string.</returns>
   public static string GenerateTsForPartialClass(
-    IEnumerable<TypeDeclarationSyntax> partialDeclarations,
-    Dictionary<string, TypeDeclarationSyntax> customTypes,
+    IEnumerable<(TypeDeclarationSyntax decl, SemanticModel? semanticModel)> partialDeclarations,
+    Dictionary<string, (TypeDeclarationSyntax decl, SemanticModel? semanticModel)> customTypes,
     out HashSet<string> dependencies
   ) {
     dependencies = new HashSet<string>(StringComparer.Ordinal);
@@ -380,12 +381,12 @@ public static class TsTypeGenerator {
     var baseTypes           = new List<BaseTypeSyntax>();
 
     foreach (var decl in partialDeclarations) {
-      mergedMembers.AddRange(decl.Members);
-      if (decl.BaseList != null) {
-        baseTypes.AddRange(decl.BaseList.Types);
+      mergedMembers.AddRange(decl.decl.Members);
+      if (decl.decl.BaseList != null) {
+        baseTypes.AddRange(decl.decl.BaseList.Types);
       }
 
-      var doc = JsDocGenerator.GenerateJsDoc(decl);
+      var doc = JsDocGenerator.GenerateJsDoc(decl.decl, decl.semanticModel);
       if (!string.IsNullOrWhiteSpace(doc)) {
         mergedClassDocLines.Add(doc);
       }
@@ -395,7 +396,7 @@ public static class TsTypeGenerator {
     var distinctBaseTypes = baseTypes.GroupBy(bt => bt.Type.ToString())
       .Select(g => g.First())
       .ToList();
-    var mergedDecl = first
+    var mergedDecl = first.decl
       .WithMembers(SyntaxFactory.List(mergedMembers))
       .WithBaseList(
         distinctBaseTypes.Any()
@@ -403,7 +404,7 @@ public static class TsTypeGenerator {
           : null
       );
     var mergedClassDoc = string.Join("\n", mergedClassDocLines);
-    var tsCode         = GenerateTs(mergedDecl, customTypes, out dependencies);
+    var tsCode = GenerateTs((mergedDecl, first.semanticModel), customTypes, out dependencies);
 
     if (!string.IsNullOrWhiteSpace(mergedClassDoc)) {
       tsCode = mergedClassDoc + "\n" + tsCode;
