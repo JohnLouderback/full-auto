@@ -60,7 +60,7 @@ public static class JsDocGenerator {
     if (xmlDocTrivia == null) {
       return string.Empty;
     }
-
+    
     // Remove leading "///" from each line.
     var rawXml = xmlDocTrivia.ToFullString();
     var cleanedXml = string.Join(
@@ -405,6 +405,45 @@ public static class JsDocGenerator {
                 cref.StartsWith("F:") ||
                 cref.StartsWith("E:")) {
               cref = cref.Substring(2);
+            }
+
+            // Try to adjust JS casing (camelCase for members)
+            if (documentedNode != null &&
+                semanticModel != null) {
+              // Try to resolve the symbol
+              var symbol = semanticModel.LookupSymbols(
+                  documentedNode.SpanStart,
+                  // Search for the identifier at the end of the cref. For example, if cref is
+                  // "GameLauncher.Script.Objects.Monitor.ChangeDisplayModeResult.Undo",
+                  // we want to find "Undo".
+                  name: cref.Split('.').LastOrDefault()
+                )
+                .FirstOrDefault();
+              if (symbol != null) {
+                // Only change casing if it's not a type
+                if (symbol.Kind != SymbolKind.NamedType &&
+                    symbol.Kind != SymbolKind.Namespace) {
+                  // Lowercase the member name
+                  cref = char.ToLowerInvariant(cref[0]) + cref.Substring(1);
+                }
+              }
+              else if (cref.Contains('.')) {
+                // If it's a qualified name like ChangeDisplayModeResult.Undo
+                var parts = cref.Split('.');
+                if (parts.Length == 2) {
+                  var typeSymbol = semanticModel
+                    .LookupSymbols(documentedNode.SpanStart, name: parts[0])
+                    .OfType<INamedTypeSymbol>()
+                    .FirstOrDefault();
+
+                  if (typeSymbol != null &&
+                      typeSymbol.GetMembers(parts[1]).Any()) {
+                    // Adjust member part
+                    parts[1] = char.ToLowerInvariant(parts[1][0]) + parts[1].Substring(1);
+                    cref     = string.Join(".", parts);
+                  }
+                }
+              }
             }
 
             return $"{{@link {cref}}}";
