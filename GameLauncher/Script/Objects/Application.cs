@@ -1,6 +1,7 @@
 ﻿using Core.Models;
 using Core.Utils;
 using GameLauncher.Script.Utils;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
 

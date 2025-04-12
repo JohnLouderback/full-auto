@@ -1,6 +1,6 @@
 ﻿using Windows.Win32.UI.WindowsAndMessaging;
 using Core.Utils;
-using GameLauncherTaskGenerator;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 using static GameLauncher.Script.Utils.JSTypeConverter;
 

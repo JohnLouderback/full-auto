@@ -4,70 +4,64 @@ import { BoundingBox } from "./BoundingBox";
  * Represents a window of an application or another window.
  *
  */
-/**
- * Represents a window of an application or another window.
- *
- */
-// Auto-generated from C# class Window
+// Auto-generated from C# type Window
 export interface Window {
     /**
      * The handle of the window. This is a unique identifier representing the
      * window.
      *
      */
-    handle: number;
+    readonly handle: number;
     /**
-     * The text of the window's titlebar. For example: `"Untitled - Notepad"`.
-     * It may be used
-     * to either get or set the title of the window.
+     * The text of the window's titlebar. For example: `"Untitled - Notepad"`. It
+     * may be used to either get or set the title of the window.
      *
      */
     title: string;
     /**
      * The class name of the window. For example: `"Notepad"`. Class names are
-     * generally
-     * used to identify the type of window within the application. They are not
-     * necessarily unique.
+     * generally used to identify the type of window within the application. They
+     * are not necessarily unique.
      *
      */
-    className: string;
+    readonly className: string;
     readonly isClosed: boolean;
-    isMinimized: boolean;
-    isMaximized: boolean;
-    isShowing: boolean;
-    isFocused: boolean;
+    readonly isMinimized: boolean;
+    readonly isMaximized: boolean;
+    readonly isShowing: boolean;
+    readonly isFocused: boolean;
     /**
      * Resolves the next time the window is shown.
      *
      */
-    shown: Promise<void>;
+    readonly shown: Promise<void>;
     /**
      * Resolves the next time the window is hidden.
      *
      */
-    hidden: Promise<void>;
+    readonly hidden: Promise<void>;
     /**
      * Resolves the next time the window is minimized.
      *
      */
-    minimized: Promise<void>;
+    readonly minimized: Promise<void>;
     /**
      * Resolves the next time the window is maximized.
      *
      */
-    maximized: Promise<void>;
+    readonly maximized: Promise<void>;
     /**
      * Resolves the next time the window is restored. When the window is
      * "un-minimized."
      *
      */
-    restored: Promise<void>;
-    focused: Promise<void>;
+    readonly restored: Promise<void>;
+    readonly focused: Promise<void>;
     /**
      * Resolves the next time the window's bounds change.
      *
      */
-    boundsChanged: Promise<void>;
+    readonly boundsChanged: Promise<void>;
     /**
      * Resolves once when the window is closed.
      *
@@ -78,15 +72,12 @@ export interface Window {
      *
      * @param eventName The name of the event to bind the callback to.
      * @param callback The callback to execute when the event occurs.
-     * @throws ArgumentException Thrown when the event name is not the name of a
-     * known event.
      */
     on(eventName: "shown" | "hidden" | "minimized" | "maximized" | "restored" | "focused" | "boundsChanged" | "closed", callback: WindowEventCallback): void;
     /**
      * Requests that the window be closed. This sends a close message to the
-     * window, which may or
-     * may not result in the window being closed. The window may choose to
-     * ignore the request.
+     * window, which may or may not result in the window being closed. The window
+     * may choose to ignore the request.
      *
      */
     close(): void;
@@ -102,50 +93,39 @@ export interface Window {
      */
     maximize(): void;
     /**
-     * Minimizes the window. This reduces the window to an icon on the taskbar
-     * or otherwise
-     * hides it from view.
+     * Minimizes the window. This reduces the window to an icon on the taskbar or
+     * otherwise hides it from view.
      *
      */
     minimize(): void;
     /**
      * Restores the window. This restores the window to its previous size and
-     * position after being
-     * minimized or maximized.
+     * position after being minimized or maximized.
      *
      */
     restore(): void;
     /**
      * Gets the bounding box of the window. This is the rectangle that contains
-     * the window's
-     * position and size on the screen. The pixels are in screen coordinates,
-     * with the origin
-     * in the top-left corner of the screen.
+     * the window's position and size on the screen. The pixels are in screen
+     * coordinates, with the origin in the top-left corner of the screen.
      *
      */
     getBoundingBox(): BoundingBox;
     /**
-     * Makes the window fullscreen. It does not automatically change the
-     * window's style to
-     * borderless. This is done by the {@link MakeBorderless} method.
+     * Makes the window fullscreen. It does not automatically change the window's
+     * style to borderless. This is done by the {@link Window.makeBorderless}
+     * method.
      *
-     * @param [method="resize"
-     * ] The method to use to make the window fullscreen. Valid values are the
-     * following:
-     * `"resize"` - Sets the window's width and height to cover the entire
-     * screen. This
-     * will set the window to cover the entire screen of the monitor the window
-     * currently
-     * resides on. The window will be resized to the monitor's current
-     * resolution. This is the
-     * default method. To remove the window's borders, use the {@link
-     * MakeBorderless}
-     * method first, before calling this method.
-     * `"alt enter"` - Sends the `Alt + Enter` key combination to the window.
-     * This
-     * is the same as pressing `Alt + Enter` on the keyboard. This method may
-     * not work
-     * if the window does not support it.
+     * @param [method=resize] The method to use to make the window fullscreen.
+     * Valid values are the following: `"resize"` - Sets the window's width and
+     * height to cover the entire screen. This will set the window to cover the
+     * entire screen of the monitor the window currently resides on. The window
+     * will be resized to the monitor's current resolution. This is the default
+     * method. To remove the window's borders, use the {@link
+     * Window.makeBorderless} method first, before calling this method. `"alt
+     * enter"` - Sends the `Alt + Enter` key combination to the window. This is
+     * the same as pressing `Alt + Enter` on the keyboard. This method may not
+     * work if the window does not support it.
      */
     makeFullscreen(method?: "resize" | "alt enter"): void;
     /**
@@ -167,13 +147,8 @@ export interface Window {
     setBoundingBox(x: number, y: number, width: number, height: number): Window;
     /**
      * Sets the window to be borderless. This removes the window's title bar and
-     * borders, making it
-     * appears as purely rectangular rendering surface.
+     * borders, making it appears as purely rectangular rendering surface.
      *
      */
     makeBorderless(): void;
 }
-
-// Auto-generated from C# delegate WindowEventCallback
-export type WindowEventCallback = (window: Window) => void;
-

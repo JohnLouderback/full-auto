@@ -1,5 +1,5 @@
 ﻿using GameLauncher.Script.Utils;
-using GameLauncherTaskGenerator;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;

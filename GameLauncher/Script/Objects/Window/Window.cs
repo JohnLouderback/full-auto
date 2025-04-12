@@ -1,7 +1,7 @@
 ﻿using Windows.Win32.Foundation;
 using Core.Models;
 using Core.Utils;
-using GameLauncherTaskGenerator;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;

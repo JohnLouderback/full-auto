@@ -1,6 +1,12 @@
-﻿using Core.Utils;
-using GameLauncherTaskGenerator;
+﻿using System.Collections;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Threading;
+using Core.Utils;
+using GameLauncher.Script.Utils;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
+using static Windows.Win32.PInvoke;
+using static GameLauncher.Script.Utils.JSTypeConverter;
 
 namespace GameLauncher.Script.Objects;
 
@@ -33,7 +39,7 @@ public class Process : ObjectBase {
 
 
   internal Process(System.Diagnostics.Process process) {
-    engine       = ScriptEngine.Current;
+    engine       = AppState.ScriptEngine;
     this.process = process;
     Name         = process.ProcessName;
     FullPath     = process.MainModule?.FileName ?? string.Empty;

@@ -1,6 +1,6 @@
 ﻿using GameLauncher.Script.Objects;
 using GameLauncher.Script.Utils;
-using GameLauncherTaskGenerator;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 using static GameLauncher.Script.Utils.JSTypeConverter;
 

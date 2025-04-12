@@ -1,7 +1,6 @@
-﻿using System;
+﻿namespace GameLauncher.Script.Utils.CodeGenAttributes;
 
-namespace GameLauncherTaskGenerator;
-
+/// <inheritdoc />
 /// <summary>
 ///   An attribute that is passed a string to override the TypeScript type for a
 ///   class, property, method, or parameter. This is useful for cases where the default TypeScript

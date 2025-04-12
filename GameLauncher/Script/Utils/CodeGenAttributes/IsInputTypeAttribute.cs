@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameLauncherTaskGenerator;
+﻿namespace GameLauncher.Script.Utils.CodeGenAttributes;
 
 /// <summary>
 ///   Marks a class as an input type for the TypeScript generator. This means that the class is

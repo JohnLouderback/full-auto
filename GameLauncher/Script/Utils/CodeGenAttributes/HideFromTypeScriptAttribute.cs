@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameLauncherTaskGenerator;
+﻿namespace GameLauncher.Script.Utils.CodeGenAttributes;
 
 /// <summary>
 ///   Hides the method or property from TypeScript when generating the TypeScript declaration file.

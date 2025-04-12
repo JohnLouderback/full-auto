@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameLauncherTaskGenerator;
+﻿namespace GameLauncher.Script.Utils.CodeGenAttributes;
 
 /// <summary>
 ///   Marks a class or interface for export to TypeScript, so that a corresponding TypeScript

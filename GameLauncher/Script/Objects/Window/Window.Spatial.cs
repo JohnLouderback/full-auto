@@ -1,4 +1,5 @@
 ﻿using Core.Utils;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using GameLauncher.Utils.SendKeys;
 using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;

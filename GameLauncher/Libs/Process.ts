@@ -2,7 +2,7 @@
  * Represents a process that is or was running on the system.
  *
  */
-// Auto-generated from C# class Process
+// Auto-generated from C# type Process
 export interface Process {
     /**
      * The names of the process. For example: `"chrome"`.
@@ -10,8 +10,8 @@ export interface Process {
      */
     readonly name: string;
     /**
-     * The full path to the process. For example:
-     * `"C:\Program Files\Google\Chrome\Application\chrome.exe"`.
+     * The full path to the process. For example: `"C:\Program
+     * Files\Google\Chrome\Application\chrome.exe"`.
      *
      */
     readonly fullPath: string;

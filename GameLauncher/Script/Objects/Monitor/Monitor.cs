@@ -2,6 +2,7 @@
 using Windows.Win32.Graphics.Gdi;
 using Core.Models;
 using Core.Utils;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
 
