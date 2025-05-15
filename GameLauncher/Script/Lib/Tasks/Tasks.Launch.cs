@@ -27,6 +27,7 @@ public static partial class Tasks {
         FileName        = path,
         UseShellExecute = false
       }
+      
     };
 
     if (process.Start()) {

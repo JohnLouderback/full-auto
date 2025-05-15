@@ -34,7 +34,7 @@ public static partial class Tasks {
     int timeout = 0
   ) {
     return await AwaitWindow(
-             (HWND hwnd) => {
+             hwnd => {
                var windowMatches = true;
 
                // If a title was provided to match against, check if the window's title matches.

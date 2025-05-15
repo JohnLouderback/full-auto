@@ -7,8 +7,7 @@ namespace GameLauncher.Script;
 
 public partial class Tasks {
   /// <summary>
-  ///   Gets all the windows that are currently open on the system. This includes all windows,
-  ///   including hidden ones.
+  ///   Gets all the windows that are currently open on the system. This includes hidden ones.
   /// </summary>
   /// <returns></returns>
   [ScriptMember("getAllWindows")]

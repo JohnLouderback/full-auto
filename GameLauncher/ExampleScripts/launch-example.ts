@@ -67,6 +67,13 @@ Process ID: 0x${app.process.pid.toString(16)}`
     });
   }
 
+  console.log(`Is process protected? ${app.process.isProtected}`);
+
+  // Set the affinity of the process to use only the first 4 CPU cores.
+  app.process.setAffinity(4);
+  // Set the priority of the process to below normal.
+  app.process.setPriority('below normal');
+
   await app.exitSignal;
   console.log(app);
   console.log("Fork exited.");

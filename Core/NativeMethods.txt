@@ -91,3 +91,9 @@ SetProcessDpiAwarenessContext
 SendInput
 KEYBD_EVENT_FLAGS
 SetPriorityClass
+SetProcessAffinityMask
+GetProcessAffinityMask
+GetSystemInfo
+OpenProcess
+NtQueryInformationProcess
+CloseHandle
