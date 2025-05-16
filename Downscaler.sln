@@ -35,6 +35,8 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "TypeScriptCompiler", "TypeS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLauncherTaskGenerator", "GameLauncherTaskGenerator\GameLauncherTaskGenerator.csproj", "{343E323A-2CAD-4EBF-A12A-7D3A5079ABBD}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ScriptEditor", "ScriptEditor\ScriptEditor.esproj", "{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -311,6 +313,30 @@ Global
 		{343E323A-2CAD-4EBF-A12A-7D3A5079ABBD}.Release|x64.Build.0 = Release|Any CPU
 		{343E323A-2CAD-4EBF-A12A-7D3A5079ABBD}.Release|x86.ActiveCfg = Release|Any CPU
 		{343E323A-2CAD-4EBF-A12A-7D3A5079ABBD}.Release|x86.Build.0 = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|arm64.Build.0 = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|arm64.Deploy.0 = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|x64.Build.0 = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|x86.Build.0 = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|arm64.ActiveCfg = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|arm64.Build.0 = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|arm64.Deploy.0 = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|x64.ActiveCfg = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|x64.Build.0 = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|x64.Deploy.0 = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|x86.ActiveCfg = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|x86.Build.0 = Release|Any CPU
+		{F5D6D530-3043-CFF9-0606-B5F5C5C6102D}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

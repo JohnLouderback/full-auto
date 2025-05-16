@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.5.89-alpha">
+    <PropertyGroup>
+        <!--Command to run on project build-->
+        <BuildCommand>yarn build:electron</BuildCommand>
+        <!--Command to run on project clean-->
+        <CleanCommand>yarn prepare</CleanCommand>
+        <StartupCommand>yarn run start:electron</StartupCommand>
+        <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
+    </PropertyGroup>
+    <Target Name="BeforeRestore">
+        <Exec Command="yarn install"/>
+    </Target>
+    <ItemGroup>
+        <!--        <Script Include="app.js"/>-->
+    </ItemGroup>
+</Project>
