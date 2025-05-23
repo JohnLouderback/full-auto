@@ -7,6 +7,29 @@ namespace Core.Utils;
 /// </summary>
 public class WindowUtils {
   /// <summary>
+  ///   Gets the window for the given window handle. <see langword="null" /> is returned if no
+  ///   window has the given handle.
+  /// </summary>
+  /// <param name="hwnd"> The window handle of window to find. </param>
+  /// <returns> The window for the given process name and, optionally, class name. </returns>
+  public static Win32Window? GetWindowForHwnd(int hwnd) {
+    // Gets all top-level windows.
+    var windows = NativeUtils.EnumerateWindows();
+
+    // Because it's most likely that a top-level window will have the process name, we check the
+    // top-level windows first.
+    foreach (var window in windows) {
+      if (window.Hwnd == hwnd) {
+        return window;
+      }
+    }
+
+    // If no window or its children had the process name and, optionally, class name, return null.
+    return null;
+  }
+
+
+  /// <summary>
   ///   Gets the window for the given process name and, optionally, class name. If a class name is
   ///   provided, then the window must have the process name and the class name. If no
   ///   <paramref name="className" /> is provided, then the window only needs to have the process

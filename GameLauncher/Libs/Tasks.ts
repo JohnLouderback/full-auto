@@ -1,5 +1,7 @@
 import { Application } from "./Application";
+import { LaunchOptions } from "./LaunchOptions";
 import { Monitor } from "./Monitor";
+import { Process } from "./Process";
 import { Window } from "./Window";
 import { WindowSearchCriteria } from "./WindowSearchCriteria";
 
@@ -96,9 +98,9 @@ export function findWindows(...args: any[]): any {
 }
 
     /**
-     * Retrieves a list of all monitors on the system.
+     * Retrieves a list of all monitors connected to the system.
      *
-     * @returns An array of all monitors on the system.
+     * @returns An array of all monitors connected to the system.
      */
 export function getAllMonitors(): Array<Monitor> {
     // @ts-expect-error - Function is injected by the engine
@@ -107,7 +109,7 @@ export function getAllMonitors(): Array<Monitor> {
 
     /**
      * Gets all the windows that are currently open on the system. This includes
-     * all windows, including hidden ones.
+     * hidden ones.
      *
      */
 export function getAllWindows(): Array<Window> {
@@ -124,9 +126,48 @@ export function getAllWindows(): Array<Window> {
      * Application.exitSignal} property can be used to await the application's
      * exit.
      */
-export function launch(path: string): Application {
+export function launch(path: string): Application;
+    /**
+     * Launch the application at the specified path.
+     *
+     * @param path The path to the application.
+     * @param options {@link LaunchOptions}. Optional. The options to use when
+     * launching the application.
+     * @returns An {@link Application} object representing the application if it
+     * was launched successfully; otherwise, `null`. The {@link
+     * Application.exitSignal} property can be used to await the application's
+     * exit.
+     */
+export function launch(path: string, options: LaunchOptions): Application;
+    /**
+     * Launch the application at the specified path.
+     *
+     * @param path The path to the application.
+     * @param args Optional. The arguments to pass to the application. If `null`,
+     * no arguments are passed.
+     * @param options {@link LaunchOptions}. Optional. The options to use when
+     * launching the application.
+     * @returns An {@link Application} object representing the application if it
+     * was launched successfully; otherwise, `null`. The {@link
+     * Application.exitSignal} property can be used to await the application's
+     * exit.
+     */
+export function launch(path: string, args: Array<string>, options: LaunchOptions): Application;
+    /**
+     * Launch the application at the specified path.
+     *
+     * @param path The path to the application.
+     * @param args Optional. The arguments to pass to the application. If `null`,
+     * no arguments are passed.
+     * @returns An {@link Application} object representing the application if it
+     * was launched successfully; otherwise, `null`. The {@link
+     * Application.exitSignal} property can be used to await the application's
+     * exit.
+     */
+export function launch(path: string, args: Array<string>): Application;
+export function launch(...args: any[]): any {
     // @ts-expect-error - Function is injected by the engine
-    return __Tasks.Launch(path);
+    return __Tasks.Launch(...args);
 }
 
     /**
@@ -162,4 +203,4 @@ export function sendKeys(keys: string): void {
  *
  */
 // Auto-generated from delegate WindowCriteriaCallback
-export type WindowCriteriaCallback = (window: Window) => boolean;
+export type WindowCriteriaCallback = (window: Window, process: Process) => boolean;

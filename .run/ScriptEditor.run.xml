@@ -1,0 +1,13 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ScriptEditor" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/ScriptEditor/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="start:electron" />
+    </scripts>
+    <node-interpreter value="project" />
+    <package-manager value="yarn" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>

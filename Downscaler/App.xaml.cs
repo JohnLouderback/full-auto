@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
 using Downscaler.Activation;
 using Downscaler.Contracts.Services;
-using Downscaler.Services;
-using Downscaler.ViewModels;
-using Downscaler.Views;
 using Downscaler.Core.Contracts.Models.AppState;
 using Downscaler.Core.Contracts.Services;
 using Downscaler.Core.Models.AppState;
 using Downscaler.Core.Services;
+using Downscaler.Helpers;
+using Downscaler.Services;
+using Downscaler.ViewModels;
+using Downscaler.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -30,6 +31,9 @@ public partial class App : Application {
 
 
   public App() {
+    // Try to attach to the parent console if it exists. This is useful for debugging and logging.
+    ConsoleHelper.TryAttachToParentConsole();
+
     InitializeComponent();
 
     Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()

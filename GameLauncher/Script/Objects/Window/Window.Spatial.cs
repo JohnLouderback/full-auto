@@ -1,17 +1,16 @@
 ﻿using Core.Utils;
 using GameLauncher.Script.Utils.CodeGenAttributes;
 using GameLauncher.Utils.SendKeys;
-using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;
 
 public partial class Window {
   private static readonly IEnumerable<Keystroke> altEnterShortcut = new List<Keystroke> {
-    new("Alt", true),
-    new("Enter", true),
-    new("Enter", false),
-    new("Alt", false)
+    new("Alt", isDown: true),
+    new("Enter", isDown: true),
+    new("Enter", isDown: false),
+    new("Alt", isDown: false)
   };
 
 
@@ -74,7 +73,7 @@ public partial class Window {
           Width  = (int)displayMode.dmPelsWidth,
           Height = (int)displayMode.dmPelsHeight
         };
-        
+
         hwnd.SetWindowPosition(
           boundingBox.X,
           boundingBox.Y,
@@ -98,6 +97,19 @@ public partial class Window {
         );
       }
     }
+  }
+
+
+  /// <summary>
+  ///   Moves the window to the specified position.
+  /// </summary>
+  /// <param name="x"> The x-coordinate of the window. </param>
+  /// <param name="y"> The y-coordinate of the window. </param>
+  /// <returns> The same window this method was called on, for chaining. </returns>
+  [ScriptMember("move")]
+  public Window Move(int x, int y) {
+    hwnd.SetWindowPosition(x, y);
+    return this;
   }
 
 

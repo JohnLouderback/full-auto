@@ -186,7 +186,7 @@ public partial class MainViewModel : INotifyPropertyChanged {
             AppState.DebugState.FontScale.Value *
             baseFontSize *
             (1 / DpiScaleFactor),
-            3,
+            digits: 3,
             MidpointRounding.AwayFromZero
           );
       }
@@ -194,9 +194,11 @@ public partial class MainViewModel : INotifyPropertyChanged {
       return WindowHeight switch {
         < 480 => baseFontSize *
                  DpiScaleFactor,
-        < 720 => (double)Application.Current.Resources["MainPixelFontSizeTwoToOne"] *
+        < 720 => baseFontSize *
+                 2 *
                  DpiScaleFactor,
-        >= 720 => (double)Application.Current.Resources["MainPixelFontSizeThreeToOne"] *
+        >= 720 => baseFontSize *
+                  3 *
                   DpiScaleFactor
       };
     }
@@ -243,7 +245,7 @@ public partial class MainViewModel : INotifyPropertyChanged {
   ///   Raises the <see cref="PositionChanged" /> event.
   /// </summary>
   public void RaisePositionChanged() {
-    PositionChanged?.Invoke(this, null);
+    PositionChanged?.Invoke(this, args: null);
   }
 
 

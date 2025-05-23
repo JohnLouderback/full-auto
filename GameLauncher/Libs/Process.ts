@@ -11,10 +11,11 @@ export interface Process {
     readonly name: string;
     /**
      * The full path to the process. For example: `"C:\Program
-     * Files\Google\Chrome\Application\chrome.exe"`.
+     * Files\Google\Chrome\Application\chrome.exe"`. This value will be `null` if
+     * access to the process is denied due to permissions.
      *
      */
-    readonly fullPath: string;
+    readonly fullPath?: string;
     /**
      * The process ID, which is unique for each process. For example: `1234`.
      *
@@ -33,6 +34,7 @@ export interface Process {
      *
      */
     readonly isProtected: boolean;
+    readonly exited: Promise<void>;
     /**
      * Forcefully terminates the process.
      *

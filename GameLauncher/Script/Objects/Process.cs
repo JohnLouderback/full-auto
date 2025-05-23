@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.ComponentModel;
 using Windows.Win32.System.Threading;
 using Core.Utils;
 using GameLauncher.Script.Utils;
@@ -28,10 +29,11 @@ public class Process : ObjectBase {
 
   /// <summary>
   ///   The full path to the process. For example:
-  ///   <c> "C:\Program Files\Google\Chrome\Application\chrome.exe" </c>.
+  ///   <c> "C:\Program Files\Google\Chrome\Application\chrome.exe" </c>. This value will be
+  ///   <see langword="null" /> if access to the process is denied due to permissions.
   /// </summary>
   [ScriptMember("fullPath")]
-  public string FullPath { get; }
+  public string? FullPath { get; }
 
   /// <summary>
   ///   The process ID, which is unique for each process. For example: <c> 1234 </c>.
@@ -136,8 +138,15 @@ public class Process : ObjectBase {
     engine       = AppState.ScriptEngine;
     this.process = process;
     Name         = process.ProcessName;
-    FullPath     = process.MainModule?.FileName ?? string.Empty;
-    Pid          = process.Id;
+    try {
+      FullPath = process.MainModule?.FileName;
+    }
+    // Catch the Win32Exception with error code 5 (access denied) when trying to get the full path.
+    catch (Win32Exception e) when (e.NativeErrorCode == 5) {
+      FullPath = null;
+    }
+
+    Pid = process.Id;
   }
 
 
@@ -393,6 +402,19 @@ public class Process : ObjectBase {
         $"Failed to close handle of process {process.ProcessName} ({Pid})."
       );
     }
+  }
+
+
+  /// <summary>
+  ///   Creates a new instance of the <see cref="Process" /> class from the specified process ID.
+  /// </summary>
+  /// <param name="pid"> The process ID of the process to create. </param>
+  /// <returns> A new instance of the <see cref="Process" /> class. </returns>
+  internal static Process FromID(
+    int pid
+  ) {
+    var process = System.Diagnostics.Process.GetProcessById(pid);
+    return new Process(process);
   }
 
 

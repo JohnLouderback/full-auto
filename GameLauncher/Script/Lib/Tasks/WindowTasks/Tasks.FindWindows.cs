@@ -1,4 +1,6 @@
-﻿using GameLauncher.Script.Objects;
+﻿using Windows.Win32.Foundation;
+using Core.Utils;
+using GameLauncher.Script.Objects;
 using GameLauncher.Script.Utils;
 using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
@@ -16,7 +18,8 @@ public partial class Tasks {
 
     if (IsFunction(searchCriteria)) {
       return FindWindows(
-        window => searchCriteria.Invoke(false, window).IsValueTruthy()
+        (window, process) =>
+          searchCriteria.Invoke(asConstructor: false, window, process).IsValueTruthy()
       );
     }
 
@@ -80,7 +83,12 @@ public partial class Tasks {
     var windows = GetAllWindows();
     var filteredWindows =
       windows
-        .Where(searchCriteria.Invoke);
+        .Where(
+          window => searchCriteria.Invoke(
+            window,
+            Process.FromID((int)((HWND)window.Handle).GetProcessID())
+          )
+        );
 
     return JSArray<Window>.FromIEnumerable(filteredWindows);
   }

@@ -10,6 +10,9 @@ public class YamlConfig : IYamlConfig {
   public int? Y { get; set; }
 
   /// <inheritdoc />
+  public int? Hwnd { get; set; }
+
+  /// <inheritdoc />
   public string? WindowTitle { get; set; }
 
   /// <inheritdoc />

@@ -12,9 +12,8 @@ namespace Downscaler.Core.Services;
 
 public class YamlParser(IAppState AppState) : IYamlParser {
   /// <inheritdoc />
-  public bool ParseYaml(string path) {
-    var yamlContent = GetYamlContent(path);
-    var yamlConfig  = DeserializeYaml(yamlContent);
+  public bool ParseYaml(string yamlText) {
+    var yamlConfig = DeserializeYaml(yamlText);
 
     // Validate the YAML configuration.
     var validationErrors = ValidateYamlConfig(yamlConfig).ToList();
@@ -38,6 +37,13 @@ public class YamlParser(IAppState AppState) : IYamlParser {
     }
 
     return yamlConfig != null;
+  }
+
+
+  /// <inheritdoc />
+  public bool ParseYamlFile(string path) {
+    var yamlContent = GetYamlContent(path);
+    return ParseYaml(yamlContent);
   }
 
 
@@ -266,6 +272,19 @@ public class YamlParser(IAppState AppState) : IYamlParser {
         errors.Add($"No window with process name \"{yamlConfig.ProcessName}\" was found.");
       }
     }
+    else if (yamlConfig.Hwnd != null) {
+      var windowByHwnd = GetWindowForHwnd(yamlConfig.Hwnd.Value);
+
+      // If a window was found, set it in the app state.
+      if (windowByHwnd is not null) {
+        AppState.WindowToScale = (Win32Window)windowByHwnd;
+      }
+      // If the window was null, log an error detailing that the window with the given hwnd was not
+      // found.
+      else {
+        errors.Add($"No window with hwnd \"{yamlConfig.Hwnd}\" was found.");
+      }
+    }
     else {
       errors.Add("No window title or process name was provided.");
     }
@@ -346,7 +365,12 @@ public class YamlParser(IAppState AppState) : IYamlParser {
     var errors = new List<string?> {
       CheckForMutualExclusion(
         ("process-name", yamlConfig.ProcessName),
-        ("window-title", yamlConfig.WindowTitle)
+        ("window-title", yamlConfig.WindowTitle),
+        ("hwnd", yamlConfig.Hwnd)
+      ),
+      CheckForMutualExclusion(
+        ("hwnd", yamlConfig.Hwnd),
+        ("class-name", yamlConfig.ClassName)
       ),
       CheckForMutualExclusion(
         ("downscale-factor", yamlConfig.DownscaleFactor),

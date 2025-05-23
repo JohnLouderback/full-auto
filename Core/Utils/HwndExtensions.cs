@@ -324,10 +324,28 @@ public static class HwndExtensions {
   }
 
 
+  public static HWND SetWindowPosition(this HWND hwnd, int x, int y) {
+    if (PInvoke.SetWindowPos(
+          hwnd,
+          (HWND)0,
+          x,
+          y,
+          cx: 0,
+          cy: 0,
+          SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOSIZE
+        ) ==
+        0) {
+      throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
+
+    return hwnd;
+  }
+
+
   public static HWND SetWindowPosition(this HWND hwnd, int x, int y, int width, int height) {
     PInvoke.SetWindowPos(
       hwnd,
-      (HWND)(nint)WindowZOrder.HWND_TOP,
+      (HWND)0,
       x,
       y,
       width,
@@ -426,10 +444,10 @@ public static class HwndExtensions {
     var result = PInvoke.SetWindowPos(
       hwnd,
       (HWND)0,
-      0,
-      0,
-      0,
-      0,
+      X: 0,
+      Y: 0,
+      cx: 0,
+      cy: 0,
       SET_WINDOW_POS_FLAGS.SWP_NOMOVE |
       SET_WINDOW_POS_FLAGS.SWP_NOSIZE |
       SET_WINDOW_POS_FLAGS.SWP_NOZORDER

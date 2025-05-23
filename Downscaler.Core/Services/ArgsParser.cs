@@ -22,10 +22,10 @@ internal class ValidationError : NamedError {
 public class Options {
   [Value(
     0,
-    MetaName = "app",
+    MetaName = "app, title, process, file, or yaml",
     Required = true,
     HelpText =
-      "Title of the window or name of the process to mirror. Titles are case-sensitive, and process names are not. Process names are discerned by the presence of the \".exe\" extension."
+      "One of: The title of the window or name of the process to mirror. Titles are case-sensitive, and process names are not. Process names are discerned by the presence of the \".exe\" extension. If the value is a path to a YAML file, that file is processed as a configuration file. If the value is \"yaml\" or \"yml\", the rest of the command line is treated as a YAML document to parse. If either a path to a YAML file is passed or a YAML document is passed, the other command line arguments are ignored."
   )]
   public string App { get; set; }
 
@@ -39,7 +39,7 @@ public class Options {
   public string? ClassName { get; set; }
 
   [Option(
-    'f',
+    shortName: 'f',
     "factor",
     Required = true,
     SetName = "factor",
@@ -49,7 +49,7 @@ public class Options {
   public double? DownscaleFactor { get; set; }
 
   [Option(
-    'W',
+    shortName: 'W',
     "scale-width",
     Required = true,
     SetName = "dimensions",
@@ -59,7 +59,7 @@ public class Options {
   public uint? DownscaleWidth { get; set; }
 
   [Option(
-    'H',
+    shortName: 'H',
     "scale-height",
     Required = true,
     SetName = "dimensions",
@@ -72,15 +72,29 @@ public class Options {
 public class ArgsParser(IAppState AppState, IYamlParser YamlParser) : IArgsParser {
   /// <inheritdoc />
   public bool ParseArgs(string[] args) {
+    // if (!Debugger.IsAttached) {
+    //   Debugger.Launch();
+    // }
+
     // First, hack off the first argument, which is the name of the executable.
     args = args[1..];
+
+    // Check if the first argument is "yaml" or "yml". If it is, we'll skip normal argument parsing
+    // and use its value as the contents of a YAML document to parse.
+    if (args.Length > 0 &&
+        (args[0].Equals("yaml", StringComparison.OrdinalIgnoreCase) ||
+         args[0].Equals("yml", StringComparison.OrdinalIgnoreCase))) {
+      Console.WriteLine("Parsing YAML config file...");
+      // Parse everything after the first argument as a YAML document.
+      return YamlParser.ParseYaml(string.Join(separator: ' ', args[1..]));
+    }
 
     // Check if the first argument is a YAML file. If it is, we'll skip normal argument parsing and
     // load the settings from the file by differing to the YAML parser.
     if (args.Length > 0 &&
         (args[0].EndsWith(".yaml") || args[0].EndsWith(".yml"))) {
       Console.WriteLine("Parsing YAML config file...");
-      return YamlParser.ParseYaml(args[0]);
+      return YamlParser.ParseYamlFile(args[0]);
     }
 
     var parser = new Parser(
@@ -319,22 +333,22 @@ public class ArgsParser(IAppState AppState, IYamlParser YamlParser) : IArgsParse
     var typeInfoCreate = typeof(TypeInfo).GetMethod(
       "Create",
       BindingFlags.Static | BindingFlags.NonPublic,
-      null,
+      binder: null,
       [typeof(Type)],
-      null
+      modifiers: null
     );
     var notParsed = notParsedType
       .MakeGenericType(typeof(Options))
       .GetConstructor(
         BindingFlags.NonPublic | BindingFlags.Instance,
-        null,
+        binder: null,
         [typeof(TypeInfo), typeof(IEnumerable<Error>)],
-        null
+        modifiers: null
       )
       ?.Invoke(
         [
           typeInfoCreate?.Invoke(
-            null,
+            obj: null,
             [typeof(Options)]
           ),
           new[] {

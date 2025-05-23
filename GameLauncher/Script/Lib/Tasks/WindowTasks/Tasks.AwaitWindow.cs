@@ -1,5 +1,4 @@
-﻿using Windows.Win32.Foundation;
-using Core.Models;
+﻿using Core.Models;
 using Core.Utils;
 using GameLauncher.Script.Objects;
 using GameLauncher.Script.Utils.CodeGenAttributes;
@@ -16,7 +15,8 @@ public static partial class Tasks {
   ///   <see langword="false" />.
   /// </summary>
   /// <param name="window"> The window to check. </param>
-  public delegate bool WindowCriteriaCallback(Window window);
+  /// <param name="process"> The process that owns the window. </param>
+  public delegate bool WindowCriteriaCallback(Window window, Process process);
 
 
   /// <summary>
@@ -79,17 +79,21 @@ public static partial class Tasks {
                  return false;
                }
 
+               var procID = hwnd.GetProcessID();
+
                var window = new Window(
                  new Win32Window {
                    Hwnd        = hwnd,
                    ClassName   = hwnd.GetClassName(),
                    Title       = hwnd.GetWindowText(),
-                   ProcessID   = hwnd.GetProcessID(),
+                   ProcessID   = procID,
                    ProcessName = hwnd.GetProcessName()
                  }
                );
 
-               return searchCriteria(window);
+               var process = Process.FromID((int)procID);
+
+               return searchCriteria(window, process);
              },
              timeout
            );
@@ -105,7 +109,8 @@ public static partial class Tasks {
 
     if (IsFunction(searchCriteria)) {
       return await AwaitWindow(
-               (Window window) => searchCriteria.Invoke(false, window).IsValueTruthy(),
+               (window, process) => searchCriteria.Invoke(asConstructor: false, window, process)
+                 .IsValueTruthy(),
                timeout
              );
     }

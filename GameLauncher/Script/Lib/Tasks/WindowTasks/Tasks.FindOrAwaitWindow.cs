@@ -91,7 +91,8 @@ public partial class Tasks {
 
     if (IsFunction(searchCriteria)) {
       return await FindOrAwaitWindow(
-               window => searchCriteria.Invoke(false, window).IsValueTruthy(),
+               (window, process) => searchCriteria.Invoke(asConstructor: false, window, process)
+                 .IsValueTruthy(),
                timeout
              );
     }

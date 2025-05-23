@@ -22,15 +22,23 @@ public interface IYamlConfig {
   int? Y { get; set; }
 
   /// <summary>
+  ///   The handle of the window to downscale. This is exclusive with <see cref="WindowTitle" />,
+  ///   <see cref="ProcessName" />, and <see cref="ClassName" />. This is useful when you already
+  ///   know the handle of the window you want to downscale. This is generally used when calling the
+  ///   downscaler from another application.
+  /// </summary>
+  int? Hwnd { get; set; }
+
+  /// <summary>
   ///   The window title to use to search for the window to downscale. This is exclusive with
-  ///   <see cref="ProcessName" />.
+  ///   <see cref="ProcessName" /> and <see cref="Hwnd" />.
   /// </summary>
   string? WindowTitle { get; set; }
 
   /// <summary>
   ///   The name of a running process to search for to use as the window to downscale. This is
-  ///   exclusive with <see cref="WindowTitle" />. Process names are case-insensitive and should
-  ///   always end with the ".exe" extension.
+  ///   exclusive with <see cref="WindowTitle" /> and <see cref="Hwnd" />. Process names are
+  ///   case-insensitive and should always end with the ".exe" extension.
   /// </summary>
   string? ProcessName { get; set; }
 
@@ -38,7 +46,7 @@ public interface IYamlConfig {
   ///   Class name of the window to mirror. You can use a tool like "Spy++", "Window Detective",
   ///   or similar to find the class name of a window. Class names are case-sensitive. This is
   ///   useful for finding windows that have the same title, but different class names, particularly
-  ///   child windows of a parent window.
+  ///   child windows of a parent window. This is exclusive with the <see cref="Hwnd" /> option.
   /// </summary>
   string? ClassName { get; set; }
 
