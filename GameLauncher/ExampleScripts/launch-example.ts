@@ -64,6 +64,7 @@ Process ID: 0x${app.process.pid.toString(16)}`
     });
     window.on('focused', () => {
       console.log('Window focused.');
+      window.constrainCursor();
     });
   }
 

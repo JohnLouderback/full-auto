@@ -1,5 +1,5 @@
-﻿using GameLauncher.Script.Utils.CodeGenAttributes;
-using GameLauncherTaskGenerator;
+﻿using GameLauncher.Script.Utils;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;
@@ -18,6 +18,18 @@ public class BoundingBox : ObjectBase {
   [ScriptMember("width")] public int Width { get; set; }
 
   [ScriptMember("height")] public int Height { get; set; }
+
+
+  public static explicit operator BoundingBox(ScriptObject obj) {
+    if (JSTypeConverter.MatchesShape<BoundingBox>(obj, out var errors)) {
+      return JSTypeConverter.ConvertTo<BoundingBox>(obj);
+    }
+
+    throw new ScriptEngineException(
+      "Could not convert to BoundingBox due to conversion errors:\n  " +
+      string.Join("\n  ", errors)
+    );
+  }
 
 
   [ScriptMember("toString")]

@@ -97,3 +97,4 @@ GetSystemInfo
 OpenProcess
 NtQueryInformationProcess
 CloseHandle
+ClipCursor

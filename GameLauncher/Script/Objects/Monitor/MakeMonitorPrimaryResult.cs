@@ -11,7 +11,6 @@ namespace GameLauncher.Script.Objects;
 /// </summary>
 [TypeScriptExport]
 public class MakeMonitorPrimaryResult : UndoableResult {
-  private readonly bool         shouldUndo;
   private readonly Win32Monitor previousPrimary;
 
 
@@ -19,7 +18,7 @@ public class MakeMonitorPrimaryResult : UndoableResult {
     Win32Monitor previousPrimary,
     bool shouldUndo
   ) {
-    this.shouldUndo      = shouldUndo;
+    ShouldUndo           = shouldUndo;
     this.previousPrimary = previousPrimary;
   }
 

@@ -1,4 +1,5 @@
 import { BoundingBox } from "./BoundingBox";
+import { ConstrainCursorResult } from "./ConstrainCursorResult";
 import { DownscaleOptions } from "./DownscaleOptions";
 
 /**
@@ -7,6 +8,36 @@ import { DownscaleOptions } from "./DownscaleOptions";
  */
 // Auto-generated from C# type Window
 export interface Window {
+    /**
+     * Constrains the cursor to the bounding box of the window. This means that
+     * the cursor will not be able to move outside the window's bounding box until
+     * the cursor is released.
+     * 
+     * Note: The bounding box is not updated automatically if the window is
+     * resized or moved. In those case, you should call this method again to
+     * update the cursor constraint.
+     *
+     * @param shouldPersist If true, the cursor will remain constrained even after
+     * the script has finished executing.
+     * @returns A {@link ConstrainCursorResult} that can be used to manually
+     * reverse the cursor constraint. Alternatively, you may call the {@link
+     * Tasks.releaseCursor} task.
+     */
+    constrainCursor(shouldPersist: boolean): ConstrainCursorResult;
+    /**
+     * Constrains the cursor to the bounding box of the window. This means that
+     * the cursor will not be able to move outside the window's bounding box until
+     * the cursor is released.
+     * 
+     * Note: The bounding box is not updated automatically if the window is
+     * resized or moved. In those case, you should call this method again to
+     * update the cursor constraint.
+     *
+     * @returns A {@link ConstrainCursorResult} that can be used to manually
+     * reverse the cursor constraint. Alternatively, you may call the {@link
+     * Tasks.releaseCursor} task.
+     */
+    constrainCursor(): ConstrainCursorResult;
     /**
      * The handle of the window. This is a unique identifier representing the
      * window.
@@ -173,74 +204,6 @@ export interface Window {
      *
      */
     restore(): void;
-    /**
-     * Creates a new window that acts as a "mirror" of the current window. The new
-     * window will be created using the passed configuration. This is useful for
-     * creating a new window that is a scaled version of the current window. Handy
-     * for when a window is resistant to being scaled down through other means,
-     * such as resizing or cannot be resized beyond a certain size.
-     * 
-     * A compelling use-case for this is if you wanted to play a contemporary
-     * pixel art game at a low resolution on a CRT TV. Imagine that the game
-     * utilizes 240p pixel art, but the game is locked to a higher resolution. You
-     * could use this to create a new window that is a scaled version of the
-     * current window but at an actual 240p resolution.
-     *
-     * @param downscaleFactor The factor to downscale the window by. For example,
-     * a factor of 2 will downscale the window by 2x, meaning that a window of
-     * size 1920x1080 will be downscaled to 960x540. To upscale the window, use a
-     * factor less than 1. For example, a factor of 0.5 will upscale the window by
-     * 2x, meaning that a window of size 1920x1080 will be upscaled to 3840x2160.
-     * @returns A reference to the downscaler window.
-     */
-    downscale(downscaleFactor: number): Promise<Window>;
-    /**
-     * Creates a new window that acts as a "mirror" of the current window. The new
-     * window will be created using the passed configuration. This is useful for
-     * creating a new window that is a scaled version of the current window. Handy
-     * for when a window is resistant to being scaled down through other means,
-     * such as resizing or cannot be resized beyond a certain size.
-     * 
-     * A compelling use-case for this is if you wanted to play a contemporary
-     * pixel art game at a low resolution on a CRT TV. Imagine that the game
-     * utilizes 240p pixel art, but the game is locked to a higher resolution. You
-     * could use this to create a new window that is a scaled version of the
-     * current window but at an actual 240p resolution.
-     *
-     * @param width The width to scale the window to. The width is in device
-     * pixels, meaning that it will not be scaled by the DPI of the monitor.
-     * @param height The height to scale the window to. The height is in device
-     * pixels, meaning that it will not be scaled by the DPI of the monitor.
-     * @returns A reference to the downscaler window.
-     */
-    downscale(width: number, height: number): Promise<Window>;
-    /**
-     */
-    downscale(box: BoundingBox): Promise<Window>;
-    /**
-     * Creates a new window that acts as a "mirror" of the current window. The new
-     * window will be created using the passed configuration. This is useful for
-     * creating a new window that is a scaled version of the current window. Handy
-     * for when a window is resistant to being scaled down through other means,
-     * such as resizing or cannot be resized beyond a certain size.
-     * 
-     * A compelling use-case for this is if you wanted to play a contemporary
-     * pixel art game at a low resolution on a CRT TV. Imagine that the game
-     * utilizes 240p pixel art, but the game is locked to a higher resolution. You
-     * could use this to create a new window that is a scaled version of the
-     * current window but at an actual 240p resolution.
-     *
-     * @param options The options to use when creating the downscaler window. This
-     * includes the position of the window, the downscale factor, and the width
-     * and height to scale to. The downscale factor is the factor to downscale the
-     * window by. For example, a factor of 2 will downscale the window by 2x,
-     * meaning that a window of size 1920x1080 will be downscaled to 960x540. To
-     * upscale the window, use a factor less than 1. For example, a factor of 0.5
-     * will upscale the window by 2x, meaning that a window of size 1920x1080 will
-     * be upscaled to 3840x2160.
-     * @returns A reference to the downscaler window.
-     */
-    downscale(options: DownscaleOptions): Promise<Window>;
     /**
      * Gets the bounding box of the window. This is the rectangle that contains
      * the window's position and size on the screen. The pixels are in screen
