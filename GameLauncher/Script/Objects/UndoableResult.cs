@@ -1,5 +1,4 @@
 ﻿using GameLauncher.Script.Utils.CodeGenAttributes;
-using GameLauncherTaskGenerator;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;
@@ -33,6 +32,9 @@ public abstract class UndoableResult : ObjectBase {
   ///   </para>
   /// </summary>
   internal bool ShouldUndo { get; set; } = true;
+
+  internal static bool  CleanupInitiated { get; private set; }
+  internal static Task? CleanupTask      { get; private set; }
 
   /// <summary>
   ///   A LIFO stack of undoable results. This is used to keep track of the results that need to be
@@ -78,14 +80,28 @@ public abstract class UndoableResult : ObjectBase {
   ///   over the undo stack and calls the `Reverse` method on each result, marking it as reversed
   ///   after it has been successfully reversed.
   /// </summary>
-  internal static async Task ReverseAll() {
-    while (UndoStack.Count > 0) {
-      var result = UndoStack.Pop();
-      if (!result.IsReversed &&
-          result.ShouldUndo) {
-        await result.Reverse();
-        result.IsReversed = true;
-      }
+  internal static Task ReverseAll() {
+    // If cleanup is already in progress or completed, return the ongoing/completed task.
+    if (CleanupTask is not null) {
+      return CleanupTask;
     }
+
+    CleanupInitiated = true;
+
+    // Begin the cleanup task and store it for others to await.
+    CleanupTask = Task.Run(
+      async () => {
+        while (UndoStack.Count > 0) {
+          var result = UndoStack.Pop();
+          if (!result.IsReversed &&
+              result.ShouldUndo) {
+            await result.Reverse();
+            result.IsReversed = true;
+          }
+        }
+      }
+    );
+
+    return CleanupTask;
   }
 }

@@ -9,8 +9,9 @@ public partial class Window {
   ///     will not be able to move outside the window's bounding box until the cursor is released.
   ///   </para>
   ///   <para>
-  ///     Note: The bounding box is not updated automatically if the window is resized or moved. In
-  ///     those case, you should call this method again to update the cursor constraint.
+  ///     Note: The bounding box is not updated automatically if the window is resized, moved, or
+  ///     closed. In those case, you should call this method again to update the cursor constraint
+  ///     or release the cursor.
   ///   </para>
   /// </summary>
   /// <param name="shouldPersist">
@@ -21,9 +22,7 @@ public partial class Window {
   ///   constraint. Alternatively, you may call the <see cref="Lib.Tasks.ReleaseCursor" /> task.
   /// </returns>
   [ScriptMember("constrainCursor")]
-  public ConstrainCursorResult ConstrainCursor(
-    bool shouldPersist
-  ) {
+  public ConstrainCursorResult ConstrainCursor(bool shouldPersist) {
     var boundingBox = GetBoundingBox();
 
     return Lib.Tasks.ConstrainCursor(boundingBox, shouldPersist);
@@ -36,8 +35,9 @@ public partial class Window {
   ///     will not be able to move outside the window's bounding box until the cursor is released.
   ///   </para>
   ///   <para>
-  ///     Note: The bounding box is not updated automatically if the window is resized or moved. In
-  ///     those case, you should call this method again to update the cursor constraint.
+  ///     Note: The bounding box is not updated automatically if the window is resized, moved, or
+  ///     closed. In those case, you should call this method again to update the cursor constraint
+  ///     or release the cursor.
   ///   </para>
   /// </summary>
   /// <returns>

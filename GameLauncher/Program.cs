@@ -1,6 +1,8 @@
 ﻿using Windows.Win32.UI.HiDpi;
 using Core.Utils;
 using GameLauncher.Cli;
+using GameLauncher.Script.Objects;
+using GameLauncher.Services;
 using Spectre.Console.Cli;
 using static Windows.Win32.PInvoke;
 
@@ -16,6 +18,13 @@ MessageLoop.Start();
 TaskScheduler.UnobservedTaskException += (sender, e) => {
   Console.WriteLine($"[Unobserved Task Exception] {e.Exception}");
   e.SetObserved();
+};
+
+AppDomain.CurrentDomain.ProcessExit += (sender, e) => {
+  // Perform any necessary cleanup here before the application exits.
+  // This is a good place to reverse any undoable results or release resources.
+  UndoableResult.ReverseAll().GetAwaiter().GetResult();
+  GuiService.Instance.Stop().GetAwaiter().GetResult();
 };
 
 var app = new CommandApp<RunCommand>();

@@ -14,8 +14,8 @@ export interface Window {
      * the cursor is released.
      * 
      * Note: The bounding box is not updated automatically if the window is
-     * resized or moved. In those case, you should call this method again to
-     * update the cursor constraint.
+     * resized, moved, or closed. In those case, you should call this method again
+     * to update the cursor constraint or release the cursor.
      *
      * @param shouldPersist If true, the cursor will remain constrained even after
      * the script has finished executing.
@@ -30,8 +30,8 @@ export interface Window {
      * the cursor is released.
      * 
      * Note: The bounding box is not updated automatically if the window is
-     * resized or moved. In those case, you should call this method again to
-     * update the cursor constraint.
+     * resized, moved, or closed. In those case, you should call this method again
+     * to update the cursor constraint or release the cursor.
      *
      * @returns A {@link ConstrainCursorResult} that can be used to manually
      * reverse the cursor constraint. Alternatively, you may call the {@link
@@ -259,4 +259,15 @@ export interface Window {
      *
      */
     makeBorderless(): void;
+    /**
+     * Applies a matte effect to the window, embedding it within a colored
+     * backdrop. This is useful for focusing attention on the window's content by
+     * surrounding it with a solid color, effectively "blacking out" the rest of
+     * the screen around the window.
+     *
+     * @param [backdropColor=#000000] The color to use for the backdrop matte.
+     * This should be a hex color code (e.g., "#000000" for black). Defaults to
+     * black if not specified.
+     */
+    matte(backdropColor?: string): Promise<void>;
 }

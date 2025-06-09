@@ -56,23 +56,34 @@ public class ScriptRunner {
       if (obj is Task promise) {
         await promise.ToTask();
       }
-
-      // Once the script has completed running, we need to undo any tasks that were executed that
-      // were intended to be reversed. For example, if the user sets the screen resolution, we need
-      // to restore the original resolution when the script completes (unless they chose to persist
-      // the change).
-      await UndoableResult.ReverseAll();
     }
     catch (Exception exception) {
       if (exception is IScriptEngineException scriptException) {
-        // AnsiConsole.WriteException(exception);
         Logger.Exception(
           CleanStackTrace(scriptException.ErrorDetails)
         );
-        //Console.WriteLine(CleanStackTrace(scriptException.ErrorDetails));
       }
       else {
         throw;
+      }
+    }
+    finally {
+      try {
+        // Once the script has completed running, we need to undo any tasks that were executed that
+        // were intended to be reversed. For example, if the user sets the screen resolution, we need
+        // to restore the original resolution when the script completes (unless they chose to persist
+        // the change).
+        await UndoableResult.ReverseAll();
+      }
+      catch (Exception exception) {
+        if (exception is IScriptEngineException scriptException) {
+          Logger.Exception(
+            CleanStackTrace(scriptException.ErrorDetails)
+          );
+        }
+        else {
+          throw;
+        }
       }
     }
   }

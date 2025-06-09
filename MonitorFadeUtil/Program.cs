@@ -48,6 +48,8 @@ public class TransparentOverlay : Form {
     ShowInTaskbar   = false;
     StartPosition   = FormStartPosition.Manual;
 
+    // Set the window style to layered and transparent. This allows us to control the
+    // transparency (alpha) of the window.
     var style = GetWindowLong(Handle, GWL_EXSTYLE);
     SetWindowLong(
       Handle,
@@ -63,7 +65,7 @@ public class TransparentOverlay : Form {
     // the cursor position.
     var alpha = initialAlpha ?? (Bounds.Contains(Cursor.Position) ? (byte)0 : darkestAlpha);
 
-    SetLayeredWindowAttributes(Handle, 0, alpha, LWA_ALPHA);
+    SetLayeredWindowAttributes(Handle, crKey: 0, alpha, LWA_ALPHA);
 
     if (initialAlpha == 0) {
       activeOverlay = this;
@@ -83,7 +85,12 @@ public class TransparentOverlay : Form {
     SystemEvents.DisplaySettingsChanged += (sender, args) => RecreateOverlays();
 
     // We track the cursor position to determine when to fade the overlays in/out.
-    fadeTimer = new Timer(state => UpdateTransparency(), null, 0, 16); // 16ms = ~60fps
+    fadeTimer = new Timer(
+      state => UpdateTransparency(),
+      state: null,
+      dueTime: 0,
+      period: 16
+    ); // 16ms = ~60fps
 
     Application.Run();
   }
@@ -96,10 +103,10 @@ public class TransparentOverlay : Form {
     if (!initialAlphaWasPassed) {
       if (!Bounds.Contains(Cursor.Position)) {
         // Tween to darkened transparency
-        TweenAlpha(this, 0, darkestAlpha);
+        TweenAlpha(this, startAlpha: 0, darkestAlpha);
       }
       else {
-        SetLayeredWindowAttributes(Handle, 0, 0, LWA_ALPHA);
+        SetLayeredWindowAttributes(Handle, crKey: 0, bAlpha: 0, LWA_ALPHA);
         activeOverlay = this;
       }
     }
@@ -111,10 +118,12 @@ public class TransparentOverlay : Form {
       if (overlay == targetOverlay) {
         if (enableTweening) {
           // Tween to full transparency
-          TweenAlpha(overlay, darkestAlpha, 0);
+          TweenAlpha(overlay, darkestAlpha, endAlpha: 0);
         }
         else {
-          overlay.Invoke(() => SetLayeredWindowAttributes(overlay.Handle, 0, 0, LWA_ALPHA));
+          overlay.Invoke(
+            () => SetLayeredWindowAttributes(overlay.Handle, crKey: 0, bAlpha: 0, LWA_ALPHA)
+          );
         }
 
         activeOverlay = overlay;
@@ -122,11 +131,11 @@ public class TransparentOverlay : Form {
       else {
         if (enableTweening) {
           // Tween to darkened transparency
-          TweenAlpha(overlay, 0, darkestAlpha);
+          TweenAlpha(overlay, startAlpha: 0, darkestAlpha);
         }
         else {
           overlay.Invoke(
-            () => SetLayeredWindowAttributes(overlay.Handle, 0, darkestAlpha, LWA_ALPHA)
+            () => SetLayeredWindowAttributes(overlay.Handle, crKey: 0, darkestAlpha, LWA_ALPHA)
           );
         }
       }
@@ -220,7 +229,9 @@ public class TransparentOverlay : Form {
     tweenTimer = new Timer(
       _ => {
         if (currentStep >= stepCount) {
-          overlay.Invoke(() => SetLayeredWindowAttributes(overlay.Handle, 0, endAlpha, LWA_ALPHA));
+          overlay.Invoke(
+            () => SetLayeredWindowAttributes(overlay.Handle, crKey: 0, endAlpha, LWA_ALPHA)
+          );
           overlayStates[overlay.Bounds] = endAlpha; // Save final alpha state
           tweenTimer.Dispose();
           return;
@@ -228,13 +239,13 @@ public class TransparentOverlay : Form {
 
         var currentAlpha = (byte)(startAlpha + stepSize * currentStep);
         overlay.Invoke(
-          () => SetLayeredWindowAttributes(overlay.Handle, 0, currentAlpha, LWA_ALPHA)
+          () => SetLayeredWindowAttributes(overlay.Handle, crKey: 0, currentAlpha, LWA_ALPHA)
         );
         overlayStates[overlay.Bounds] = currentAlpha; // Update alpha state during tween
         currentStep++;
       },
-      null,
-      0,
+      state: null,
+      dueTime: 0,
       stepDuration
     );
   }
@@ -253,7 +264,7 @@ public class TransparentOverlay : Form {
           fadeTimeout?.Dispose();
           fadeTimeout = new Timer(
             _ => ApplyTransparency(overlay),
-            null,
+            state: null,
             fadeOutDelay,
             Timeout.Infinite
           );

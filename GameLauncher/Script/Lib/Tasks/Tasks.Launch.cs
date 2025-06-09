@@ -2,6 +2,7 @@
 using GameLauncher.Script.Objects;
 using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
+using Application = GameLauncher.Script.Objects.Application;
 using Process = System.Diagnostics.Process;
 
 namespace GameLauncher.Script;

@@ -76,16 +76,17 @@ Process ID: 0x${app.process.pid.toString(16)}`
   app.process.setPriority('below normal');
 
   if (!window.isShowing) await window.shown;
-  console.log('Downscaling Fork...');
-  const downscaleWindow = await window.downscale({
-    x: 0,
-    y: 0,
-    width: 640,
-    height: 360,
-  });
-  if (!downscaleWindow.isShowing) await downscaleWindow.shown;
-  downscaleWindow.move(1, 1);
-  window.move(1, 1);
+  // console.log('Downscaling Fork...');
+  // const downscaleWindow = await window.downscale({
+  //   x: 0,
+  //   y: 0,
+  //   width: 640,
+  //   height: 360,
+  // });
+  // if (!downscaleWindow.isShowing) await downscaleWindow.shown;
+  // downscaleWindow.move(1, 1);
+  // window.move(1, 1);
+  // await window.matte()
 
 
   await app.exitSignal;

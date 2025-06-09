@@ -1,6 +1,4 @@
 import { Application } from "./Application";
-import { BoundingBox } from "./BoundingBox";
-import { ConstrainCursorResult } from "./ConstrainCursorResult";
 import { LaunchOptions } from "./LaunchOptions";
 import { Monitor } from "./Monitor";
 import { Process } from "./Process";
@@ -40,24 +38,6 @@ export function awaitWindow(...args: any[]): any {
 export function changeResolution(width: number, height: number, refreshRate: number): void {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.ChangeResolution(width, height, refreshRate);
-}
-
-    /**
-     * Constrains the cursor to a specified bounding box on the screen. The cursor
-     * will be unable to move outside the specified bounding box until the cursor
-     * is released.
-     *
-     * @param boundingBox The bounding box to constrain the cursor to. The
-     * bounding box must have a positive width and height greater than zero.
-     * @param [shouldPersist=false] Whether the cursor constraint should persist
-     * after the script has finished executing.
-     * @returns A {@link ConstrainCursorResult} that can be used to manually
-     * reverse the cursor constraint. Alternatively, you may call the {@link
-     * Tasks.releaseCursor} task.
-     */
-export function constrainCursor(boundingBox: BoundingBox, shouldPersist?: boolean): ConstrainCursorResult {
-    // @ts-expect-error - Function is injected by the engine
-    return __Tasks.ConstrainCursor(boundingBox, shouldPersist);
 }
 
     /**
@@ -188,19 +168,6 @@ export function launch(path: string, args: Array<string>): Application;
 export function launch(...args: any[]): any {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.Launch(...args);
-}
-
-    /**
-     * Releases the cursor from its current clipping bounds, allowing it to move
-     * freely outside the previously constrained area. This works both when the
-     * cursor was constrained by the {@link Tasks.constrainCursor} task or by any
-     * other means (i.e., any other application or system setting that may have
-     * constrained the cursor).
-     *
-     */
-export function releaseCursor(): void {
-    // @ts-expect-error - Function is injected by the engine
-    return __Tasks.ReleaseCursor();
 }
 
     /**

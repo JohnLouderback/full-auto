@@ -1,5 +1,6 @@
 ﻿using Microsoft.ClearScript;
 using Microsoft.ClearScript.V8;
+using Timer = System.Threading.Timer;
 
 namespace GameLauncher.Script.Globals;
 
@@ -60,7 +61,7 @@ internal class Timers {
 
   public static int SetInterval(ScriptObject func, int interval) {
     var id    = Interlocked.Increment(ref intervalIdCounter);
-    var timer = new Timer(_ => func.Invoke(false), null, interval, interval);
+    var timer = new Timer(_ => func.Invoke(false), state: null, interval, interval);
     intervalMap[id] = timer;
     return id;
   }
@@ -73,7 +74,7 @@ internal class Timers {
         func.Invoke(false);
         timeoutMap.Remove(id);
       },
-      null,
+      state: null,
       delay,
       Timeout.Infinite
     );

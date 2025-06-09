@@ -15,12 +15,12 @@ public static class ObjectUtils {
   /// <param name="obj">The object to convert.</param>
   /// <returns>A console.log-like string representation of the object.</returns>
   public static string ToJsonLikeString(object obj) {
-    return ToJsonLikeString(obj, 0);
+    return ToJsonLikeString(obj, indentLevel: 0);
   }
 
 
   /// <summary>
-  ///   Describe a Task as <pending>, <fulfilled>, <rejected>, etc.
+  ///   Describe a Task as &lt;pending&gt;, &lt;fulfilled&gt;, &lt;rejected&gt;, etc.
   /// </summary>
   private static string DescribeTaskStatus(Task task) {
     // Simplify or expand as needed
@@ -37,8 +37,8 @@ public static class ObjectUtils {
   ///   Internal recursive helper that tracks indentation level.
   /// </summary>
   private static string ToJsonLikeString(object obj, int indentLevel) {
-    var indent      = new string(' ', indentLevel * 2);
-    var childIndent = new string(' ', (indentLevel + 1) * 2);
+    var indent      = new string(c: ' ', indentLevel * 2);
+    var childIndent = new string(c: ' ', (indentLevel + 1) * 2);
 
     if (obj == null) {
       return "null";
@@ -118,7 +118,7 @@ public static class ObjectUtils {
 
       object value;
       try {
-        value = prop.GetValue(obj, null);
+        value = prop.GetValue(obj, index: null);
       }
       catch {
         // If a getter throws, skip or display something else
@@ -182,11 +182,11 @@ public static class ObjectUtils {
       var keyName = string.IsNullOrWhiteSpace(attr.Name) ? method.Name : attr.Name;
 
       sbObj.Append(childIndent);
-      sbObj.Append($"{keyName}()"); // Use ƒ to indicate a function);
+      sbObj.Append($"{keyName}()"); // Use ƒ to indicate a function;
     }
 
     sbObj.Append('\n');
-    sbObj.Append(indent).Append("}");
+    sbObj.Append(indent).Append('}');
     return sbObj.ToString();
   }
 }

@@ -61,7 +61,10 @@ public partial class Window {
     [TsTypeOverride(""" "resize" | "alt enter" """)]
     string method = "resize"
   ) {
-    // For now, we only implement the resize method.
+    if (string.IsNullOrWhiteSpace(method)) {
+      throw new ArgumentException("The method must not be null or empty.", nameof(method));
+    }
+
     switch (method) {
       case "resize": {
         var win32Monitor = win32Window.GetMonitor();
