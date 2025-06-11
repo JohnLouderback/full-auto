@@ -38,12 +38,28 @@ public partial class Window : ObjectBase {
   [ScriptMember("className")]
   public string ClassName => hwnd.GetClassName();
 
+  internal Window(HWND hwnd) {
+    win32Window = new Win32Window {
+      Hwnd        = hwnd,
+      Title       = hwnd.GetWindowText(),
+      ClassName   = hwnd.GetClassName(),
+      ProcessName = hwnd.GetProcessName(),
+      ProcessID   = hwnd.GetProcessID()
+    };
+    this.hwnd   = hwnd;
 
-  internal Window(Win32Window window) {
-    engine      = AppState.ScriptEngine;
+    Init();
+  }
+
+  internal Window(Win32Window window){
     win32Window = window;
     hwnd        = window.Hwnd;
-
+    Init();
+  }
+  
+  private void Init() {
+    engine      = AppState.ScriptEngine;
+    
     // Ensure the window still exists at this point before trying to initialize events.
     if (!IsClosed) {
       InitializeEvents();

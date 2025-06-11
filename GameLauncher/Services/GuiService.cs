@@ -1,5 +1,7 @@
 ﻿using Windows.Win32.Foundation;
 using GameLauncher.Forms;
+using GameLauncher.Script.Objects;
+using Application = System.Windows.Forms.Application;
 
 namespace GameLauncher.Services;
 
@@ -51,6 +53,33 @@ public class GuiService {
 
 
   /// <summary>
+  ///   Invokes the specified function asynchronously on the GUI thread. This method is safe to call
+  ///   from any thread and ensures the delegate runs in the Windows Forms synchronization context.
+  /// </summary>
+  /// <param name="func">
+  ///   The <see cref="Func{T}" /> to execute on the GUI thread.
+  /// </param>
+  public async Task<T> InvokeAsync<T>(Func<T> func) {
+    await EnsureStarted().ConfigureAwait(false);
+    var returnValue = new TaskCompletionSource<T>();
+    context!.Post(
+      _ => {
+        try {
+          var result = func();
+          returnValue.SetResult(result);
+        }
+        catch (Exception ex) {
+          returnValue.SetException(ex);
+        }
+      },
+      state: null
+    );
+
+    return await returnValue.Task.ConfigureAwait(false);
+  }
+
+
+  /// <summary>
   ///   Displays a fullscreen, borderless matte overlay window on the GUI thread,
   ///   optionally surrounding a specified target window. The window remains on top
   ///   of other windows and is intended for visual framing or focus.
@@ -62,13 +91,17 @@ public class GuiService {
   /// <param name="color">
   ///   The background color to use for the matte window.
   /// </param>
-  public async Task ShowMatteWindow(HWND targetWindow, Color color) {
-    await InvokeAsync(
-      () => {
-        var matte = new MatteForm(targetWindow, color);
-        matte.Show();
-      }
-    );
+  /// <returns>
+  ///   A <see cref="Window" /> object representing the matte window that was created.
+  /// </returns>
+  public async Task<Window> ShowMatteWindow(HWND targetWindow, Color color) {
+    return await InvokeAsync(
+             () => {
+               var matte = new MatteForm(targetWindow, color);
+               matte.Show();
+               return new Window((HWND)matte.Handle);
+             }
+           );
   }
 
 

@@ -57,9 +57,31 @@ public partial class Window {
   ///   The color to use for the backdrop matte. This should be a hex color code (e.g., "#000000" for
   ///   black). Defaults to black if not specified.
   /// </param>
+  /// <param name="shouldPersist">
+  ///   If true, the matte window will persist after the script execution ends. If false, it will
+  ///   be closed automatically when the script finishes. If the matted window is still open at that
+  ///   time, it will be "unparented" from the matte window, allowing it to function normally again.
+  ///   Defaults to false.
+  /// </param>
+  /// <returns>
+  ///   A <see cref="MatteWindowResult" /> object that contains the matte window and the matted window.
+  ///   This object can be used to reverse the matte effect by calling its
+  ///   <see cref="MatteWindowResult.Undo" /> method. The result also contains references to both
+  ///   this window (the matted window) and the matte window itself, allowing you to interact with
+  ///   the matte window after it has been created.
+  /// </returns>
   [ScriptMember("matte")]
-  public async Task Matte(string backdropColor = "#000000") {
-    var color = ColorTranslator.FromHtml(backdropColor);
-    await GuiService.Instance.ShowMatteWindow(hwnd, color);
+  public async Task<MatteWindowResult> Matte(
+    string backdropColor = "#000000",
+    bool shouldPersist = false
+  ) {
+    var color       = ColorTranslator.FromHtml(backdropColor);
+    var matteWindow = await GuiService.Instance.ShowMatteWindow(hwnd, color);
+
+    if (matteWindow is null) {
+      throw new InvalidOperationException("Failed to create matte window.");
+    }
+
+    return new MatteWindowResult(matteWindow, this, !shouldPersist);
   }
 }
