@@ -98,3 +98,6 @@ OpenProcess
 NtQueryInformationProcess
 CloseHandle
 ClipCursor
+SystemParametersInfo
+FindWindowW
+SendMessageTimeout

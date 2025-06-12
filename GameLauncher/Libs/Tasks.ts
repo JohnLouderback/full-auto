@@ -2,6 +2,7 @@ import { Application } from "./Application";
 import { LaunchOptions } from "./LaunchOptions";
 import { Monitor } from "./Monitor";
 import { Process } from "./Process";
+import { Taskbar } from "./Taskbar";
 import { Window } from "./Window";
 import { WindowSearchCriteria } from "./WindowSearchCriteria";
 
@@ -115,6 +116,16 @@ export function getAllMonitors(): Array<Monitor> {
 export function getAllWindows(): Array<Window> {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.GetAllWindows();
+}
+
+    /**
+     * Gets the taskbar object, which represents the Windows taskbar.
+     *
+     * @returns A {@link Taskbar} object representing the taskbar.
+     */
+export function getTaskbar(): Taskbar {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.GetTaskbar();
 }
 
     /**

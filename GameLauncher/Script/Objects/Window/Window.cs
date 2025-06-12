@@ -7,7 +7,7 @@ using Microsoft.ClearScript;
 namespace GameLauncher.Script.Objects;
 
 /// <summary>
-///   Represents a window of an application or another window.
+///   Represents a window of an application.
 /// </summary>
 [TypeScriptExport]
 public partial class Window : ObjectBase {
@@ -38,6 +38,7 @@ public partial class Window : ObjectBase {
   [ScriptMember("className")]
   public string ClassName => hwnd.GetClassName();
 
+
   internal Window(HWND hwnd) {
     win32Window = new Win32Window {
       Hwnd        = hwnd,
@@ -46,20 +47,22 @@ public partial class Window : ObjectBase {
       ProcessName = hwnd.GetProcessName(),
       ProcessID   = hwnd.GetProcessID()
     };
-    this.hwnd   = hwnd;
+    this.hwnd = hwnd;
 
     Init();
   }
 
-  internal Window(Win32Window window){
+
+  internal Window(Win32Window window) {
     win32Window = window;
     hwnd        = window.Hwnd;
     Init();
   }
-  
+
+
   private void Init() {
-    engine      = AppState.ScriptEngine;
-    
+    engine = AppState.ScriptEngine;
+
     // Ensure the window still exists at this point before trying to initialize events.
     if (!IsClosed) {
       InitializeEvents();

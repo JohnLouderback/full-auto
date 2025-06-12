@@ -1,9 +1,10 @@
 import { BoundingBox } from "./BoundingBox";
 import { ConstrainCursorResult } from "./ConstrainCursorResult";
 import { DownscaleOptions } from "./DownscaleOptions";
+import { MatteWindowResult } from "./MatteWindowResult";
 
 /**
- * Represents a window of an application or another window.
+ * Represents a window of an application.
  *
  */
 // Auto-generated from C# type Window
@@ -188,6 +189,11 @@ export interface Window {
      */
     focus(): void;
     /**
+     * Hides the window. This makes the window invisible, but does not destroy it.
+     *
+     */
+    hide(): void;
+    /**
      * Maximizes the window. This expands the window to fill the entire screen.
      *
      */
@@ -204,6 +210,11 @@ export interface Window {
      *
      */
     restore(): void;
+    /**
+     * Shows the window. This makes the window visible if it is currently hidden.
+     *
+     */
+    show(): void;
     /**
      * Gets the bounding box of the window. This is the rectangle that contains
      * the window's position and size on the screen. The pixels are in screen
@@ -268,6 +279,17 @@ export interface Window {
      * @param [backdropColor=#000000] The color to use for the backdrop matte.
      * This should be a hex color code (e.g., "#000000" for black). Defaults to
      * black if not specified.
+     * @param [shouldPersist=false] If true, the matte window will persist after
+     * the script execution ends. If false, it will be closed automatically when
+     * the script finishes. If the matted window is still open at that time, it
+     * will be "unparented" from the matte window, allowing it to function
+     * normally again. Defaults to false.
+     * @returns A {@link MatteWindowResult} object that contains the matte window
+     * and the matted window. This object can be used to reverse the matte effect
+     * by calling its {@link UndoableResult.undo} method. The result also contains
+     * references to both this window (the matted window) and the matte window
+     * itself, allowing you to interact with the matte window after it has been
+     * created.
      */
-    matte(backdropColor?: string): Promise<void>;
+    matte(backdropColor?: string, shouldPersist?: boolean): Promise<MatteWindowResult>;
 }

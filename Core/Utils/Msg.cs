@@ -30,6 +30,7 @@ public enum Msg : uint {
   WM_SHOWWINDOW                 = 0x0018,
   WM_CTLCOLOR                   = 0x0019,
   WM_WININICHANGE               = 0x001a,
+  WM_SETTINGCHANGE              = 0x001A,
   WM_DEVMODECHANGE              = 0x001b,
   WM_ACTIVATEAPP                = 0x001c,
   WM_FONTCHANGE                 = 0x001d,

@@ -33,6 +33,15 @@ public partial class Window {
 
 
   /// <summary>
+  ///   Hides the window. This makes the window invisible, but does not destroy it.
+  /// </summary>
+  [ScriptMember("hide")]
+  public void Hide() {
+    hwnd.Hide();
+  }
+
+
+  /// <summary>
   ///   Maximizes the window. This expands the window to fill the entire screen.
   /// </summary>
   [ScriptMember("maximize")]
@@ -58,5 +67,14 @@ public partial class Window {
   [ScriptMember("restore")]
   public void Restore() {
     hwnd.SetWindowPlacementCommand(SHOW_WINDOW_CMD.SW_RESTORE);
+  }
+
+
+  /// <summary>
+  ///   Shows the window. This makes the window visible if it is currently hidden.
+  /// </summary>
+  [ScriptMember("show")]
+  public void Show() {
+    hwnd.Show();
   }
 }

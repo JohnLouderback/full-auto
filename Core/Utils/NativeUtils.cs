@@ -25,6 +25,25 @@ public enum PointerSize {
 
 public static class NativeUtils {
   /// <summary>
+  ///   Converts a byte array to a structure of type <typeparamref name="T" />.
+  /// </summary>
+  /// <param name="bytes"> The byte array to convert. </param>
+  /// <typeparam name="T"> The type of the structure to convert to. </typeparam>
+  /// <returns>
+  ///   An instance of type <typeparamref name="T" /> populated with the data from the byte array.
+  /// </returns>
+  public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct {
+    var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+    try {
+      return Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
+    }
+    finally {
+      handle.Free();
+    }
+  }
+
+
+  /// <summary>
   ///   Copies a string to a fixed-size buffer. This is useful taking managed strings and copying
   ///   them to fixed-size buffers in native blittable structs.
   /// </summary>
@@ -106,7 +125,7 @@ public static class NativeUtils {
     var parentHwnd = parent ?? new HWND(nint.Zero);
 
     var hwnd = CreateWindowEx(
-      0,
+      dwExStyle: 0,
       className,
       windowName,
       style,
@@ -115,7 +134,7 @@ public static class NativeUtils {
       width,
       height,
       parentHwnd,
-      null,
+      hMenu: null,
       Win32Ex.GetModuleHandle(),
       (void*)nint.Zero
     );
@@ -233,6 +252,30 @@ public static class NativeUtils {
   /// <returns> The size of a pointer for the current platform. </returns>
   public static PointerSize GetPointerSize() {
     return nint.Size == 4 ? PointerSize.PointerSize32 : PointerSize.PointerSize64;
+  }
+
+
+  /// <summary>
+  ///   Converts a structure of type <typeparamref name="T" /> to a byte array.
+  /// </summary>
+  /// <param name="structure"> The structure to convert. </param>
+  /// <typeparam name="T"> The type of the structure to convert from. </typeparam>
+  /// <returns>
+  ///   A byte array containing the data from the structure.
+  /// </returns>
+  public static byte[] StructureToByteArray<T>(T structure) where T : struct {
+    var size  = Marshal.SizeOf<T>();
+    var bytes = new byte[size];
+    var ptr   = Marshal.AllocHGlobal(size);
+
+    try {
+      Marshal.StructureToPtr(structure, ptr, fDeleteOld: false);
+      Marshal.Copy(ptr, bytes, startIndex: 0, size);
+      return bytes;
+    }
+    finally {
+      Marshal.FreeHGlobal(ptr);
+    }
   }
 
 

@@ -20,6 +20,14 @@ public static class Macros {
   /// </summary>
   public const int nullptr = 0;
 
+  /// <summary>
+  ///   Broadcasts a message to all top-level windows in the system, including
+  ///   the windows of other applications. This is often used to send system-wide
+  ///   notifications or commands, such as shutting down the system or changing
+  ///   the display settings.
+  /// </summary>
+  public const int HWND_BROADCAST = 0xffff;
+
 
   /// <summary>
   ///   Extracts the x-coordinate from the given LPARAM value. The x-coordinate is the low-order word

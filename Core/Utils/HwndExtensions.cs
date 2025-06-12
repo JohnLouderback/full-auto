@@ -166,6 +166,12 @@ public static class HwndExtensions {
   }
 
 
+  public static HWND Hide(this HWND hwnd) {
+    PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+    return hwnd;
+  }
+
+
   /// <summary>
   ///   Whether the window is the foreground window.
   /// </summary>
