@@ -117,6 +117,27 @@ public partial class Window {
 
 
   /// <summary>
+  ///   <para>
+  ///     Moves the window to a position that is off-screen. This is typically used to hide the
+  ///     window without interfering with its state, visibility, or otherwise affecting its normal
+  ///     rendering.
+  ///   </para>
+  ///   <para>
+  ///     In particular, this may be useful if you wish to downscale the window and wish to hide the
+  ///     source window, only leaving the downscaler window visible.
+  ///   </para>
+  /// </summary>
+  /// <returns> The same window this method was called on, for chaining. </returns>
+  [ScriptMember("moveOffScreen")]
+  public Window MoveOffScreen() {
+    // Move the window to a position that is off-screen.
+    // This is done by moving it to the top-left corner of the screen, which is usually off-screen.
+    hwnd.SetWindowPosition(x: -32000, y: -32000);
+    return this;
+  }
+
+
+  /// <summary>
   ///   Sets the position and size of the window.
   /// </summary>
   /// <param name="boundingBox"> The bounding box to set the window to. </param>
