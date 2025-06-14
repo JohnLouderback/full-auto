@@ -4,9 +4,9 @@ using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 using static Windows.Win32.PInvoke;
 
-namespace GameLauncher.Script.Lib;
+namespace GameLauncher.Script;
 
-public static class Tasks {
+public static partial class Tasks {
   /// <summary>
   ///   Constrains the cursor to a specified bounding box on the screen. The cursor will be
   ///   unable to move outside the specified bounding box until the cursor is released.

@@ -1,4 +1,8 @@
 import { Application } from "./Application";
+import { BoundingBox } from "./BoundingBox";
+import { ConstrainCursorResult } from "./ConstrainCursorResult";
+import { Coordinate } from "./Coordinate";
+import { HideCursorResult } from "./HideCursorResult";
 import { LaunchOptions } from "./LaunchOptions";
 import { Monitor } from "./Monitor";
 import { Process } from "./Process";
@@ -39,6 +43,24 @@ export function awaitWindow(...args: any[]): any {
 export function changeResolution(width: number, height: number, refreshRate: number): void {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.ChangeResolution(width, height, refreshRate);
+}
+
+    /**
+     * Constrains the cursor to a specified bounding box on the screen. The cursor
+     * will be unable to move outside the specified bounding box until the cursor
+     * is released.
+     *
+     * @param boundingBox The bounding box to constrain the cursor to. The
+     * bounding box must have a positive width and height greater than zero.
+     * @param [shouldPersist=false] Whether the cursor constraint should persist
+     * after the script has finished executing.
+     * @returns A {@link ConstrainCursorResult} that can be used to manually
+     * reverse the cursor constraint. Alternatively, you may call the {@link
+     * Tasks.releaseCursor} task.
+     */
+export function constrainCursor(boundingBox: BoundingBox, shouldPersist?: boolean): ConstrainCursorResult {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.ConstrainCursor(boundingBox, shouldPersist);
 }
 
     /**
@@ -119,6 +141,17 @@ export function getAllWindows(): Array<Window> {
 }
 
     /**
+     * Gets the current position of the cursor on the screen.
+     *
+     * @returns A {@link Coordinate} representing the current position of the
+     * cursor on the screen.
+     */
+export function getCursorPosition(): Coordinate {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.GetCursorPosition();
+}
+
+    /**
      * Gets the taskbar object, which represents the Windows taskbar.
      *
      * @returns A {@link Taskbar} object representing the taskbar.
@@ -126,6 +159,30 @@ export function getAllWindows(): Array<Window> {
 export function getTaskbar(): Taskbar {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.GetTaskbar();
+}
+
+    /**
+     * Makes the cursor invisible, effectively hiding it from the user.
+     * 
+     * This method will decrement the display count of the cursor, which means
+     * that the cursor will not be visible until the display count reaches zero.
+     * If the display count is already zero, the cursor will remain hidden.
+     * 
+     * If the {@link force} parameter is set to true, the display count will be
+     * decremented forcibly, meaning that the cursor will be hidden regardless of
+     * its current display count. This is useful if you want to ensure that the
+     * cursor is hidden, even if other applications or scripts have made it
+     * visible. However, this should be used with caution, as it may interfere
+     * with the user's expectations or other applications' cursor visibility.
+     *
+     * @param [force=false] If true, forcibly decrements the display count until
+     * the cursor is hidden.
+     * @param [shouldPersist=false] If true, the cursor will remain hidden even
+     * after the script has finished executing.
+     */
+export function hideCursor(force?: boolean, shouldPersist?: boolean): HideCursorResult {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.HideCursor(force, shouldPersist);
 }
 
     /**
@@ -182,6 +239,19 @@ export function launch(...args: any[]): any {
 }
 
     /**
+     * Releases the cursor from its current clipping bounds, allowing it to move
+     * freely outside the previously constrained area. This works both when the
+     * cursor was constrained by the {@link Tasks.constrainCursor} task or by any
+     * other means (i.e., any other application or system setting that may have
+     * constrained the cursor).
+     *
+     */
+export function releaseCursor(): void {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.ReleaseCursor();
+}
+
+    /**
      * Synthesizes keystrokes from a SendKeys-style string. These are either
      * handled by the currently focused window or the system.
      * 
@@ -205,6 +275,40 @@ export function launch(...args: any[]): any {
 export function sendKeys(keys: string): void {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.SendKeys(keys);
+}
+
+    /**
+     * Sets the position of the cursor on the screen to the specified coordinates.
+     *
+     * @param x The X coordinate to set the cursor position to.
+     * @param y The Y coordinate to set the cursor position to.
+     */
+export function setCursorPosition(x: number, y: number): void {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.SetCursorPosition(x, y);
+}
+
+    /**
+     * Makes the cursor visible, allowing it to be seen by the user.
+     * 
+     * This method will increment the display count of the cursor, which means
+     * that the cursor will be visible until the display count reaches zero. If
+     * the display count is already zero, the cursor will remain visible.
+     * 
+     * If the {@link force} parameter is set to true, the display count will be
+     * incremented forcibly, meaning that the cursor will be made visible
+     * regardless of its current display count. This is useful if you want to
+     * ensure that the cursor is visible, even if other applications or scripts
+     * have made it invisible. However, this should be used with caution, as it
+     * may interfere with the user's expectations or other applications' cursor
+     * visibility.
+     *
+     * @param [force=false] If true, forcibly increments the display count until
+     * the cursor is shown.
+     */
+export function showCursor(force?: boolean): void {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.ShowCursor(force);
 }
 
 /**

@@ -25,7 +25,7 @@ public partial class Window {
   public ConstrainCursorResult ConstrainCursor(bool shouldPersist) {
     var boundingBox = GetBoundingBox();
 
-    return Lib.Tasks.ConstrainCursor(boundingBox, shouldPersist);
+    return Tasks.ConstrainCursor(boundingBox, shouldPersist);
   }
 
 

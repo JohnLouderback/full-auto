@@ -21,8 +21,7 @@ export interface Window {
      * @param shouldPersist If true, the cursor will remain constrained even after
      * the script has finished executing.
      * @returns A {@link ConstrainCursorResult} that can be used to manually
-     * reverse the cursor constraint. Alternatively, you may call the {@link
-     * Tasks.releaseCursor} task.
+     * reverse the cursor constraint. Alternatively, you may call the task.
      */
     constrainCursor(shouldPersist: boolean): ConstrainCursorResult;
     /**
@@ -35,8 +34,7 @@ export interface Window {
      * to update the cursor constraint or release the cursor.
      *
      * @returns A {@link ConstrainCursorResult} that can be used to manually
-     * reverse the cursor constraint. Alternatively, you may call the {@link
-     * Tasks.releaseCursor} task.
+     * reverse the cursor constraint. Alternatively, you may call the task.
      */
     constrainCursor(): ConstrainCursorResult;
     /**
@@ -247,6 +245,17 @@ export interface Window {
      * @returns The same window this method was called on, for chaining.
      */
     move(x: number, y: number): Window;
+    /**
+     * Moves the window to a position that is off-screen. This is typically used
+     * to hide the window without interfering with its state, visibility, or
+     * otherwise affecting its normal rendering.
+     * 
+     * In particular, this may be useful if you wish to downscale the window and
+     * wish to hide the source window, only leaving the downscaler window visible.
+     *
+     * @returns The same window this method was called on, for chaining.
+     */
+    moveOffScreen(): Window;
     /**
      * Sets the position and size of the window.
      *

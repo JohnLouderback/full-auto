@@ -8,8 +8,8 @@ namespace GameLauncher.Script.Objects;
 ///   it to move freely again.
 /// </summary>
 [TypeScriptExport]
-public class ConstrainCursorResult : UndoableResult {
-  internal ConstrainCursorResult(
+public class HideCursorResult : UndoableResult {
+  internal HideCursorResult(
     bool shouldUndo
   ) {
     ShouldUndo = shouldUndo;
@@ -19,6 +19,6 @@ public class ConstrainCursorResult : UndoableResult {
   /// <inheritdoc />
   protected override async Task Reverse() {
     // To reverse, we simply call the ReleaseCursor task.
-    Tasks.ReleaseCursor();
+    Tasks.ShowCursor();
   }
 }
