@@ -2,8 +2,7 @@
 using Windows.Win32.Graphics.Gdi;
 using Core.Models;
 using Core.Utils;
-using GameLauncher.Script.Utils.CodeGenAttributes;
-using GameLauncherTaskGenerator;
+using GameLauncher.Core.CodeGenAttributes;
 
 namespace GameLauncher.Script.Objects;
 
@@ -41,6 +40,6 @@ public class ChangeDisplayModeResult : UndoableResult {
 
     // Set the display mode to the specified display mode and as temporary. Temporary display modes
     // are not saved to the registry and are reset when the system is restarted.
-    win32Monitor.SetDisplayModeOrThrow(dm, 0);
+    win32Monitor.SetDisplayModeOrThrow(dm, cdsType: 0);
   }
 }

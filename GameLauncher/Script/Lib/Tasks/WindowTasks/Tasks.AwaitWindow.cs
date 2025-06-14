@@ -1,7 +1,7 @@
 ﻿using Core.Models;
 using Core.Utils;
+using GameLauncher.Core.CodeGenAttributes;
 using GameLauncher.Script.Objects;
-using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 using static GameLauncher.Script.Utils.JSTypeConverter;
 using static GameLauncher.Script.Utils.JSInteropUtils;

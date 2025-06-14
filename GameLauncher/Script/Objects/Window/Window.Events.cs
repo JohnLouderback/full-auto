@@ -1,6 +1,6 @@
 ﻿using Windows.Win32.UI.WindowsAndMessaging;
 using Core.Utils;
-using GameLauncher.Script.Utils.CodeGenAttributes;
+using GameLauncher.Core.CodeGenAttributes;
 using Microsoft.ClearScript;
 using static GameLauncher.Script.Utils.JSTypeConverter;
 
@@ -118,7 +118,7 @@ public partial class Window {
     ArgumentNullException.ThrowIfNull(callback);
 
     if (IsFunction(callback)) {
-      On(eventName, window => callback.Invoke(false, window));
+      On(eventName, window => callback.Invoke(asConstructor: false, window));
     }
     else {
       throw new ArgumentException("Callback must be a function.");
@@ -250,14 +250,14 @@ public partial class Window {
     minimizeEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_SYSTEM_MINIMIZESTART,
-      true,
+      allowMultiple: true,
       cancellationToken.Token
     );
 
     maximizeEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_OBJECT_LOCATIONCHANGE,
-      true,
+      allowMultiple: true,
       cancellationToken.Token,
       // Only trigger if the window is maximized.
       _ => IsMaximized
@@ -266,42 +266,42 @@ public partial class Window {
     restoreEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_SYSTEM_MINIMIZEEND,
-      true,
+      allowMultiple: true,
       cancellationToken.Token
     );
 
     focusEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_SYSTEM_FOREGROUND,
-      true,
+      allowMultiple: true,
       cancellationToken.Token
     );
 
     boundsChangeEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_OBJECT_LOCATIONCHANGE,
-      true,
+      allowMultiple: true,
       cancellationToken.Token
     );
 
     showEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_OBJECT_SHOW,
-      true,
+      allowMultiple: true,
       cancellationToken.Token
     );
 
     hideEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_OBJECT_HIDE,
-      true,
+      allowMultiple: true,
       cancellationToken.Token
     );
 
     closeEvent = new WindowEvent(
       hwnd,
       WinEvent.EVENT_OBJECT_DESTROY,
-      false,
+      allowMultiple: false,
       cancellationToken.Token
     );
 

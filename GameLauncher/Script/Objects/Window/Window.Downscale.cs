@@ -1,5 +1,5 @@
-﻿using GameLauncher.Script.Utils;
-using GameLauncher.Script.Utils.CodeGenAttributes;
+﻿using GameLauncher.Core.CodeGenAttributes;
+using GameLauncher.Script.Utils;
 using Microsoft.ClearScript;
 using static Core.StringUtils;
 

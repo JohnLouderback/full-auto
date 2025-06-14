@@ -3,7 +3,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 using Core.Models;
 using Core.Utils;
-using GameLauncher.Script.Utils.CodeGenAttributes;
+using GameLauncher.Core.CodeGenAttributes;
 using Microsoft.ClearScript;
 using static Windows.Win32.PInvoke;
 using static Core.Utils.Macros;

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using GameLauncher.Core.CodeGenAttributes;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CodeAnalysis;
@@ -32,7 +33,8 @@ public class GenerateTasksTs : Task {
       var references = new[] {
         MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-        MetadataReference.CreateFromFile(typeof(Task).Assembly.Location)
+        MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
+        MetadataReference.CreateFromFile(typeof(TsTypeOverrideAttribute).Assembly.Location)
       };
 
       var compilation = CSharpCompilation.Create(
@@ -55,7 +57,7 @@ public class GenerateTasksTs : Task {
       return true;
     }
     catch (Exception ex) {
-      Log.LogErrorFromException(ex, true);
+      Log.LogErrorFromException(ex, showStackTrace: true);
       return false;
     }
   }
@@ -94,7 +96,7 @@ file class SymbolProcessor {
     var processedSymbols = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
     foreach (var syntaxTree in _compilation.SyntaxTrees) {
-      var model = _compilation.GetSemanticModel(syntaxTree, true);
+      var model = _compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: true);
       var root  = syntaxTree.GetRoot();
 
       foreach (var decl in root.DescendantNodes().OfType<TypeDeclarationSyntax>()) {
@@ -203,7 +205,7 @@ file class TypeScriptEmitter {
 
     var importBlock = EmitImportBlock(deps, [del.Name]);
     if (!string.IsNullOrWhiteSpace(importBlock)) {
-      sb.Insert(0, importBlock + "\n\n");
+      sb.Insert(index: 0, importBlock + "\n\n");
     }
 
     return sb.ToString();
@@ -275,7 +277,7 @@ file class TypeScriptEmitter {
 
     var imports = EmitImportBlock(dependencies, [type.Name]);
     if (!string.IsNullOrWhiteSpace(imports)) {
-      sb.Insert(0, imports + "\n\n");
+      sb.Insert(index: 0, imports + "\n\n");
     }
 
     return sb.ToString();
@@ -339,7 +341,7 @@ file class TypeScriptEmitter {
 
     var importBlock = EmitImportBlock(dependencies, [symbol.Name]);
     if (!string.IsNullOrWhiteSpace(importBlock)) {
-      sb.Insert(0, importBlock + "\n\n");
+      sb.Insert(index: 0, importBlock + "\n\n");
     }
 
     return sb.ToString();
@@ -369,10 +371,29 @@ file class TypeScriptEmitter {
           a.AttributeClass?.Name is "ScriptMember" or "ScriptMemberAttribute"
       );
 
+    if (attr is null) return null;
+
     if (attr is { ConstructorArguments.Length: 1 } &&
         attr.ConstructorArguments[0].Value is string s) {
       return s;
     }
+
+    // If the attribute is not null, but we couldn't get the arg, try to get the AttributeSyntax
+    // instance from it.
+
+    if (attr.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax {
+          ArgumentList.Arguments.Count: 1
+        } attrSyntax) {
+      var arg = attrSyntax.ArgumentList.Arguments[0].Expression;
+
+      if (arg is LiteralExpressionSyntax literal &&
+          literal.IsKind(SyntaxKind.StringLiteralExpression)) {
+        var text = literal.Token.ValueText;
+        return text.Trim();
+      }
+    }
+
+    // If the ScriptMember is not null, try to get the AttributeSyntax instance from it.
 
     return null;
   }
@@ -438,10 +459,25 @@ file class TypeScriptEmitter {
 
     // If the override attribute is present and was passed a string, use that
     // as the type.
-    if (overrideAttr != null &&
-        overrideAttr.ConstructorArguments.Length == 1 &&
-        overrideAttr.ConstructorArguments[0].Value is string overrideText) {
-      return overrideText.Trim();
+    if (overrideAttr is not null) {
+      if (overrideAttr.ConstructorArguments.Length == 1 &&
+          overrideAttr.ConstructorArguments[0].Value is string overrideText) {
+        return overrideText.Trim();
+      }
+
+      // If the attribute is not null, but we couldn't get the arg, try to get the AttributeSyntax
+      // instance from it.
+      if (overrideAttr.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax {
+            ArgumentList.Arguments.Count: 1
+          } overrideAttrSyntax) {
+        var arg = overrideAttrSyntax.ArgumentList.Arguments[0].Expression;
+
+        if (arg is LiteralExpressionSyntax literal &&
+            literal.IsKind(SyntaxKind.StringLiteralExpression)) {
+          var text = literal.Token.ValueText;
+          return text.Trim();
+        }
+      }
     }
 
     switch (type) {
@@ -530,8 +566,8 @@ file static class DocumentationResolver {
     if (symbol == null) return string.Empty;
 
     var xml = symbol.GetDocumentationCommentXml(expandIncludes: true, cancellationToken: default)
-      ?.Replace('\n', ' ')
-      .Replace('\r', ' ');
+      ?.Replace(oldChar: '\n', newChar: ' ')
+      .Replace(oldChar: '\r', newChar: ' ');
     if (string.IsNullOrWhiteSpace(xml)) {
       // If the symbol is a method and has an overridden method, get the doc from the overridden method
       if (symbol is IMethodSymbol m &&
@@ -738,11 +774,11 @@ file static class DocumentationResolver {
 
     // Try to find the method name (possibly with arguments) by scanning from the end
     var openParen = cref.LastIndexOf('(');
-    var lastDot   = cref.LastIndexOf('.', openParen > 0 ? openParen : cref.Length - 1);
+    var lastDot   = cref.LastIndexOf(value: '.', openParen > 0 ? openParen : cref.Length - 1);
 
     if (lastDot < 0) return cref;
 
-    var containerName = cref.Substring(0, lastDot);
+    var containerName = cref.Substring(startIndex: 0, lastDot);
     var memberName    = cref.Substring(lastDot + 1);
 
     var containerSymbol = compilation.GetTypeByMetadataName(containerName);
@@ -751,7 +787,7 @@ file static class DocumentationResolver {
     // Method overloads may not match by name alone, but for normalization
     // purposes we only lowercase the name
     var simpleMemberName = memberName.Contains('(')
-                             ? memberName.Substring(0, memberName.IndexOf('('))
+                             ? memberName.Substring(startIndex: 0, memberName.IndexOf('('))
                              : memberName;
 
     var memberSymbol = containerSymbol.GetMembers(simpleMemberName).FirstOrDefault();
@@ -854,12 +890,12 @@ file static class DocumentationResolver {
       // Handle method parameters: "Namespace.Type.Method(Type1,Type2)"
       var paramStart = cref.IndexOf('(');
       paramList = paramStart >= 0 ? cref.Substring(paramStart) : null;
-      var fullName = paramStart >= 0 ? cref.Substring(0, paramStart) : cref;
+      var fullName = paramStart >= 0 ? cref.Substring(startIndex: 0, paramStart) : cref;
 
       var lastDot = fullName.LastIndexOf('.');
       if (lastDot == -1) return null;
 
-      containerName = fullName.Substring(0, lastDot);
+      containerName = fullName.Substring(startIndex: 0, lastDot);
       memberName    = fullName.Substring(lastDot + 1);
     }
     else {
@@ -972,8 +1008,8 @@ file static class DocumentationResolver {
   private static XElement? TryGetXmlElement(ISymbol? symbol) {
     if (symbol == null) return null;
     var xml = symbol.GetDocumentationCommentXml(expandIncludes: true, cancellationToken: default)
-      ?.Replace('\n', ' ')
-      .Replace('\r', ' ');
+      ?.Replace(oldChar: '\n', newChar: ' ')
+      .Replace(oldChar: '\r', newChar: ' ');
     if (string.IsNullOrWhiteSpace(xml)) return null;
 
     try {

@@ -17,7 +17,7 @@ export interface DownscaleDebugOptions {
      * FPS represents the FPS of the downscaler window, not the source window.
      *
      */
-    showFps?: boolean;
+    showFPS?: boolean;
     /**
      * Whether to show the mouse coordinates in the debug information. This is
      * useful for debugging that the mouse coordinates are being correctly

@@ -1,6 +1,6 @@
 ﻿using Core.Models;
 using Core.Utils;
-using GameLauncher.Script.Utils.CodeGenAttributes;
+using GameLauncher.Core.CodeGenAttributes;
 
 namespace GameLauncher.Script.Objects;
 

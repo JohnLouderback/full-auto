@@ -2,8 +2,8 @@
 using Windows.Win32.Graphics.Gdi;
 using Core.Models;
 using Core.Utils;
+using GameLauncher.Core.CodeGenAttributes;
 using GameLauncher.Script.Utils;
-using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Objects;
@@ -36,7 +36,7 @@ public class Screen : ObjectBase {
   ///   </para>
   /// </summary>
   /// <returns> The current display mode of the monitor. </returns>
-  [ScriptMember("currentDisplayMode")]
+  [ScriptMember("getCurrentDisplayMode")]
   public DisplayMode GetCurrentDisplayMode() {
     var displayMode = win32Monitor.GetCurrentDisplayMode();
     return new DisplayMode {
