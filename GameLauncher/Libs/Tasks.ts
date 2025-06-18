@@ -4,6 +4,7 @@ import { ConstrainCursorResult } from "./ConstrainCursorResult";
 import { Coordinate } from "./Coordinate";
 import { HideCursorResult } from "./HideCursorResult";
 import { LaunchOptions } from "./LaunchOptions";
+import { ModLauncherConfiguration } from "./ModLauncherConfiguration";
 import { Monitor } from "./Monitor";
 import { Process } from "./Process";
 import { Taskbar } from "./Taskbar";
@@ -309,6 +310,17 @@ export function setCursorPosition(x: number, y: number): void {
 export function showCursor(force?: boolean): void {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.ShowCursor(force);
+}
+
+    /**
+     * Shows the mod launcher window. This is a tool for configuring a window to
+     * show a list of game mods, allowing users to choose, enable, disable, and
+     * ultimately launch the game with selected mods.
+     *
+     */
+export async function showModLauncher(configuration: ModLauncherConfiguration): Promise<void> {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.ShowModLauncher(configuration);
 }
 
 /**

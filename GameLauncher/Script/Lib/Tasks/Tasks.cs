@@ -1,4 +1,4 @@
-﻿using GameLauncher.Core.CodeGenAttributes;
+﻿using GameLauncher.Script.Utils.CodeGenAttributes;
 using GameLauncherTaskGenerator;
 using Microsoft.ClearScript.V8;
 

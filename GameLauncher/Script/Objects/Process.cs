@@ -2,8 +2,8 @@
 using System.ComponentModel;
 using Windows.Win32.System.Threading;
 using Core.Utils;
-using GameLauncher.Core.CodeGenAttributes;
 using GameLauncher.Script.Utils;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 using Microsoft.Win32.SafeHandles;
 using static Windows.Win32.PInvoke;

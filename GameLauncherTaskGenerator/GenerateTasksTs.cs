@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using GameLauncher.Core.CodeGenAttributes;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CodeAnalysis;
@@ -27,14 +26,21 @@ public class GenerateTasksTs : Task {
     try {
       var syntaxTrees = Directory
         .EnumerateFiles(SourceDirectory, "*.cs", SearchOption.AllDirectories)
+        .Concat(
+          Directory
+            .EnumerateFiles(
+              Path.GetFullPath(SourceDirectory + "../GenericModLauncher/"),
+              "*.cs",
+              SearchOption.AllDirectories
+            )
+        )
         .Select(path => CSharpSyntaxTree.ParseText(File.ReadAllText(path), path: path))
         .ToList();
 
       var references = new[] {
         MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
         MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-        MetadataReference.CreateFromFile(typeof(Task).Assembly.Location),
-        MetadataReference.CreateFromFile(typeof(TsTypeOverrideAttribute).Assembly.Location)
+        MetadataReference.CreateFromFile(typeof(Task).Assembly.Location)
       };
 
       var compilation = CSharpCompilation.Create(
@@ -460,9 +466,21 @@ file class TypeScriptEmitter {
     // If the override attribute is present and was passed a string, use that
     // as the type.
     if (overrideAttr is not null) {
-      if (overrideAttr.ConstructorArguments.Length == 1 &&
-          overrideAttr.ConstructorArguments[0].Value is string overrideText) {
-        return overrideText.Trim();
+      if (overrideAttr.ConstructorArguments.Length == 1) {
+        if (overrideAttr.ConstructorArguments[0].Value is string overrideText) {
+          return overrideText.Trim();
+        }
+
+        if (overrideAttr.ConstructorArguments[0].Value is ITypeSymbol typeSymbol) {
+          return ToTypeScriptType(typeSymbol, deps);
+        }
+
+        throw new InvalidOperationException(
+          $"Invalid TsTypeOverride attribute on {context?.Name ?? "unknown"}: " +
+          $"expected a string or type, got {
+            overrideAttr.ConstructorArguments[0].Value?.GetType().Name
+          }"
+        );
       }
 
       // If the attribute is not null, but we couldn't get the arg, try to get the AttributeSyntax
@@ -477,6 +495,11 @@ file class TypeScriptEmitter {
           var text = literal.Token.ValueText;
           return text.Trim();
         }
+
+        throw new InvalidOperationException(
+          $"Invalid TsTypeOverride attribute on {context?.Name ?? "unknown"}: " +
+          $"expected a string, got {arg.Kind()} ({arg})"
+        );
       }
     }
 
@@ -707,6 +730,23 @@ file static class DocumentationResolver {
   }
 
 
+  private static ISymbol? GetImplementedInterfaceMember(ISymbol symbol) {
+    var containingType = symbol.ContainingType;
+    if (containingType == null) return null;
+
+    foreach (var @interface in containingType.AllInterfaces) {
+      foreach (var member in @interface.GetMembers()) {
+        var implementation = containingType.FindImplementationForInterfaceMember(member);
+        if (SymbolEqualityComparer.Default.Equals(implementation, symbol)) {
+          return member;
+        }
+      }
+    }
+
+    return null;
+  }
+
+
   private static XElement MergeInheritedDocIfPresent(
     XElement root,
     ISymbol symbol,
@@ -735,6 +775,15 @@ file static class DocumentationResolver {
       };
 
       baseDocXml = TryGetXmlElement(baseSymbol);
+    }
+
+    if (baseDocXml == null) {
+      // If we couldn't resolve the cref, try to find the implemented interface member
+      // and get its documentation, if there is one.
+      var implementedMember = GetImplementedInterfaceMember(symbol);
+      if (implementedMember != null) {
+        baseDocXml = TryGetXmlElement(implementedMember);
+      }
     }
 
     if (baseDocXml == null) return root;

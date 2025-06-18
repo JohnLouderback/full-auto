@@ -26,7 +26,6 @@
     <ItemGroup>
         <!--        <ProjectReference Include="..\GameLaunchTaskSourceGenerator\GameLaunchTaskSourceGenerator.csproj" OutputItemType="Analyzer"/>-->
         <ProjectReference Include="..\Core\Core.csproj"/>
-        <ProjectReference Include="..\GameLauncher.Core\GameLauncher.Core.csproj"/>
         <ProjectReference Include="..\GameLauncherTaskGenerator\GameLauncherTaskGenerator.csproj"/>
         <ProjectReference Include="..\GenericModLauncher\GenericModLauncher.csproj"/>
         <ProjectReference Include="..\TypeScriptCompiler\TypeScriptCompiler.esproj"/>
@@ -95,4 +94,11 @@
         <Copy SourceFiles=".\tsconfig.json" DestinationFolder="$(OutputPath)\" SkipUnchangedFiles="true"/>
     </Target>
 
+    <Target Name="CopyAssets" AfterTargets="Build">
+        <ItemGroup>
+            <AssetFiles Include="..\GenericModLauncher\Assets\**\*"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(AssetFiles)" DestinationFolder="$(OutputPath)\Assets\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+    </Target>
 </Project>

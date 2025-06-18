@@ -1,6 +1,6 @@
 ﻿using Windows.Win32.Foundation;
-using GameLauncher.Core.CodeGenAttributes;
 using GameLauncher.Script.Objects;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 using static Windows.Win32.PInvoke;
 

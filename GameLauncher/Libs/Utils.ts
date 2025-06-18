@@ -4,6 +4,18 @@
  * A collection of utility functions.
  *
  */
+    /**
+     * Returns a promise that never resolves. This is useful to await at the end
+     * of a script to keep the script running indefinitely. The script will only
+     * exit when forced.
+     *
+     * @returns A promise that never resolves.
+     */
+export function forever(): Promise<void> {
+    // @ts-expect-error - Function is injected by the engine
+    return __Utils.Forever();
+}
+
 export function injectIntoEngine(engine: V8ScriptEngine): void {
     // @ts-expect-error - Function is injected by the engine
     return __Utils.InjectIntoEngine(engine);

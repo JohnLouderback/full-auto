@@ -1,5 +1,5 @@
 ﻿using Core.Utils;
-using GameLauncher.Core.CodeGenAttributes;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using GameLauncher.Utils.SendKeys;
 using Microsoft.ClearScript;
 
