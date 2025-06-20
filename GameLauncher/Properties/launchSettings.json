@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "GameLauncher": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\John\\Projects\\Downscaler\\GameLauncher\\ExampleScripts\\mod-launcher-example.ts",
+      "workingDirectory": "C:/Users/John/Projects/Downscaler/GameLauncher/bin/Debug/net8.0-windows"
+    }
+  }
+}

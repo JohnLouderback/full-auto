@@ -9,15 +9,15 @@ namespace GameLauncher.Script.Objects;
 public class SourcePortInfo : ObjectBase, ISourcePortInfo {
   /// <inheritdoc />
   [ScriptMember("displayName")]
-  public string DisplayName { get; }
+  public string DisplayName { get; set; }
 
   /// <inheritdoc />
   [ScriptMember("id")]
-  public string ID { get; }
+  public string ID { get; set; }
 
   /// <inheritdoc />
   [ScriptMember("sourcePortPath")]
-  public string? SourcePortPath { get; }
+  public string? SourcePortPath { get; set; }
 
 
   public static explicit operator SourcePortInfo(ScriptObject obj) {

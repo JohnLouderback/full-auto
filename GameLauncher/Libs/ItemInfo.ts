@@ -7,25 +7,31 @@ export interface ItemInfo {
      * the game.
      *
      */
-    readonly displayName: string;
+    displayName: string;
     /**
      * The unique identifier for the game, used to distinguish it from other items
      * such as other mods.
      *
      */
-    readonly id: string;
+    id: string;
     /**
      * The path to the screenshot image for the item, used in the UI to visually
      * represent the game or mod.
      *
      */
-    readonly screenshotPath?: string;
+    screenshotPath?: string;
     /**
      * A brief description of the game or mod, providing additional context or
      * information about it.
      *
      */
-    readonly description?: string;
+    description?: string;
+    /**
+     * The four digit year when the game or mod was released, used to provide
+     * context for the item in the UI.
+     *
+     */
+    releaseYear?: string;
     /**
      * Any custom metadata associated with the item, which can be used to store
      * additional information

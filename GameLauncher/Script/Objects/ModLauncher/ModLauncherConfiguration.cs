@@ -10,7 +10,11 @@ public class ModLauncherConfiguration : ObjectBase, ILauncherConfiguration {
   /// <inheritdoc />
   [ScriptMember("game")]
   [TsTypeOverride(typeof(BaseGameInfo))]
-  public IBaseGameInfo Game { get; }
+  public IBaseGameInfo Game { get; set; }
+
+  /// <inheritdoc />
+  [ScriptMember("backgroundImagePath")]
+  public string? BackgroundImagePath { get; set; }
 
 
   public static explicit operator ModLauncherConfiguration(ScriptObject obj) {

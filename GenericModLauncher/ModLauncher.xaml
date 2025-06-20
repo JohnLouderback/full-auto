@@ -3,14 +3,28 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
+        xmlns:vm="clr-namespace:GenericModLauncher.ViewModels"
+        xmlns:local="clr-namespace:GenericModLauncher"
         mc:Ignorable="d"
         WindowStyle="None"
         AllowsTransparency="False"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Title="Mod Launcher" Height="480" Width="640">
+        Title="Mod Launcher" Height="480" Width="640"
+        d:DataContext="{d:DesignInstance vm:MockLauncherViewModel, IsDesignTimeCreatable=True}"
+        DataContext="d:DesignInstance vm:MockLauncherViewModel, IsDesignTimeCreatable=True"
+        SnapsToDevicePixels="True">
+  <Window.Resources>
+    <CollectionViewSource x:Key="GroupedItems"
+                          Source="{Binding Items}">
+      <CollectionViewSource.GroupDescriptions>
+        <PropertyGroupDescription PropertyName="Group" />
+      </CollectionViewSource.GroupDescriptions>
+    </CollectionViewSource>
+  </Window.Resources>
   <Grid Background="Black">
-    <Image Source="Assets/test-bg.png"
+    <Image Visibility="{c:Binding 'BackgroundImagePath != null'}" Source="{Binding BackgroundImagePath}"
            Stretch="UniformToFill"
            Panel.ZIndex="0">
       <Image.Effect>
@@ -23,22 +37,73 @@
       <!-- Foreground content -->
       <Grid Background="#CC1A1A1E">
         <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
+          <RowDefinition Height="100" />
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
 
         <!--<TextBlock FontFamily="Trebuchet MS" Text="Mod Launcher" FontSize="24" Foreground="White" Margin="10"
                    HorizontalAlignment="Center" />-->
-        <Image Source="Assets/test-logo.png" MaxHeight="65" Margin="10,20,10,10" />
+        <Image Grid.ColumnSpan="3" Grid.Row="0" Visibility="{c:Binding 'GameLogoPath != null'}"
+               RenderOptions.BitmapScalingMode="HighQuality"
+               Source="{Binding GameLogoPath}" Height="90"
+               VerticalAlignment="Bottom" />
+        <TextBlock Grid.ColumnSpan="3" Grid.Row="0" Visibility="{c:Binding 'GameLogoPath == null'}"
+                   Text="{Binding GameTitle}" TextAlignment="Center" VerticalAlignment="Center"
+                   FontFamily="Century Gothic" FontWeight="Bold" Foreground="WhiteSmoke" FontSize="48">
+          <TextBlock.Effect>
+            <DropShadowEffect BlurRadius="12" />
+          </TextBlock.Effect>
+        </TextBlock>
 
-        <ListBox Grid.Row="1" Margin="10" Background="#CC2D2D30" Foreground="White">
-          <ListBoxItem Content="Mod 1" />
-          <ListBoxItem Content="Mod 2" />
-          <ListBoxItem Content="Mod 3" />
-          <ListBoxItem Content="Mod 4" />
+        <ListBox ItemsSource="{Binding Source={StaticResource GroupedItems}}"
+                 SelectionMode="Single" Grid.Row="1" Grid.Column="0" Margin="10" Background="#CC2D2D30"
+                 Foreground="White" Padding="0,0,5,0">
+          <ListBox.ItemContainerStyle>
+            <Style TargetType="ListBoxItem">
+              <!-- Updates the selected item in the view model to match the focused list item. -->
+              <Setter Property="local:FocusTrackingBehavior.TrackFocus" Value="True" />
+            </Style>
+          </ListBox.ItemContainerStyle>
+          <ListBox.GroupStyle>
+            <GroupStyle>
+              <GroupStyle.HeaderTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding Name}"
+                             FontWeight="Bold"
+                             FontSize="14"
+                             Padding="4"
+                             Foreground="Gray" />
+                </DataTemplate>
+              </GroupStyle.HeaderTemplate>
+            </GroupStyle>
+          </ListBox.GroupStyle>
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding Name}" Padding="4" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
         </ListBox>
 
+        <Border Grid.Row="1" Grid.Column="1" Margin="10" Background="#CC2D2D30" BorderBrush="#abadb3"
+                BorderThickness="1" Padding="10,5">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" TextWrapping="Wrap" TextAlignment="Center" FontSize="18" Foreground="White"
+                       Margin="0, 0, 0, 5" FontWeight="DemiBold" Text="{Binding SelectedItem.Name}" />
+            <TextBlock Grid.Row="1" TextWrapping="Wrap" FontSize="14" Foreground="White"
+                       Text="{Binding SelectedItem.Description}" />
+          </Grid>
+        </Border>
+
         <Button FontFamily="Trebuchet MS" FontStyle="Italic" FontSize="14" Content="Launch Game" Grid.Row="1"
+                Grid.Column="1"
                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20"
                 Padding="10"
                 Width="120" />

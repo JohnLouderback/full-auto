@@ -6,6 +6,11 @@
         <UseWPF>true</UseWPF>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CalcBinding" Version="2.5.2"/>
+        <PackageReference Include="PropertyChanged.Fody" Version="4.1.0"/>
+    </ItemGroup>
     <Target Name="CopyAssets" AfterTargets="Build">
         <ItemGroup>
             <AssetFiles Include=".\Assets\**\*"/>

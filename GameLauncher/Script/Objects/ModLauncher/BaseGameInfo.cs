@@ -9,16 +9,16 @@ namespace GameLauncher.Script.Objects;
 public class BaseGameInfo : ItemInfo, IBaseGameInfo {
   /// <inheritdoc />
   [ScriptMember("gamePath")]
-  public string GamePath { get; }
+  public string GamePath { get; set; }
 
   /// <inheritdoc />
   [ScriptMember("logoPath")]
-  public string? LogoPath { get; }
+  public string? LogoPath { get; set; }
 
   /// <inheritdoc />
   [ScriptMember("mods")]
-  [TsTypeOverride(typeof(IEnumerable<ModInfo>))]
-  public IEnumerable<IModInfo>? Mods { get; }
+  [TsTypeOverride(typeof(List<ModInfo>))]
+  public IEnumerable<IModInfo>? Mods { get; set; }
 
 
   public static explicit operator BaseGameInfo(ScriptObject obj) {

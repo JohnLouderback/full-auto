@@ -6,4 +6,9 @@ public interface ILauncherConfiguration {
   ///   the base game information and any mods that can eb applied to it.
   /// </summary>
   IBaseGameInfo Game { get; }
+
+  /// <summary>
+  ///   The path to the background image for the mod launcher.
+  /// </summary>
+  string? BackgroundImagePath { get; }
 }

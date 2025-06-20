@@ -12,7 +12,7 @@ public static partial class Tasks {
   ///   selected mods.
   /// </summary>
   public static async Task ShowModLauncher(ModLauncherConfiguration configuration) {
-    await GuiService.Instance.ShowModLauncher();
+    await GuiService.Instance.ShowModLauncher(configuration);
   }
 
 

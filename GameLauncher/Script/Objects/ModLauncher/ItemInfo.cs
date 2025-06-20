@@ -8,19 +8,23 @@ namespace GameLauncher.Script.Objects;
 public abstract class ItemInfo : ObjectBase, IItemInfo {
   /// <inheritdoc />
   [ScriptMember("displayName")]
-  public string DisplayName { get; }
+  public string DisplayName { get; set; }
 
   /// <inheritdoc />
   [ScriptMember("id")]
-  public string ID { get; }
+  public string ID { get; set; }
 
   /// <inheritdoc />
   [ScriptMember("screenshotPath")]
-  public string? ScreenshotPath { get; }
+  public string? ScreenshotPath { get; set; }
 
   /// <inheritdoc />
   [ScriptMember("description")]
-  public string? Description { get; }
+  public string? Description { get; set; }
+
+  /// <inheritdoc />
+  [ScriptMember("releaseYear")]
+  public string? ReleaseYear { get; set; }
 
   /// <inheritdoc />
   [ScriptMember("customMetadata")]
@@ -28,6 +32,6 @@ public abstract class ItemInfo : ObjectBase, IItemInfo {
 
   /// <inheritdoc />
   [ScriptMember("mixins")]
-  [TsTypeOverride(typeof(IEnumerable<ModInfo>))]
+  [TsTypeOverride(typeof(List<ModInfo>))]
   public IEnumerable<IModInfo>? Mixins { get; set; }
 }

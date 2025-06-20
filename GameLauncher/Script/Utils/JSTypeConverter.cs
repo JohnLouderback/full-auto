@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Reflection;
+using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 
 // or whichever engine you use
@@ -239,7 +240,8 @@ public static class JSTypeConverter {
       // If the JS object has a property by that name, then convert it.
       if (obj.PropertyNames.Contains(jsPropName)) {
         var value          = obj.GetProperty(jsPropName);
-        var convertedValue = ConvertValue(value, prop.PropertyType);
+        var effectiveType  = GetEffectivePropertyType(prop);
+        var convertedValue = ConvertValue(value, effectiveType);
         prop.SetValue(result, convertedValue);
       }
     }
@@ -258,11 +260,11 @@ public static class JSTypeConverter {
     }
 
     // If targetType is Nullable<T>, get its underlying type.
-    var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+    var effectiveType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-    if (IsSimpleType(underlyingType)) {
+    if (IsSimpleType(effectiveType)) {
       try {
-        return Convert.ChangeType(value, underlyingType);
+        return Convert.ChangeType(value, effectiveType);
       }
       catch (Exception ex) {
         throw new ScriptEngineException(
@@ -271,39 +273,98 @@ public static class JSTypeConverter {
       }
     }
 
-    if (underlyingType.IsArray) {
-      // Expect value to be a ScriptObject representing an array.
-      if (value is ScriptObject so &&
-          IsArray(so)) {
-        var elementType = underlyingType.GetElementType()!;
-        var list        = new List<object?>();
-        foreach (var element in (IEnumerable)so) {
-          list.Add(ConvertValue(element, elementType));
-        }
-
-        var arr = Array.CreateInstance(elementType, list.Count);
-        for (var i = 0; i < list.Count; i++) {
-          arr.SetValue(list[i], i);
-        }
-
-        return arr;
+    if (typeof(IEnumerable).IsAssignableFrom(effectiveType) &&
+        effectiveType != typeof(string)) {
+      if (value is not ScriptObject so ||
+          !IsArray(so)) {
+        throw new ScriptEngineException(
+          $"Expected an array for conversion to {effectiveType.Name}."
+        );
       }
 
-      throw new ScriptEngineException($"Expected an array for conversion to {targetType.Name}.");
+      var elementType = GetEnumerableElementType(effectiveType);
+      if (elementType == null) {
+        throw new ScriptEngineException(
+          $"Unable to determine element type of {effectiveType.Name}."
+        );
+      }
+
+      var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(elementType))!;
+      foreach (var element in (IEnumerable)so) {
+        list.Add(ConvertValue(element, elementType));
+      }
+
+      // Convert list to target type if needed
+      if (effectiveType.IsAssignableFrom(list.GetType())) {
+        return list;
+      }
+
+      try {
+        return Activator.CreateInstance(effectiveType, list);
+      }
+      catch {
+        return list;
+      }
     }
 
     if (value is ScriptObject soValue) {
       // Recursively convert nested objects.
-      return ConvertObject(soValue, underlyingType);
+      return ConvertObject(soValue, effectiveType);
     }
 
-    if (underlyingType.IsAssignableFrom(value.GetType())) {
+    if (effectiveType.IsAssignableFrom(value.GetType())) {
       return value;
     }
 
     throw new ScriptEngineException(
       $"Value '{value}' of type {value.GetType().Name} is not assignable to {targetType.Name}."
     );
+  }
+
+
+  /// <summary>
+  ///   Returns the effective type of a property, taking into account any
+  ///   [TsTypeOverride] attribute.
+  /// </summary>
+  /// <param name="prop">
+  ///   The property to inspect.
+  /// </param>
+  /// <returns>
+  ///   The effective type of the property, which may differ from its declared type
+  ///   if a [TsTypeOverride] attribute is present.
+  /// </returns>
+  private static Type GetEffectivePropertyType(PropertyInfo prop) {
+    // If [TsTypeOverride(typeof(X))] is present, use it.
+    var overrideAttr = prop.GetCustomAttribute<TsTypeOverrideAttribute>();
+    if (overrideAttr is { Type: not null }) {
+      return overrideAttr.Type;
+    }
+
+    // Otherwise, just use the declared property type.
+    return prop.PropertyType;
+  }
+
+
+  /// <summary>
+  ///   Gets the element type of an enumerable type (like IEnumerable&lt;T&gt; or array).
+  /// </summary>
+  /// <param name="enumerableType">
+  ///   The type of the enumerable (e.g. IEnumerable&lt;T&gt;, IList&lt;T&gt;, or array).
+  /// </param>
+  /// <returns>
+  ///   The element type of the enumerable, or null if it cannot be determined.
+  /// </returns>
+  private static Type? GetEnumerableElementType(Type enumerableType) {
+    if (enumerableType.IsArray) return enumerableType.GetElementType();
+
+    var iface = enumerableType
+      .GetInterfaces()
+      .Concat(new[] { enumerableType })
+      .FirstOrDefault(
+        i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+      );
+
+    return iface?.GetGenericArguments()[0];
   }
 
 
@@ -388,19 +449,20 @@ public static class JSTypeConverter {
         continue;
       }
 
-      var propType       = prop.PropertyType;
-      var underlyingType = Nullable.GetUnderlyingType(propType) ?? propType;
+      var propType = prop.PropertyType;
+      var effectiveType = Nullable.GetUnderlyingType(GetEffectivePropertyType(prop)) ??
+                          GetEffectivePropertyType(prop);
 
-      if (IsSimpleType(underlyingType)) {
+      if (IsSimpleType(effectiveType)) {
         try {
-          Convert.ChangeType(value, underlyingType);
+          Convert.ChangeType(value, effectiveType);
         }
         catch (Exception ex) {
           errors.Add(
             $"Property '{
               fullPath
             }' expected type \"{
-              underlyingType.Name
+              effectiveType.Name
             }\" but got type \"{
               GetJSType(value)
             }\". Conversion failed: {
@@ -409,67 +471,73 @@ public static class JSTypeConverter {
           );
         }
       }
-      else if (underlyingType.IsArray) {
+      else if (typeof(IEnumerable).IsAssignableFrom(effectiveType) &&
+               effectiveType != typeof(string)) {
         if (!(value is ScriptObject arrayObj) ||
             !IsArray(arrayObj)) {
           errors.Add($"Property '{fullPath}' expected an array but got {GetJSType(value)}.");
         }
         else {
-          var elementType = underlyingType.GetElementType()!;
-          var index       = 0;
-          foreach (var element in (IEnumerable)arrayObj) {
-            if (element is ScriptObject elementObj) {
-              ValidateShape(elementObj, elementType, $"{fullPath}[{index}]", errors);
-            }
-            else if (IsSimpleType(elementType)) {
-              try {
-                Convert.ChangeType(element, elementType);
+          var elementType = GetEnumerableElementType(effectiveType);
+          if (elementType == null) {
+            errors.Add($"Could not determine element type for collection at '{fullPath}'.");
+          }
+          else {
+            var index = 0;
+            foreach (var element in (IEnumerable)arrayObj) {
+              if (element is ScriptObject elementObj) {
+                ValidateShape(elementObj, elementType, $"{fullPath}[{index}]", errors);
               }
-              catch (Exception ex) {
-                errors.Add(
-                  $"Element '{
-                    fullPath
-                  }[{
-                    index
-                  }]' expected type {
-                    elementType.Name
-                  } but conversion failed: {
-                    ex.Message
-                  }"
-                );
+              else if (IsSimpleType(elementType)) {
+                try {
+                  Convert.ChangeType(element, elementType);
+                }
+                catch (Exception ex) {
+                  errors.Add(
+                    $"Element '{
+                      fullPath
+                    }[{
+                      index
+                    }]' expected type {
+                      elementType.Name
+                    } but conversion failed: {
+                      ex.Message
+                    }"
+                  );
+                }
               }
-            }
-            else {
-              if (!elementType.IsAssignableFrom(element.GetType())) {
-                errors.Add(
-                  $"Element '{
-                    fullPath
-                  }[{
-                    index
-                  }]' expected type {
-                    elementType.Name
-                  } but got {
-                    element.GetType().Name
-                  }."
-                );
+              else {
+                if (!elementType.IsAssignableFrom(element.GetType())) {
+                  errors.Add(
+                    $"Element '{
+                      fullPath
+                    }[{
+                      index
+                    }]' expected type {
+                      elementType.Name
+                    } but got {
+                      element.GetType().Name
+                    }."
+                  );
+                }
               }
-            }
 
-            index++;
+              index++;
+            }
           }
         }
       }
       else if (value is ScriptObject nestedObj) {
         // Recursively validate nested objects.
-        ValidateShape(nestedObj, underlyingType, fullPath, errors);
+        ValidateShape(nestedObj, effectiveType, fullPath, errors);
       }
       else {
-        if (!underlyingType.IsAssignableFrom(value.GetType())) {
+        if (!effectiveType.IsAssignableFrom(value.GetType())) {
           errors.Add(
             $"Property '{
               fullPath
             }' expected type {
-              underlyingType.Name
+              effectiveType.Name
             } but got {
               value.GetType().Name
             }."

@@ -25,6 +25,12 @@ public interface IItemInfo {
   string? Description { get; }
 
   /// <summary>
+  ///   The four digit year when the game or mod was released, used to provide context
+  ///   for the item in the UI.
+  /// </summary>
+  string? ReleaseYear { get; }
+
+  /// <summary>
   ///   Any custom metadata associated with the item, which can be used to store additional
   ///   information
   /// </summary>

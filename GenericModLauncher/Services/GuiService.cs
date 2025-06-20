@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
+using GenericModLauncher.Models;
+using GenericModLauncher.ViewModels;
 
 namespace GenericModLauncher.Services;
 
@@ -72,13 +74,13 @@ public sealed class GuiService {
   /// <returns>
   ///   The mod launcher window that was shown.
   /// </returns>
-  public async Task<ModLauncher> ShowModLauncher() {
+  public async Task<ModLauncher> ShowModLauncher(ILauncherConfiguration config) {
     await EnsureStarted().ConfigureAwait(false);
     var tcs = new TaskCompletionSource<ModLauncher>();
 
     dispatcher!.InvokeAsync(
       () => {
-        var window = new ModLauncher();
+        var window = new ModLauncher(new LauncherViewModel(config));
         window.Show();
         tcs.SetResult(window);
       }

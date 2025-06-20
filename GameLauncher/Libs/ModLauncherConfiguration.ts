@@ -7,5 +7,10 @@ export interface ModLauncherConfiguration {
      * base game information and any mods that can eb applied to it.
      *
      */
-    readonly game: BaseGameInfo;
+    game: BaseGameInfo;
+    /**
+     * The path to the background image for the mod launcher.
+     *
+     */
+    backgroundImagePath?: string;
 }
