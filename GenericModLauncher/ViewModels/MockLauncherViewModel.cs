@@ -8,9 +8,6 @@ namespace GenericModLauncher.ViewModels;
 public partial class MockLauncherViewModel : ILauncherViewModel, INotifyPropertyChanged {
   public string GameTitle => "Commando!";
 
-  public string GameDescription =>
-    "A classic action game where you fight against an army of enemies.";
-
   public ImageSource? GameLogoPath => null;
 
   /// <inheritdoc />
@@ -26,7 +23,8 @@ public partial class MockLauncherViewModel : ILauncherViewModel, INotifyProperty
   public ObservableCollection<ItemViewModel> Items { get; } = [
     new ItemViewModel {
       Group       = "Base Game", Name = "Commando",
-      Description = "A classic action game where you fight against an army of enemies."
+      Description = "A classic action game where you fight against an army of enemies.",
+      ReleaseYear = "1985"
     },
     new ItemViewModel { Group = "Mods", Name = "Super Commando" },
     new ItemViewModel { Group = "Mods", Name = "Stealth Mode" },

@@ -93,12 +93,17 @@
           <Grid>
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" TextWrapping="Wrap" TextAlignment="Center" FontSize="18" Foreground="White"
-                       Margin="0, 0, 0, 5" FontWeight="DemiBold" Text="{Binding SelectedItem.Name}" />
-            <TextBlock Grid.Row="1" TextWrapping="Wrap" FontSize="14" Foreground="White"
-                       Text="{Binding SelectedItem.Description}" />
+                       Margin="0,0,0,5" FontWeight="DemiBold" Text="{Binding SelectedItem.Name}" />
+            <TextBlock Grid.Row="1" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" Foreground="White"
+                       Margin="0,-5,0,5" FontWeight="Bold"
+                       Visibility="{c:Binding 'SelectedItem.ReleaseYear != \'\''}"
+                       Text="{Binding SelectedItem.ReleaseYear}" />
+            <TextBlock Grid.Row="2" TextWrapping="Wrap" FontSize="14" Foreground="White"
+                       TextAlignment="Justify" Text="{Binding SelectedItem.Description}" />
           </Grid>
         </Border>
 

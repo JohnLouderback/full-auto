@@ -7,6 +7,7 @@ await showModLauncher({
     displayName: "DOOM",
     logoPath: "H:\\Downloads\\Doom-Logo-PNG-Isolated-File.png",
     description: "Doom (1993) is a landmark first-person shooter by id Software. Players battle demons on Mars' moons after a failed experiment. Its fast gameplay and mod support made it a cultural phenomenon. Doom also helped popularize multiplayer and 3D graphics in games.",
+    releaseYear: "1993",
     gamePath: "C:/Doom",
     mods: [
       {

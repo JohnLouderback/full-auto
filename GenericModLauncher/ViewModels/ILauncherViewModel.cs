@@ -4,9 +4,8 @@ using System.Windows.Media;
 namespace GenericModLauncher.ViewModels;
 
 public interface ILauncherViewModel {
-  string       GameTitle       { get; }
-  string       GameDescription { get; }
-  ImageSource? GameLogoPath    { get; }
+  string       GameTitle    { get; }
+  ImageSource? GameLogoPath { get; }
 
   ImageSource? BackgroundImagePath { get; }
 

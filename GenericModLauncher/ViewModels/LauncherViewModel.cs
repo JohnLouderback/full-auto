@@ -13,8 +13,7 @@ public partial class LauncherViewModel : ILauncherViewModel, INotifyPropertyChan
   private          ObservableCollection<ItemViewModel>? items;
   private          ItemViewModel?                       selectedItem;
 
-  public string GameTitle       => config.Game.DisplayName;
-  public string GameDescription => config.Game.Description ?? "No description available.";
+  public string GameTitle => config.Game.DisplayName;
 
   public ImageSource? GameLogoPath => gameLogoImage ??= !string.IsNullOrEmpty(config.Game.LogoPath)
                                                           ? LoadImage(config.Game.LogoPath)
@@ -47,7 +46,8 @@ public partial class LauncherViewModel : ILauncherViewModel, INotifyPropertyChan
            new ItemViewModel {
              Group       = "Base Game",
              Name        = config.Game.DisplayName,
-             Description = config.Game.Description ?? string.Empty
+             Description = config.Game.Description ?? string.Empty,
+             ReleaseYear = config.Game.ReleaseYear ?? string.Empty
            }
          }
          : []).Concat(
@@ -56,7 +56,8 @@ public partial class LauncherViewModel : ILauncherViewModel, INotifyPropertyChan
             mod => new ItemViewModel {
               Group       = "Mods",
               Name        = mod.DisplayName,
-              Description = mod.Description ?? string.Empty
+              Description = mod.Description ?? string.Empty,
+              ReleaseYear = mod.ReleaseYear ?? string.Empty
             }
           )
           : []
