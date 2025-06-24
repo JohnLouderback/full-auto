@@ -2,6 +2,17 @@
 
 public interface IItemInfo {
   /// <summary>
+  ///   A callback that is called when the game is launched. It provides information about the base
+  ///   games, the mod (if a mod was chosen), and any mixins that were selected. This callback should
+  ///   handle the logic for launching the game with the selected mod and mixins.
+  /// </summary>
+  public delegate Task OnLaunchCallback(
+    IBaseGameInfo baseGame,
+    IModInfo? mod,
+    IEnumerable<IModInfo> mixins
+  );
+
+  /// <summary>
   ///   The display name of the item—the game or mod, used in the UI to identify the game.
   /// </summary>
   string DisplayName { get; }
@@ -42,4 +53,11 @@ public interface IItemInfo {
   ///   "mixed in" to the item to create a new configuration or gameplay experience.
   /// </summary>
   IEnumerable<IModInfo>? Mixins { get; set; }
+
+  /// <summary>
+  ///   A callback that is called when the game or a mod is launched. It provides information about
+  ///   the base game, the mod (if a mod was chosen), and any mixins that were selected. This callback
+  ///   is used to perform any necessary actions or configurations before the game is started.
+  /// </summary>
+  OnLaunchCallback? OnLaunch { get; set; }
 }

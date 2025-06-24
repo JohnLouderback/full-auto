@@ -7,4 +7,6 @@ public partial class ItemViewModel : INotifyPropertyChanged {
   public string Group       { get; set; }
   public string Description { get; set; } = string.Empty;
   public string ReleaseYear { get; set; } = string.Empty;
+
+  public required Action OnLaunch { get; init; }
 }

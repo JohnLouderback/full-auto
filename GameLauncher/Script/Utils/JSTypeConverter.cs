@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq.Expressions;
 using System.Reflection;
 using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
@@ -75,6 +76,54 @@ public static class JSTypeConverter {
                                         })();
                                         """
                                       );
+
+
+  /// <summary>
+  ///   Converts a ScriptObject (assumed to be an array) to an IEnumerable of type T.
+  /// </summary>
+  /// <param name="obj"> The ScriptObject to convert. </param>
+  /// <typeparam name="T"> The type of <see cref="IEnumerable" /> to convert to. </typeparam>
+  /// <returns>
+  ///   The converted <see cref="IEnumerable" /> of type <typeparamref name="T" />.
+  /// </returns>
+  public static T ConvertArrayToEnumerable<T>(ScriptObject obj) where T : IEnumerable {
+    if (!IsArray(obj)) {
+      throw new ScriptEngineException(
+        $"Expected an array, but got {GetJSType(obj)}."
+      );
+    }
+
+    var elementType = GetEnumerableElementType(typeof(T));
+    if (elementType == null) {
+      throw new ScriptEngineException(
+        $"Unable to determine element type of {typeof(T).Name}."
+      );
+    }
+
+    var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(elementType))!;
+    foreach (var element in (IEnumerable)obj) {
+      list.Add(ConvertValue(element, elementType));
+    }
+
+    // Convert list to target type if needed
+    if (typeof(T).IsAssignableFrom(list.GetType())) {
+      return (T)list;
+    }
+
+    // If the target type is not assignable from the list type, try to create an instance of T
+    // using the list as a constructor argument.
+    try {
+      return (T)Activator.CreateInstance(typeof(T), list) ??
+             throw new ScriptEngineException(
+               $"Failed to create an instance of {typeof(T).Name}."
+             );
+    }
+    catch {
+      throw new ScriptEngineException(
+        $"Failed to convert list to {typeof(T).Name}."
+      );
+    }
+  }
 
 
   /// <summary>
@@ -308,6 +357,138 @@ public static class JSTypeConverter {
     }
 
     if (value is ScriptObject soValue) {
+      // Handle callback functions (delegates).
+      if (typeof(Delegate).IsAssignableFrom(effectiveType)) {
+        if (!IsFunction(value)) {
+          throw new ScriptEngineException(
+            $"Expected a JavaScript function for delegate conversion to {
+              effectiveType.Name
+            }, but got {
+              GetJSType(value)
+            }."
+          );
+        }
+
+        if (value is not ScriptObject jsFunc) {
+          throw new ScriptEngineException(
+            $"Expected ScriptObject for delegate conversion but received {
+              value?.GetType().Name ?? "null"
+            }."
+          );
+        }
+
+        var invokeMethod = effectiveType.GetMethod("Invoke")!;
+        var parameters   = invokeMethod.GetParameters();
+        var returnType   = invokeMethod.ReturnType;
+
+        var paramExprs = parameters
+          .Select(p => Expression.Parameter(p.ParameterType, p.Name))
+          .ToArray();
+
+        var argsArrayExpr = Expression.NewArrayInit(
+          typeof(object),
+          paramExprs.Select(p =>
+            p.Type.IsValueType
+              ? Expression.Convert(p, typeof(object))
+              : (Expression)p
+          )
+        );
+
+        var scriptObjectExpr = Expression.Constant(jsFunc);
+
+        // jsFunc.Invoke(false, args)
+        var jsInvokeExpr = Expression.Call(
+          scriptObjectExpr,
+          typeof(ScriptObject).GetMethod(
+            nameof(ScriptObject.Invoke),
+            new[] { typeof(bool), typeof(object[]) }
+          )!,
+          Expression.Constant(false),
+          argsArrayExpr
+        );
+
+        Expression bodyExpr;
+
+        // Async: Func<Task> or Func<Task<T>>
+        if (typeof(Task).IsAssignableFrom(returnType)) {
+          // Compile-time variables
+          var jsInvokeResult = jsInvokeExpr;
+
+          Expression taskExpr;
+
+          if (returnType == typeof(Task)) {
+            // If return type is Task and result is Task, return directly
+            taskExpr = Expression.TypeAs(jsInvokeResult, typeof(Task));
+          }
+          else if (returnType.IsGenericType &&
+                   returnType.GetGenericTypeDefinition() == typeof(Task<>)) {
+            var resultType = returnType.GenericTypeArguments[0];
+
+            // Assume result is Task<object>, so we need to await and cast
+            var tcsType = typeof(TaskCompletionSource<>).MakeGenericType(resultType);
+            var tcsVar  = Expression.Variable(tcsType, "tcs");
+            var taskVar = Expression.Variable(typeof(Task<object>), "jsTask");
+
+            var setResultMethod = tcsType.GetMethod("SetResult")!;
+            var setExceptionMethod = tcsType.GetMethod(
+              "SetException",
+              new[] { typeof(Exception) }
+            )!;
+            var taskProp = Expression.Property(tcsVar, "Task");
+
+            // jsTask.ContinueWith(t => { if (t.IsFaulted) tcs.SetException(t.Exception); else tcs.SetResult((T)t.Result); })
+            var tParam = Expression.Parameter(typeof(Task<object>), "t");
+
+            var ifFaulted = Expression.IfThenElse(
+              Expression.Property(tParam, "IsFaulted"),
+              Expression.Call(tcsVar, setExceptionMethod, Expression.Property(tParam, "Exception")),
+              Expression.Call(
+                tcsVar,
+                setResultMethod,
+                Expression.Convert(Expression.Property(tParam, "Result"), resultType)
+              )
+            );
+
+            var continueLambda = Expression.Lambda<Action<Task<object>>>(ifFaulted, tParam);
+
+            var continueCall = Expression.Call(
+              taskVar,
+              typeof(Task<object>).GetMethod(
+                "ContinueWith",
+                new[] { typeof(Action<Task<object>>) }
+              )!,
+              continueLambda
+            );
+
+            var block = Expression.Block(
+              new[] { tcsVar, taskVar },
+              Expression.Assign(tcsVar, Expression.New(tcsType)),
+              Expression.Assign(taskVar, Expression.TypeAs(jsInvokeResult, typeof(Task<object>))),
+              continueCall,
+              taskProp
+            );
+
+            taskExpr = block;
+          }
+          else {
+            throw new NotSupportedException(
+              $"Unsupported Task-like return type: {returnType.FullName}"
+            );
+          }
+
+          bodyExpr = taskExpr;
+        }
+        else {
+          // Sync
+          bodyExpr = returnType == typeof(void)
+                       ? jsInvokeExpr
+                       : Expression.Convert(jsInvokeExpr, returnType);
+        }
+
+        var lambda = Expression.Lambda(effectiveType, bodyExpr, paramExprs);
+        return lambda.Compile();
+      }
+
       // Recursively convert nested objects.
       return ConvertObject(soValue, effectiveType);
     }
@@ -360,8 +541,7 @@ public static class JSTypeConverter {
     var iface = enumerableType
       .GetInterfaces()
       .Concat(new[] { enumerableType })
-      .FirstOrDefault(
-        i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+      .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)
       );
 
     return iface?.GetGenericArguments()[0];
@@ -527,11 +707,30 @@ public static class JSTypeConverter {
           }
         }
       }
-      else if (value is ScriptObject nestedObj) {
+      else if (value is ScriptObject nestedObj &&
+               !IsFunction(nestedObj)) {
         // Recursively validate nested objects.
         ValidateShape(nestedObj, effectiveType, fullPath, errors);
       }
       else {
+        // Special case: allow ScriptObject functions for delegate types
+        if (typeof(Delegate).IsAssignableFrom(effectiveType)) {
+          if (!IsFunction(value)) {
+            errors.Add(
+              $"Property '{
+                fullPath
+              }' expected a function for delegate type {
+                effectiveType.Name
+              }, but got {
+                GetJSType(value)
+              }."
+            );
+          }
+
+          // otherwise valid
+          continue;
+        }
+
         if (!effectiveType.IsAssignableFrom(value.GetType())) {
           errors.Add(
             $"Property '{

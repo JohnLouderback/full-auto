@@ -27,7 +27,10 @@ public partial class LauncherViewModel : ILauncherViewModel, INotifyPropertyChan
 
   /// <inheritdoc />
   public ItemViewModel SelectedItem {
-    get => selectedItem ??= Items.FirstOrDefault() ?? new ItemViewModel();
+    get => selectedItem ??= Items.FirstOrDefault() ??
+                            new ItemViewModel {
+                              OnLaunch = () => {}
+                            };
     set {
       if (value is null) {
         throw new ArgumentNullException(nameof(value), "Selected item cannot be null.");
@@ -47,17 +50,26 @@ public partial class LauncherViewModel : ILauncherViewModel, INotifyPropertyChan
              Group       = "Base Game",
              Name        = config.Game.DisplayName,
              Description = config.Game.Description ?? string.Empty,
-             ReleaseYear = config.Game.ReleaseYear ?? string.Empty
+             ReleaseYear = config.Game.ReleaseYear ?? string.Empty,
+             OnLaunch = () => {
+               if (config.Game.OnLaunch is not null) {
+                 config.Game.OnLaunch(config.Game, mod: null, mixins: null);
+               }
+             }
            }
          }
          : []).Concat(
         config.Game?.Mods is not null
-          ? config.Game.Mods.Select(
-            mod => new ItemViewModel {
+          ? config.Game.Mods.Select(mod => new ItemViewModel {
               Group       = "Mods",
               Name        = mod.DisplayName,
               Description = mod.Description ?? string.Empty,
-              ReleaseYear = mod.ReleaseYear ?? string.Empty
+              ReleaseYear = mod.ReleaseYear ?? string.Empty,
+              OnLaunch = () => {
+                if (mod.OnLaunch is not null) {
+                  mod.OnLaunch(config.Game, mod, mixins: null);
+                }
+              }
             }
           )
           : []

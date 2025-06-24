@@ -1,7 +1,7 @@
 ﻿using GameLauncher.Script.Utils;
 using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
-using static Core.StringUtils;
+using static Core.Utils.StringUtils;
 
 namespace GameLauncher.Script.Objects;
 

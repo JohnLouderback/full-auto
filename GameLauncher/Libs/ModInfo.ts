@@ -20,5 +20,5 @@ export interface ModInfo extends ItemInfo {
      * applied to it.
      *
      */
-    dontInheritMixins?: boolean;
+    dontInheritMixins?: boolean | null;
 }

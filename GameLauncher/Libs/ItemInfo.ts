@@ -1,4 +1,5 @@
 import { ModInfo } from "./ModInfo";
+import { OnLaunchCallback } from "./OnLaunchCallback";
 
 // Auto-generated from C# type ItemInfo
 export interface ItemInfo {
@@ -46,4 +47,12 @@ export interface ItemInfo {
      *
      */
     mixins?: Array<ModInfo>;
+    /**
+     * A callback that is called when the game or a mod is launched. It provides
+     * information about the base game, the mod (if a mod was chosen), and any
+     * mixins that were selected. This callback is used to perform any necessary
+     * actions or configurations before the game is started.
+     *
+     */
+    onLaunch?: OnLaunchCallback;
 }

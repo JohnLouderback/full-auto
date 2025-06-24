@@ -89,5 +89,5 @@ export interface Screen {
      * display mode back to the original display mode, you can call the {@link
      * UndoableResult.undo} method on the result.
      */
-    setDisplayMode(width: number, height: number, refreshRate?: number, colorDepth?: number, shouldPersist?: boolean): ChangeDisplayModeResult;
+    setDisplayMode(width: number, height: number, refreshRate?: number | null, colorDepth?: number | null, shouldPersist?: boolean): ChangeDisplayModeResult;
 }

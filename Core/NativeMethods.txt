@@ -104,3 +104,4 @@ SetCursorPos
 SystemParametersInfo
 FindWindowW
 SendMessageTimeout
+GetSystemMetrics

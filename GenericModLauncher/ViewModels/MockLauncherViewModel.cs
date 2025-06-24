@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Controls;
 using System.Windows.Media;
 using static GenericModLauncher.Utils;
 
@@ -21,13 +22,18 @@ public partial class MockLauncherViewModel : ILauncherViewModel, INotifyProperty
 
   /// <inheritdoc />
   public ObservableCollection<ItemViewModel> Items { get; } = [
-    new ItemViewModel {
+    new() {
       Group       = "Base Game", Name = "Commando",
       Description = "A classic action game where you fight against an army of enemies.",
-      ReleaseYear = "1985"
+      ReleaseYear = "1985",
+      OnLaunch    = () => {}
     },
-    new ItemViewModel { Group = "Mods", Name = "Super Commando" },
-    new ItemViewModel { Group = "Mods", Name = "Stealth Mode" },
-    new ItemViewModel { Group = "Mods", Name = "Unlimited Ammo" }
+    new() { Group = "Mods", Name = "Super Commando", OnLaunch = () => {} },
+    new() { Group = "Mods", Name = "Stealth Mode", OnLaunch   = () => {} },
+    new() { Group = "Mods", Name = "Unlimited Ammo", OnLaunch = () => {} }
   ];
+
+
+  /// <inheritdoc />
+  public void OnSelectionChanged(object sender, SelectionChangedEventArgs e) {}
 }

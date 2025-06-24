@@ -6,6 +6,7 @@
         xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
         xmlns:vm="clr-namespace:GenericModLauncher.ViewModels"
         xmlns:local="clr-namespace:GenericModLauncher"
+        xmlns:ws="https://schemas.elecho.dev/wpfsuite"
         mc:Ignorable="d"
         WindowStyle="None"
         AllowsTransparency="False"
@@ -14,6 +15,7 @@
         Title="Mod Launcher" Height="480" Width="640"
         d:DataContext="{d:DesignInstance vm:MockLauncherViewModel, IsDesignTimeCreatable=True}"
         DataContext="d:DesignInstance vm:MockLauncherViewModel, IsDesignTimeCreatable=True"
+        Loaded="RootElement_Loaded"
         SnapsToDevicePixels="True">
   <Window.Resources>
     <CollectionViewSource x:Key="GroupedItems"
@@ -59,9 +61,10 @@
           </TextBlock.Effect>
         </TextBlock>
 
-        <ListBox ItemsSource="{Binding Source={StaticResource GroupedItems}}"
+        <ListBox x:Name="GameList" ItemsSource="{Binding Source={StaticResource GroupedItems}}"
                  SelectionMode="Single" Grid.Row="1" Grid.Column="0" Margin="10" Background="#CC2D2D30"
-                 Foreground="White" Padding="0,0,5,0">
+                 Foreground="White" Padding="0,0,5,0" MouseDoubleClick="OnItemActivated"
+                 KeyDown="OnItemKeyDown">
           <ListBox.ItemContainerStyle>
             <Style TargetType="ListBoxItem">
               <!-- Updates the selected item in the view model to match the focused list item. -->
@@ -88,7 +91,8 @@
           </ListBox.ItemTemplate>
         </ListBox>
 
-        <Border Grid.Row="1" Grid.Column="1" Margin="10" Background="#CC2D2D30" BorderBrush="#abadb3"
+        <Border ClipToBounds="True" Grid.Row="1" Grid.Column="1" Margin="10" Background="#CC2D2D30"
+                BorderBrush="#abadb3"
                 BorderThickness="1" Padding="10,5">
           <Grid>
             <Grid.RowDefinitions>
@@ -97,11 +101,22 @@
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" TextWrapping="Wrap" TextAlignment="Center" FontSize="18" Foreground="White"
-                       Margin="0,0,0,5" FontWeight="DemiBold" Text="{Binding SelectedItem.Name}" />
+                       Margin="0,0,0,5" FontWeight="DemiBold">
+              <ws:ContentControl Content="{Binding SelectedItem.Name}">
+                <ws:ContentControl.Transition>
+                  <ws:SlideFadeTransition Orientation="Vertical" />
+                </ws:ContentControl.Transition>
+              </ws:ContentControl>
+            </TextBlock>
             <TextBlock Grid.Row="1" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" Foreground="White"
                        Margin="0,-5,0,5" FontWeight="Bold"
-                       Visibility="{c:Binding 'SelectedItem.ReleaseYear != \'\''}"
-                       Text="{Binding SelectedItem.ReleaseYear}" />
+                       Visibility="{c:Binding 'SelectedItem.ReleaseYear != \'\''}">
+              <ws:ContentControl Content="{Binding SelectedItem.ReleaseYear}">
+                <ws:ContentControl.Transition>
+                  <ws:FadeTransition />
+                </ws:ContentControl.Transition>
+              </ws:ContentControl>
+            </TextBlock>
             <TextBlock Grid.Row="2" TextWrapping="Wrap" FontSize="14" Foreground="White"
                        TextAlignment="Justify" Text="{Binding SelectedItem.Description}" />
           </Grid>

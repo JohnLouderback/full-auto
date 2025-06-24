@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Core;
+namespace Core.Utils;
 
 public static class StringUtils {
   /// <summary>

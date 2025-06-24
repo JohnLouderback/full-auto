@@ -8,14 +8,14 @@ export interface DownscaleOptions {
      * the window will be positioned automatically.
      *
      */
-    x?: number;
+    x?: number | null;
     /**
      * The Y position of the top-left corner of the downscaler window. This will
      * be relative to the monitor that the window is on. If this is not specified,
      * the window will be positioned automatically.
      *
      */
-    y?: number;
+    y?: number | null;
     /**
      * The factor to downscale the window by. For example, a factor of 2 will
      * downscale the window by 2x, meaning that a window of size 1920x1080 will be
@@ -24,7 +24,7 @@ export interface DownscaleOptions {
      * window of size 1920x1080 will be upscaled to 3840x2160.
      *
      */
-    downscaleFactor?: number;
+    downscaleFactor?: number | null;
     /**
      * The width to scale the window to. This is exclusive with {@link
      * DownscaleOptions.downscaleFactor}. If this is specified, but height is not,
@@ -32,7 +32,7 @@ export interface DownscaleOptions {
      * the window.
      *
      */
-    scaleWidth?: number;
+    scaleWidth?: number | null;
     /**
      * The height to scale the window to. This is exclusive with {@link
      * DownscaleOptions.downscaleFactor}. If this is specified, but width is not,
@@ -40,7 +40,7 @@ export interface DownscaleOptions {
      * window.
      *
      */
-    scaleHeight?: number;
+    scaleHeight?: number | null;
     /**
      * A namespace where debug configurations can be specified.
      *

@@ -120,10 +120,10 @@ file class SymbolProcessor {
 
       foreach (var del in root.DescendantNodes().OfType<DelegateDeclarationSyntax>()) {
         var symbol = model.GetDeclaredSymbol(del);
-        if (symbol is INamedTypeSymbol delSym &&
-            delSym.TypeKind == TypeKind.Delegate &&
+        if (symbol is { TypeKind: TypeKind.Delegate } delSym &&
             del.Parent is BaseNamespaceDeclarationSyntax or CompilationUnitSyntax) {
           _globalDelegates.Add(delSym);
+          _exportedTypes[delSym.Name] = delSym;
         }
       }
     }
@@ -151,8 +151,7 @@ file class SymbolProcessor {
 
   private static bool IsMarkedWith(ISymbol symbol, string attributeName) {
     return symbol.GetAttributes()
-      .Any(
-        a => a.AttributeClass?.Name.IndexOf(attributeName, StringComparison.Ordinal) > -1
+      .Any(a => a.AttributeClass?.Name.IndexOf(attributeName, StringComparison.Ordinal) > -1
       );
   }
 
@@ -193,7 +192,14 @@ file class TypeScriptEmitter {
 
     var args = string.Join(
       ", ",
-      invoke.Parameters.Select(p => $"{p.Name}: {ToTypeScriptType(p.Type, dependencies, p)}")
+      invoke.Parameters.Select(p => {
+          var name = p.Name;
+          var type = ToTypeScriptType(p.Type, dependencies, p);
+          return p.HasExplicitDefaultValue || p.NullableAnnotation == NullableAnnotation.Annotated
+                   ? $"{name}?: {type}"
+                   : $"{name}: {type}";
+        }
+      )
     );
 
     var ret = ToTypeScriptType(invoke.ReturnType, dependencies);
@@ -231,12 +237,11 @@ file class TypeScriptEmitter {
     var methods = type
       .GetMembers()
       .OfType<IMethodSymbol>()
-      .Where(
-        m =>
-          m.MethodKind == MethodKind.Ordinary &&
-          m.DeclaredAccessibility == Accessibility.Public &&
-          !m.IsImplicitlyDeclared &&
-          !IsHidden(m)
+      .Where(m =>
+        m.MethodKind == MethodKind.Ordinary &&
+        m.DeclaredAccessibility == Accessibility.Public &&
+        !m.IsImplicitlyDeclared &&
+        !IsHidden(m)
       )
       .GroupBy(m => m.Name)
       .OrderBy(g => g.Key, StringComparer.Ordinal);
@@ -372,9 +377,8 @@ file class TypeScriptEmitter {
 
   private static string? GetScriptMemberName(ISymbol symbol) {
     var attr = symbol.GetAttributes()
-      .FirstOrDefault(
-        a =>
-          a.AttributeClass?.Name is "ScriptMember" or "ScriptMemberAttribute"
+      .FirstOrDefault(a =>
+        a.AttributeClass?.Name is "ScriptMember" or "ScriptMemberAttribute"
       );
 
     if (attr is null) return null;
@@ -407,8 +411,7 @@ file class TypeScriptEmitter {
 
   private static bool IsHidden(ISymbol symbol) {
     return symbol.GetAttributes()
-      .Any(
-        a => a.AttributeClass?.Name is "HideFromTypeScript" or "HideFromTypeScriptAttribute"
+      .Any(a => a.AttributeClass?.Name is "HideFromTypeScript" or "HideFromTypeScriptAttribute"
       );
   }
 
@@ -446,11 +449,12 @@ file class TypeScriptEmitter {
   private string FormatParams(IMethodSymbol method, HashSet<string> dependencies) {
     return string.Join(
       ", ",
-      method.Parameters.Select(
-        p => {
+      method.Parameters.Select(p => {
           var name = p.Name;
           var type = ToTypeScriptType(p.Type, dependencies, p);
-          return p.HasExplicitDefaultValue ? $"{name}?: {type}" : $"{name}: {type}";
+          return p.HasExplicitDefaultValue || p.NullableAnnotation == NullableAnnotation.Annotated
+                   ? $"{name}?: {type}"
+                   : $"{name}: {type}";
         }
       )
     );
@@ -459,8 +463,7 @@ file class TypeScriptEmitter {
 
   private string ToTypeScriptType(ITypeSymbol type, HashSet<string> deps, ISymbol? context = null) {
     var overrideAttr = context?.GetAttributes()
-      .FirstOrDefault(
-        a => a.AttributeClass?.Name is "TsTypeOverride" or "TsTypeOverrideAttribute"
+      .FirstOrDefault(a => a.AttributeClass?.Name is "TsTypeOverride" or "TsTypeOverrideAttribute"
       );
 
     // If the override attribute is present and was passed a string, use that
@@ -504,6 +507,11 @@ file class TypeScriptEmitter {
     }
 
     switch (type) {
+      // Handle nullable types
+      case INamedTypeSymbol named when
+        named.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T:
+        return ToTypeScriptType(named.TypeArguments[0], deps) + " | null";
+
       // Handle arrays
       case IArrayTypeSymbol array:
         return $"{ToTypeScriptType(array.ElementType, deps)}[]";
@@ -1005,8 +1013,8 @@ file static class DocumentationResolver {
         foreach (var method in methods) {
           var sig = string.Join(
             ",",
-            method.Parameters.Select(
-              p => p.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)
+            method.Parameters.Select(p =>
+              p.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)
             )
           );
           if (string.Equals($"({sig})", paramList, StringComparison.Ordinal)) {

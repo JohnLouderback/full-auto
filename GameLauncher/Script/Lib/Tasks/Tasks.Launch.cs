@@ -4,6 +4,7 @@ using GameLauncher.Script.Utils.CodeGenAttributes;
 using Microsoft.ClearScript;
 using Application = GameLauncher.Script.Objects.Application;
 using Process = System.Diagnostics.Process;
+using static GameLauncher.Script.Utils.JSTypeConverter;
 
 namespace GameLauncher.Script;
 
@@ -91,9 +92,26 @@ public static partial class Tasks {
 
 
   [HideFromTypeScript]
+  public static Application? Launch(string path, ScriptObject args, ScriptObject options) {
+    if (options is null &&
+        args is null) {
+      return Launch(path);
+    }
+
+    return Launch(path, ConvertArrayToEnumerable<List<string>>(args), (LaunchOptions)options);
+  }
+
+
+  [HideFromTypeScript]
   public static Application? Launch(string path, ScriptObject options) {
     if (options is null) {
       return Launch(path);
+    }
+
+    // If the options object is actually an array of the string arguments, convert it to a
+    // LaunchOptions object with the arguments.
+    if (IsArray(options)) {
+      return Launch(path, ConvertArrayToEnumerable<List<string>>(options));
     }
 
     return Launch(path, (LaunchOptions)options);
