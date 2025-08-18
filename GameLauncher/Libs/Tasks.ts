@@ -2,6 +2,8 @@ import { Application } from "./Application";
 import { BoundingBox } from "./BoundingBox";
 import { ConstrainCursorResult } from "./ConstrainCursorResult";
 import { Coordinate } from "./Coordinate";
+import { Directory } from "./Directory";
+import { File } from "./File";
 import { HideCursorResult } from "./HideCursorResult";
 import { LaunchOptions } from "./LaunchOptions";
 import { ModLauncherConfiguration } from "./ModLauncherConfiguration";
@@ -23,7 +25,7 @@ import { WindowSearchCriteria } from "./WindowSearchCriteria";
      * If `0`, the method waits indefinitely.
      * @returns The window that was created, or `null` if the timeout elapsed.
      */
-export function awaitWindow(searchCriteria: WindowSearchCriteria, timeout?: number): Promise<Window>;
+export function awaitWindow(searchCriteria: WindowSearchCriteria, timeout?: number): Promise<Window | null>;
     /**
      * Waits for a window to be spawned with the specified criteria. This only
      * awaits new windows and will not return a window that already exists at the
@@ -35,7 +37,7 @@ export function awaitWindow(searchCriteria: WindowSearchCriteria, timeout?: numb
      * If `0`, the method waits indefinitely.
      * @returns The window that was created, or `null` if the timeout elapsed.
      */
-export function awaitWindow(searchCriteria: WindowCriteriaCallback, timeout?: number): Promise<Window>;
+export function awaitWindow(searchCriteria: WindowCriteriaCallback, timeout?: number): Promise<Window | null>;
 export function awaitWindow(...args: any[]): any {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.AwaitWindow(...args);
@@ -153,6 +155,32 @@ export function getCursorPosition(): Coordinate {
 }
 
     /**
+     * Gets a file object for the specified path. If the file does not exist,
+     * returns `null`.
+     *
+     * @param path The path to the file.
+     * @returns A {@link Directory} object representing the file if it exists;
+     * otherwise, `null`.
+     */
+export function getDirectory(path: string): Directory | null {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.GetDirectory(path);
+}
+
+    /**
+     * Gets a file object for the specified path. If the file does not exist,
+     * returns `null`.
+     *
+     * @param path The path to the file.
+     * @returns A {@link File} object representing the file if it exists;
+     * otherwise, `null`.
+     */
+export function getFile(path: string): File | null {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.GetFile(path);
+}
+
+    /**
      * Gets the taskbar object, which represents the Windows taskbar.
      *
      * @returns A {@link Taskbar} object representing the taskbar.
@@ -160,6 +188,34 @@ export function getCursorPosition(): Coordinate {
 export function getTaskbar(): Taskbar {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.GetTaskbar();
+}
+
+    /**
+     * Searches for files matching the specified glob pattern in the given
+     * directory (and potentially its subdirectories).
+     *
+     * @param searchDir The directory to search in.
+     * @param globPattern The glob pattern to match files against.
+     * @returns An array containing the files that match the glob pattern. If no
+     * files match, an empty array is returned.
+     */
+export function glob(searchDir: string, globPattern: string): Array<File>;
+    /**
+     * Searches for files matching the specified glob pattern in the given
+     * directory (and potentially its subdirectories).
+     *
+     * @param searchDir The directory to search in.
+     * @param globPattern The glob pattern to match files against.
+     * @param [excludePattern=null] Optional. A glob pattern to exclude files from
+     * the results. If a matched file also matches this glob pattern, it is
+     * omitted from the results.
+     * @returns An array containing the files that match the glob pattern. If no
+     * files match, an empty array is returned.
+     */
+export function glob(searchDir: string, globPattern: string, excludePattern?: string | null): Array<File>;
+export function glob(...args: any[]): any {
+    // @ts-expect-error - Function is injected by the engine
+    return __Tasks.Glob(...args);
 }
 
     /**
@@ -195,7 +251,7 @@ export function hideCursor(force?: boolean, shouldPersist?: boolean): HideCursor
      * Application.exitSignal} property can be used to await the application's
      * exit.
      */
-export function launch(path: string): Application;
+export function launch(path: string): Application | null;
     /**
      * Launch the application at the specified path.
      *
@@ -207,7 +263,7 @@ export function launch(path: string): Application;
      * Application.exitSignal} property can be used to await the application's
      * exit.
      */
-export function launch(path: string, options: LaunchOptions): Application;
+export function launch(path: string, options: LaunchOptions): Application | null;
     /**
      * Launch the application at the specified path.
      *
@@ -221,7 +277,7 @@ export function launch(path: string, options: LaunchOptions): Application;
      * Application.exitSignal} property can be used to await the application's
      * exit.
      */
-export function launch(path: string, args: Array<string>, options: LaunchOptions): Application;
+export function launch(path: string, args: Array<string>, options: LaunchOptions): Application | null;
     /**
      * Launch the application at the specified path.
      *
@@ -233,7 +289,7 @@ export function launch(path: string, args: Array<string>, options: LaunchOptions
      * Application.exitSignal} property can be used to await the application's
      * exit.
      */
-export function launch(path: string, args: Array<string>): Application;
+export function launch(path: string, args: Array<string>): Application | null;
 export function launch(...args: any[]): any {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.Launch(...args);

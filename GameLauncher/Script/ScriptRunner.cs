@@ -7,6 +7,7 @@ using Microsoft.ClearScript.V8;
 using Task = System.Threading.Tasks.Task;
 using TypeScriptCompiler = GameLauncher.TypeScript.Compiler;
 using static GameLauncher.Script.Utils.ErrorUtils;
+using File = System.IO.File;
 
 namespace GameLauncher.Script;
 

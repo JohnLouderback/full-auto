@@ -12,5 +12,5 @@ export interface ModLauncherConfiguration {
      * The path to the background image for the mod launcher.
      *
      */
-    backgroundImagePath?: string;
+    backgroundImagePath?: string | null;
 }

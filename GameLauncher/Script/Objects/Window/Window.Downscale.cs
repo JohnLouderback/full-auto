@@ -285,7 +285,7 @@ public partial class Window {
     // executable. In a published build, this will be the same directory as the executable.
     var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
     var downscalerPath   = Path.Combine(currentDirectory, "Downscaler.exe");
-    if (File.Exists(downscalerPath)) {
+    if (System.IO.File.Exists(downscalerPath)) {
       return downscalerPath;
     }
 
@@ -307,7 +307,7 @@ public partial class Window {
         "Downscaler.exe"
       )
     );
-    if (File.Exists(downscalerDevPath)) {
+    if (System.IO.File.Exists(downscalerDevPath)) {
       return downscalerDevPath;
     }
 #else

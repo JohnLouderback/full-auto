@@ -18,5 +18,5 @@ export interface SourcePortInfo {
      * executable.
      *
      */
-    sourcePortPath?: string;
+    sourcePortPath?: string | null;
 }

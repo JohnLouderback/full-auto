@@ -30,7 +30,6 @@ public class ChangeDisplayModeResult : UndoableResult {
 
   /// <inheritdoc />
   protected override async Task Reverse() {
-    Console.WriteLine($"Reverting to original display mode: {originalDisplayMode}");
     var dm = new DEVMODEW();
     dm.dmSize             = (ushort)Marshal.SizeOf(typeof(DEVMODEW));
     dm.dmPelsWidth        = (uint)originalDisplayMode.Width;

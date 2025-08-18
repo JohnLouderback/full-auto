@@ -13,7 +13,7 @@ export interface BaseGameInfo extends ItemInfo {
      * represent the game.
      *
      */
-    logoPath?: string;
+    logoPath?: string | null;
     /**
      * A collection of pre-configured mods that are associated with this game.
      *

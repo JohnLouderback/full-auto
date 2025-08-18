@@ -15,7 +15,7 @@ export interface Process {
      * access to the process is denied due to permissions.
      *
      */
-    readonly fullPath?: string;
+    readonly fullPath?: string | null;
     /**
      * The process ID, which is unique for each process. For example: `1234`.
      *

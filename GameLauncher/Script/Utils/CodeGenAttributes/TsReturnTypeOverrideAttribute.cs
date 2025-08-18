@@ -2,12 +2,13 @@
 
 /// <inheritdoc />
 /// <summary>
-///   An attribute that is passed a string to override the TypeScript type for a
-///   class, property, method, or parameter. This is useful for cases where the default TypeScript
+///   An attribute that is passed a string to override the TypeScript return type for a
+///   method or function. This is useful for cases where the default TypeScript
 ///   mapping is not suitable, such as when you want to use a specific TypeScript type such as a
-///   union or a custom type.
+///   union or a custom type or when you wish to specify a JavaScript object type that is not
+///   an existing C# type, such as UInt8Array, Uint16Array, etc.
 /// </summary>
-public class TsTypeOverrideAttribute : Attribute {
+public class TsReturnTypeOverrideAttribute : Attribute {
   /// <summary>
   ///   Store the Type of the decorated member, if applicable. This is used to determine the
   ///   overridden type at runtime. This is useful for cases where a JavaScript object is being
@@ -25,9 +26,9 @@ public class TsTypeOverrideAttribute : Attribute {
   ///   TypeScript code, so it should be a valid TypeScript type expression.
   /// </summary>
   /// <param name="tsType">
-  ///   The TypeScript type to use as a replacement for the decorated member.
+  ///   The TypeScript type to use as a replacement for the decorated member's return type.
   /// </param>
-  public TsTypeOverrideAttribute(string tsType) {}
+  public TsReturnTypeOverrideAttribute(string tsType) {}
 
 
   /// <summary>
@@ -48,7 +49,7 @@ public class TsTypeOverrideAttribute : Attribute {
   /// <exception cref="ArgumentNullException">
   ///   Thrown when any of the dependency types are null.
   /// </exception>
-  public TsTypeOverrideAttribute(string tsType, params Type[] deps) {
+  public TsReturnTypeOverrideAttribute(string tsType, params Type[] deps) {
     // Ensure none of the dependencies are null.
     if (deps.Any(dep => dep is null)) {
       throw new ArgumentNullException(nameof(deps), "Dependency types cannot be null.");
@@ -60,9 +61,9 @@ public class TsTypeOverrideAttribute : Attribute {
   ///   Replaces the type of the decorated member with the specified type using the Type object.
   /// </summary>
   /// <param name="replacementType">
-  ///   The type to use as a replacement for the decorated member.
+  ///   The type to use as a replacement for the decorated member's return type.
   /// </param>
-  public TsTypeOverrideAttribute(Type replacementType) {
+  public TsReturnTypeOverrideAttribute(Type replacementType) {
     Type = replacementType ??
            throw new ArgumentNullException(
              nameof(replacementType),

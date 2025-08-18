@@ -9,4 +9,4 @@ import { ModInfo } from "./ModInfo";
  *
  */
 // Auto-generated from delegate OnLaunchCallback
-export type OnLaunchCallback = (baseGame: BaseGameInfo, mod?: ModInfo, mixins?: Array<ModInfo>) => Promise<void>;
+export type OnLaunchCallback = (baseGame: BaseGameInfo, mod?: ModInfo | null, mixins?: Array<ModInfo> | null) => Promise<void>;

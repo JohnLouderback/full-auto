@@ -20,25 +20,25 @@ export interface ItemInfo {
      * represent the game or mod.
      *
      */
-    screenshotPath?: string;
+    screenshotPath?: string | null;
     /**
      * A brief description of the game or mod, providing additional context or
      * information about it.
      *
      */
-    description?: string;
+    description?: string | null;
     /**
      * The four digit year when the game or mod was released, used to provide
      * context for the item in the UI.
      *
      */
-    releaseYear?: string;
+    releaseYear?: string | null;
     /**
      * Any custom metadata associated with the item, which can be used to store
      * additional information
      *
      */
-    customMetadata?: Object;
+    customMetadata?: Object | null;
     /**
      * A collection of mods that are specifically associated with this item, such
      * as other mods that can be applied to this game or only specifically to this
@@ -54,5 +54,5 @@ export interface ItemInfo {
      * actions or configurations before the game is started.
      *
      */
-    onLaunch?: OnLaunchCallback;
+    onLaunch?: OnLaunchCallback | null;
 }

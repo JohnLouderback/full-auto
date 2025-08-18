@@ -6,6 +6,6 @@
  */
 // Auto-generated from C# type WindowSearchCriteria
 export interface WindowSearchCriteria {
-    title?: string;
-    className?: string;
+    title?: string | null;
+    className?: string | null;
 }

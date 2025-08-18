@@ -45,5 +45,5 @@ export interface DownscaleOptions {
      * A namespace where debug configurations can be specified.
      *
      */
-    debug?: DownscaleDebugOptions;
+    debug?: DownscaleDebugOptions | null;
 }

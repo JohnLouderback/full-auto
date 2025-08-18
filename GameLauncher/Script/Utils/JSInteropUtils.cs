@@ -1,4 +1,5 @@
-﻿using Microsoft.ClearScript;
+﻿using System.Collections;
+using Microsoft.ClearScript;
 
 namespace GameLauncher.Script.Utils;
 
@@ -8,6 +9,8 @@ public static class JSInteropUtils {
   private static dynamic? _isPlainObject;
 
   private static dynamic? _isValueTruthy;
+
+  private static dynamic? _createUInt8Array;
 
   private static ScriptEngine currentScriptEngine =>
     AppState.ScriptEngine ??
@@ -22,6 +25,32 @@ public static class JSInteropUtils {
   private static dynamic isValueTruthy => _isValueTruthy ??= currentScriptEngine.Evaluate(
                                             "(value) => !!value;"
                                           );
+
+  private static dynamic createUInt8Array => _createUInt8Array ??= currentScriptEngine.Evaluate(
+                                               "(lengthOrData) => new Uint8Array(lengthOrData);"
+                                             );
+
+
+  /// <summary>
+  ///   Creates a new Uint8Array with the specified length.
+  /// </summary>
+  /// <returns>
+  ///   A new Uint8Array with the specified length.
+  /// </returns>
+  public static dynamic CreateUInt8Array(uint length) {
+    return createUInt8Array(length);
+  }
+
+
+  /// <summary>
+  ///   Creates a new Uint8Array with the specified initial data.
+  /// </summary>
+  /// <returns>
+  ///   A new Uint8Array with the specified initial data.
+  /// </returns>
+  public static dynamic CreateUInt8Array(IEnumerable initialData) {
+    return createUInt8Array(initialData);
+  }
 
 
   /// <summary>

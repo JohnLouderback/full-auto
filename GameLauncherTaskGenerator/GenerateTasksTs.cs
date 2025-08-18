@@ -258,14 +258,11 @@ file class TypeScriptEmitter {
         foreach (var method in overloads) {
           var docComment = DocumentationResolver.GetJsDoc(method, _compilation, "    ");
           if (!string.IsNullOrWhiteSpace(docComment)) sb.AppendLine(docComment);
+          var overriddenReturnType = GetOverriddenReturnType(dependencies, method);
+          var returnType = overriddenReturnType ??
+                           ToTypeScriptType(method.ReturnType, dependencies, method);
           sb.AppendLine(
-            $"export function {
-              exportName
-            }({
-              FormatParams(method, dependencies)
-            }): {
-              ToTypeScriptType(method.ReturnType, dependencies)
-            };"
+            $"export function {exportName}({FormatParams(method, dependencies)}): {returnType};"
           );
         }
 
@@ -342,8 +339,10 @@ file class TypeScriptEmitter {
         var jsDoc = DocumentationResolver.GetJsDoc(method, _compilation, "    ");
         if (!string.IsNullOrWhiteSpace(jsDoc)) sb.AppendLine(jsDoc);
 
-        var parameters = FormatParams(method, dependencies);
-        var returnType = ToTypeScriptType(method.ReturnType, dependencies, method);
+        var parameters           = FormatParams(method, dependencies);
+        var overriddenReturnType = GetOverriddenReturnType(dependencies, method);
+        var returnType = overriddenReturnType ??
+                         ToTypeScriptType(method.ReturnType, dependencies, method);
         sb.AppendLine($"    {name}({parameters}): {returnType};");
       }
     }
@@ -426,8 +425,10 @@ file class TypeScriptEmitter {
     var doc = DocumentationResolver.GetJsDoc(method, _compilation, "    ");
     if (!string.IsNullOrWhiteSpace(doc)) sb.AppendLine(doc);
 
-    var parameters = FormatParams(method, dependencies);
-    var returnType = ToTypeScriptType(method.ReturnType, dependencies, method);
+    var parameters           = FormatParams(method, dependencies);
+    var overriddenReturnType = GetOverriddenReturnType(dependencies, method);
+    var returnType = overriddenReturnType ??
+                     ToTypeScriptType(method.ReturnType, dependencies, method);
 
     sb.Append("export ");
     if (method.IsAsync) sb.Append("async ");
@@ -461,9 +462,10 @@ file class TypeScriptEmitter {
   }
 
 
-  private string ToTypeScriptType(ITypeSymbol type, HashSet<string> deps, ISymbol? context = null) {
+  private string? GetOverriddenReturnType(HashSet<string> deps, ISymbol? context = null) {
     var overrideAttr = context?.GetAttributes()
-      .FirstOrDefault(a => a.AttributeClass?.Name is "TsTypeOverride" or "TsTypeOverrideAttribute"
+      .FirstOrDefault(a =>
+        a.AttributeClass?.Name is "TsReturnTypeOverride" or "TsReturnTypeOverrideAttribute"
       );
 
     // If the override attribute is present and was passed a string, use that
@@ -471,6 +473,19 @@ file class TypeScriptEmitter {
     if (overrideAttr is not null) {
       if (overrideAttr.ConstructorArguments.Length == 1) {
         if (overrideAttr.ConstructorArguments[0].Value is string overrideText) {
+          // Check if there were dependencies specified in the attribute.
+          if (overrideAttr.ConstructorArguments.Length > 1) {
+            for (var i = 1; i < overrideAttr.ConstructorArguments.Length; i++) {
+              var dep = overrideAttr.ConstructorArguments[i].Value;
+              if (dep is INamedTypeSymbol namedDep) {
+                deps.Add(namedDep.Name);
+              }
+              else if (dep is TypeOfExpressionSyntax typeOf) {
+                deps.Add(typeOf.Type.ToString());
+              }
+            }
+          }
+
           return overrideText.Trim();
         }
 
@@ -489,12 +504,108 @@ file class TypeScriptEmitter {
       // If the attribute is not null, but we couldn't get the arg, try to get the AttributeSyntax
       // instance from it.
       if (overrideAttr.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax {
-            ArgumentList.Arguments.Count: 1
+            ArgumentList.Arguments.Count: >= 1
           } overrideAttrSyntax) {
         var arg = overrideAttrSyntax.ArgumentList.Arguments[0].Expression;
 
         if (arg is LiteralExpressionSyntax literal &&
             literal.IsKind(SyntaxKind.StringLiteralExpression)) {
+          // Check if there were dependencies specified in the attribute.
+          if (overrideAttrSyntax.ArgumentList.Arguments.Count > 1) {
+            foreach (var argSyntax in overrideAttrSyntax.ArgumentList.Arguments.Skip(1)) {
+              if (argSyntax.Expression is TypeOfExpressionSyntax typeOf) {
+                if (typeOf.Type is IdentifierNameSyntax identifier) {
+                  deps.Add(identifier.Identifier.Text);
+                }
+                else if (typeOf.Type is QualifiedNameSyntax qualified) {
+                  deps.Add(qualified.ToString());
+                }
+              }
+              else if (argSyntax.Expression is IdentifierNameSyntax identifier) {
+                deps.Add(identifier.Identifier.Text);
+              }
+            }
+          }
+
+          var text = literal.Token.ValueText;
+          return text.Trim();
+        }
+
+        throw new InvalidOperationException(
+          $"Invalid TsTypeOverride attribute on {context?.Name ?? "unknown"}: " +
+          $"expected a string, got {arg.Kind()} ({arg})"
+        );
+      }
+    }
+
+    return null;
+  }
+
+
+  private string ToTypeScriptType(ITypeSymbol type, HashSet<string> deps, ISymbol? context = null) {
+    var overrideAttr = context?.GetAttributes()
+      .FirstOrDefault(a => a.AttributeClass?.Name is "TsTypeOverride" or "TsTypeOverrideAttribute"
+      );
+
+    // If the override attribute is present and was passed a string, use that
+    // as the type.
+    if (overrideAttr is not null) {
+      if (overrideAttr.ConstructorArguments.Length == 1) {
+        if (overrideAttr.ConstructorArguments[0].Value is string overrideText) {
+          // Check if there were dependencies specified in the attribute.
+          if (overrideAttr.ConstructorArguments.Length > 1) {
+            for (var i = 1; i < overrideAttr.ConstructorArguments.Length; i++) {
+              var dep = overrideAttr.ConstructorArguments[i].Value;
+              if (dep is INamedTypeSymbol namedDep) {
+                deps.Add(namedDep.Name);
+              }
+              else if (dep is TypeOfExpressionSyntax typeOf) {
+                deps.Add(typeOf.Type.ToString());
+              }
+            }
+          }
+
+          return overrideText.Trim();
+        }
+
+        if (overrideAttr.ConstructorArguments[0].Value is ITypeSymbol typeSymbol) {
+          return ToTypeScriptType(typeSymbol, deps);
+        }
+
+        throw new InvalidOperationException(
+          $"Invalid TsTypeOverride attribute on {context?.Name ?? "unknown"}: " +
+          $"expected a string or type, got {
+            overrideAttr.ConstructorArguments[0].Value?.GetType().Name
+          }"
+        );
+      }
+
+      // If the attribute is not null, but we couldn't get the arg, try to get the AttributeSyntax
+      // instance from it.
+      if (overrideAttr.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax {
+            ArgumentList.Arguments.Count: >= 1
+          } overrideAttrSyntax) {
+        var arg = overrideAttrSyntax.ArgumentList.Arguments[0].Expression;
+
+        if (arg is LiteralExpressionSyntax literal &&
+            literal.IsKind(SyntaxKind.StringLiteralExpression)) {
+          // Check if there were dependencies specified in the attribute.
+          if (overrideAttrSyntax.ArgumentList.Arguments.Count > 1) {
+            foreach (var argSyntax in overrideAttrSyntax.ArgumentList.Arguments.Skip(1)) {
+              if (argSyntax.Expression is TypeOfExpressionSyntax typeOf) {
+                if (typeOf.Type is IdentifierNameSyntax identifier) {
+                  deps.Add(identifier.Identifier.Text);
+                }
+                else if (typeOf.Type is QualifiedNameSyntax qualified) {
+                  deps.Add(qualified.ToString());
+                }
+              }
+              else if (argSyntax.Expression is IdentifierNameSyntax identifier) {
+                deps.Add(identifier.Identifier.Text);
+              }
+            }
+          }
+
           var text = literal.Token.ValueText;
           return text.Trim();
         }
@@ -509,8 +620,18 @@ file class TypeScriptEmitter {
     switch (type) {
       // Handle nullable types
       case INamedTypeSymbol named when
-        named.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T:
+        named.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T ||
+        named.SpecialType == SpecialType.System_Nullable_T:
         return ToTypeScriptType(named.TypeArguments[0], deps) + " | null";
+
+      case INamedTypeSymbol { NullableAnnotation: NullableAnnotation.Annotated } named:
+        return ToTypeScriptType(
+                 // If the type is annotated, we use the type without the annotation to avoid
+                 // infinite recursion.
+                 named.WithNullableAnnotation(NullableAnnotation.NotAnnotated),
+                 deps
+               ) +
+               " | null";
 
       // Handle arrays
       case IArrayTypeSymbol array:
