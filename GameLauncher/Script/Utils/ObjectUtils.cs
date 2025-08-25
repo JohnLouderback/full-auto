@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text;
 using Microsoft.ClearScript;
+using static GameLauncher.Script.Utils.JSTypeConverter;
 
 namespace GameLauncher.Script.Utils;
 
@@ -34,6 +35,91 @@ public static class ObjectUtils {
 
 
   /// <summary>
+  ///   Converts a ScriptObject that is known to be a JavaScript array to a JSON-like string.
+  /// </summary>
+  /// <param name="so"> The ScriptObject representing the JavaScript array. </param>
+  /// <param name="indentLevel">
+  ///   The current indentation level for pretty-printing. Defaults to 0.
+  /// </param>
+  /// <returns>
+  ///   The JSON-like string representation of the JavaScript array.
+  /// </returns>
+  private static string JSArrayToString(ScriptObject so, int indentLevel = 0) {
+    var indent      = new string(c: ' ', indentLevel * 2);
+    var childIndent = new string(c: ' ', (indentLevel + 1) * 2);
+
+    var length = (int)(so.GetProperty("length") ?? 0);
+    var sbArr  = new StringBuilder();
+    sbArr.Append("[\n");
+    for (var i = 0; i < length; i++) {
+      if (i > 0) {
+        sbArr.Append(",\n");
+      }
+
+      sbArr.Append(childIndent);
+      var item = so.GetProperty(i.ToString());
+      sbArr.Append(ToJsonLikeString(item, indentLevel + 1));
+    }
+
+    sbArr.Append("\n");
+    sbArr.Append(indent).Append("]");
+    return sbArr.ToString();
+  }
+
+
+  /// <summary>
+  ///   Excepts a ScriptObject that is known to be a plain object (i.e. not a host object, array,
+  ///   function, etc.) and converts it to a JSON-like string. This is a helper for the main
+  ///   ToJsonLikeString function to avoid unnecessary reflection on ScriptObjects.
+  /// </summary>
+  /// <param name="so"> The ScriptObject representing the plain JavaScript object. </param>
+  /// <param name="indentLevel">
+  ///   The current indentation level for pretty-printing. Defaults to 0.
+  /// </param>
+  /// <returns>
+  ///   The JSON-like string representation of the plain JavaScript object.
+  /// </returns>
+  private static string JSPlainScriptObjectToString(ScriptObject so, int indentLevel = 0) {
+    var indent      = new string(c: ' ', indentLevel * 2);
+    var childIndent = new string(c: ' ', (indentLevel + 1) * 2);
+
+    // Check if it's an array
+    if (IsArray(so)) {
+      return JSArrayToString(so, indentLevel);
+    }
+
+    var sbObj = new StringBuilder();
+    sbObj.Append("{");
+    var members = so.ListKeys();
+
+    var anyMember = false;
+    foreach (var member in members) {
+      if (anyMember) {
+        sbObj.Append(',');
+      }
+
+      sbObj.Append('\n');
+
+      anyMember = true;
+      var value = so.GetProperty(member);
+      sbObj.Append(childIndent);
+      sbObj.Append($"{member}: ");
+      sbObj.Append(ToJsonLikeString(value, indentLevel + 1));
+    }
+
+    if (anyMember) {
+      sbObj.Append('\n');
+    }
+    else {
+      sbObj.Append(' ');
+    }
+
+    sbObj.Append(indent).Append('}');
+    return sbObj.ToString();
+  }
+
+
+  /// <summary>
   ///   Internal recursive helper that tracks indentation level.
   /// </summary>
   private static string ToJsonLikeString(object obj, int indentLevel) {
@@ -42,6 +128,10 @@ public static class ObjectUtils {
 
     if (obj == null) {
       return "null";
+    }
+
+    if (obj is Undefined) {
+      return "undefined";
     }
 
     var t = obj.GetType();
@@ -78,6 +168,12 @@ public static class ObjectUtils {
       return $"[Function: {fnName}]";
     }
 
+    // If the object is a JavaScript object (ScriptObject), handle it specially.
+    if (obj is ScriptObject so) {
+      // If it's a ScriptObject, we can try to treat it as a plain object first.
+      return JSPlainScriptObjectToString(so, indentLevel);
+    }
+
     // Enumerables (excluding strings, already handled above)
     if (obj is IEnumerable enumerable) {
       var sbArr = new StringBuilder();
@@ -95,8 +191,8 @@ public static class ObjectUtils {
         sbArr.Append(ToJsonLikeString(item, indentLevel + 1));
       }
 
-      sbArr.Append("\n");
-      sbArr.Append(indent).Append("]");
+      sbArr.Append('\n');
+      sbArr.Append(indent).Append(']');
       return sbArr.ToString();
     }
 

@@ -21,7 +21,7 @@ public static partial class Tasks {
   ///   Thrown when <paramref name="searchDir" /> or <paramref name="globPattern" /> is
   ///   <see langword="null" /> or empty.
   /// </exception>
-  public static JSArray<File> Glob(
+  public static Task<JSArray<File>> Glob(
     string searchDir,
     string globPattern
   ) {
@@ -47,26 +47,32 @@ public static partial class Tasks {
   ///   Thrown when <paramref name="searchDir" /> or <paramref name="globPattern" /> is
   ///   <see langword="null" /> or empty.
   /// </exception>
-  public static JSArray<File> Glob(
+  public static Task<JSArray<File>> Glob(
     string searchDir,
     string globPattern,
     string? excludePattern = null
   ) {
     if (string.IsNullOrEmpty(searchDir)) {
-      throw new ArgumentException("Search directory cannot be null or empty.", nameof(globPattern));
+      throw new ArgumentException(
+        "Search directory cannot be null or empty.",
+        nameof(globPattern)
+      );
     }
 
     if (string.IsNullOrEmpty(globPattern)) {
       throw new ArgumentException("Glob pattern cannot be null or empty.", nameof(globPattern));
     }
 
-    var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-    matcher.AddInclude(globPattern);
-    if (excludePattern != null) matcher.AddExclude(excludePattern);
+    return Task.Run(() => {
+        var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+        matcher.AddInclude(globPattern);
+        if (excludePattern != null) matcher.AddExclude(excludePattern);
 
-    var result = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(searchDir)));
-    return JSArray<File>.FromIEnumerable(
-      result.Files.Select(file => new File(Path.Combine(searchDir, file.Path)))
+        var result = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(searchDir)));
+        return JSArray<File>.FromIEnumerable(
+          result.Files.Select(file => new File(Path.Combine(searchDir, file.Path)))
+        );
+      }
     );
   }
 }

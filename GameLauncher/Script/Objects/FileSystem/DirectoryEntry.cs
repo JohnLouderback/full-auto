@@ -9,7 +9,7 @@ namespace GameLauncher.Script.Objects;
 /// </summary>
 [TypeScriptExport]
 public class DirectoryEntry : ObjectBase {
-  public string Path { get; private set; }
+  [ScriptMember("path")] public string Path { get; private set; }
 
 
   internal DirectoryEntry(string path) {

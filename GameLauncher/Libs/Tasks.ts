@@ -192,14 +192,15 @@ export function getTaskbar(): Taskbar {
 
     /**
      * Searches for files matching the specified glob pattern in the given
-     * directory (and potentially its subdirectories).
+     * directory (and potentially its subdirectories). This allows for finding
+     * files based on patterns and wildcards.
      *
      * @param searchDir The directory to search in.
      * @param globPattern The glob pattern to match files against.
      * @returns An array containing the files that match the glob pattern. If no
      * files match, an empty array is returned.
      */
-export function glob(searchDir: string, globPattern: string): Array<File>;
+export function glob(searchDir: string, globPattern: string): Promise<Array<File>>;
     /**
      * Searches for files matching the specified glob pattern in the given
      * directory (and potentially its subdirectories).
@@ -212,7 +213,7 @@ export function glob(searchDir: string, globPattern: string): Array<File>;
      * @returns An array containing the files that match the glob pattern. If no
      * files match, an empty array is returned.
      */
-export function glob(searchDir: string, globPattern: string, excludePattern?: string | null): Array<File>;
+export function glob(searchDir: string, globPattern: string, excludePattern?: string | null): Promise<Array<File>>;
 export function glob(...args: any[]): any {
     // @ts-expect-error - Function is injected by the engine
     return __Tasks.Glob(...args);

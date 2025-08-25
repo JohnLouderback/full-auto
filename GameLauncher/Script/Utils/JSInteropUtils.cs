@@ -12,6 +12,8 @@ public static class JSInteropUtils {
 
   private static dynamic? _createUInt8Array;
 
+  private static dynamic? _listKeysOfObject;
+
   private static ScriptEngine currentScriptEngine =>
     AppState.ScriptEngine ??
     throw new InvalidOperationException(
@@ -28,6 +30,10 @@ public static class JSInteropUtils {
 
   private static dynamic createUInt8Array => _createUInt8Array ??= currentScriptEngine.Evaluate(
                                                "(lengthOrData) => new Uint8Array(lengthOrData);"
+                                             );
+
+  private static dynamic listKeysOfObject => _listKeysOfObject ??= currentScriptEngine.Evaluate(
+                                               "(obj) => Object.keys(obj);"
                                              );
 
 
@@ -102,5 +108,18 @@ public static class JSInteropUtils {
   /// </returns>
   public static bool IsValueTruthy(this object value) {
     return (bool)isValueTruthy(value);
+  }
+
+
+  /// <summary>
+  ///   Lists the keys of a JavaScript object.
+  /// </summary>
+  /// <param name="obj"> The object to list the keys of. </param>
+  /// <returns>
+  ///   A list of the keys of the object.
+  /// </returns>
+  public static List<string> ListKeys(this ScriptObject obj) {
+    var result = listKeysOfObject(obj);
+    return ((IEnumerable)result).Cast<string>().ToList();
   }
 }
