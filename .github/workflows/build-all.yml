@@ -72,7 +72,7 @@ jobs:
           -p:BuildInParallel=true `
           -maxcpucount `
           -nologo `
-          -verbosity:minimal"
+          -verbosity:minimal
       shell: pwsh
       
     - name: Collect and deduplicate build outputs
