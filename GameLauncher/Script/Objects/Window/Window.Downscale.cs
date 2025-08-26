@@ -312,7 +312,21 @@ public partial class Window {
     }
 #else
     // If not, check the directory it would be in, in a release build.
+    // If check to see if the file is colocated with this executable.
     var downscalerRelPath = Path.GetFullPath(
+      Path.Combine(
+        currentDirectory,
+        "Downscaler.exe"
+      )
+    );
+    
+    if (System.IO.File.Exists(downscalerRelPath)) {
+      return downscalerRelPath;
+    }
+    
+    // If not, check the directory it would be in, in a release build where it has not yet been
+    // published to the output directory.
+    downscalerRelPath = Path.GetFullPath(
       Path.Combine(
         currentDirectory,
         "..",
@@ -328,7 +342,8 @@ public partial class Window {
         "Downscaler.exe"
       )
     );
-    if (File.Exists(downscalerRelPath)) {
+    
+    if (System.IO.File.Exists(downscalerRelPath)) {
       return downscalerRelPath;
     }
 #endif
