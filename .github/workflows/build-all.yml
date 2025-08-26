@@ -61,8 +61,8 @@ jobs:
         npm install
       shell: pwsh
       
-    - name: Restore NuGet packages
-      run: dotnet restore Downscaler.sln
+    - name: Restore (MSBuild, solution-wide)
+      run: dotnet msbuild Downscaler.sln -t:Restore -v:m
       shell: pwsh
       
     - name: Build solution
@@ -73,6 +73,7 @@ jobs:
           -p:BuildInParallel=true `
           -m `
           -nologo `
+          --no-restore `
           -v:minimal
       shell: pwsh
       
