@@ -16,108 +16,118 @@ jobs:
     runs-on: windows-2022
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
-      
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    - name: Setup Yarn
-      run: npm install -g yarn@1.22.19
-      
-    - name: Cache NuGet packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.vcxproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-          
-    - name: Cache Node modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          ScriptEditor/node_modules
-          ScriptEditor/electron-app/node_modules
-          TypeScriptCompiler/node_modules
-          build-scripts/node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', '**/package-lock.json', 'build-scripts/package.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-          
-    - name: Install build script dependencies
-      run: |
-        cd build-scripts
-        npm install
-      shell: pwsh
-      
-    - name: Restore NuGet packages
-      run: msbuild Downscaler.sln -t:Restore -v:m
-      
-    - name: Build solution
-      run: |
-        msbuild Downscaler.sln `
-          -p:Configuration=${{ env.CONFIGURATION }} `
-          -p:Platform=${{ env.PLATFORM }} `
-          -p:BuildInParallel=true `
-          -maxcpucount `
-          -nologo `
-          -verbosity:minimal
-      shell: pwsh
-      
-    - name: Collect and deduplicate build outputs
-      run: |
-        cd build-scripts
-        node collect-outputs.js
-      shell: pwsh
-      
-    - name: Create unified distribution
-      run: |
-        cd build-scripts
-        node create-distribution.js
-      shell: pwsh
-      
-    - name: Validate build output
-      run: |
-        cd build-scripts
-        node validate-build.js
-      shell: pwsh
-      
-    - name: Create artifact archive
-      run: |
-        Compress-Archive -Path "dist/*" -DestinationPath "downscaler-build-${{ github.sha }}.zip" -CompressionLevel Optimal
-      shell: pwsh
-      
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: downscaler-build-${{ github.sha }}
-        path: downscaler-build-${{ github.sha }}.zip
-        retention-days: 90
-        compression-level: 0
-        
-    - name: Upload build report (on failure)
-      if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-report-${{ github.sha }}
-        path: build-outputs/build-report.json
-        retention-days: 30
-        
-    - name: Upload validation report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: validation-report-${{ github.sha }}
-        path: dist/validation-report.json
-        retention-days: 30
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Yarn
+        run: npm install -g yarn@1.22.19
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.vcxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Cache Node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ScriptEditor/node_modules
+            ScriptEditor/electron-app/node_modules
+            TypeScriptCompiler/node_modules
+            build-scripts/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', '**/package-lock.json', 'build-scripts/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install build script dependencies
+        run: |
+          cd build-scripts
+          npm install
+        shell: pwsh
+
+      - name: Install esproj dependencies
+        run: |
+          cd YamlSchemaTypes
+          npm install
+          cd ../TypeScriptCompiler
+          npm install
+          cd ../ScriptEditor
+          yarn install
+        shell: pwsh
+
+      - name: Restore NuGet packages
+        run: nuget restore Downscaler.sln -NonInteractive -Verbosity detailed
+
+      - name: Build solution
+        run: |
+          msbuild Downscaler.sln `
+            -p:Configuration=${{ env.CONFIGURATION }} `
+            -p:Platform=${{ env.PLATFORM }} `
+            -p:BuildInParallel=true `
+            -maxcpucount `
+            -nologo `
+            -verbosity:minimal
+        shell: pwsh
+
+      - name: Collect and deduplicate build outputs
+        run: |
+          cd build-scripts
+          node collect-outputs.js
+        shell: pwsh
+
+      - name: Create unified distribution
+        run: |
+          cd build-scripts
+          node create-distribution.js
+        shell: pwsh
+
+      - name: Validate build output
+        run: |
+          cd build-scripts
+          node validate-build.js
+        shell: pwsh
+
+      - name: Create artifact archive
+        run: |
+          Compress-Archive -Path "dist/*" -DestinationPath "downscaler-build-${{ github.sha }}.zip" -CompressionLevel Optimal
+        shell: pwsh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: downscaler-build-${{ github.sha }}
+          path: downscaler-build-${{ github.sha }}.zip
+          retention-days: 90
+          compression-level: 0
+
+      - name: Upload build report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-report-${{ github.sha }}
+          path: build-outputs/build-report.json
+          retention-days: 30
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report-${{ github.sha }}
+          path: dist/validation-report.json
+          retention-days: 30
