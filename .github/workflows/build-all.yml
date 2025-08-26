@@ -61,20 +61,18 @@ jobs:
         npm install
       shell: pwsh
       
-    - name: Restore (MSBuild, solution-wide)
-      run: dotnet msbuild Downscaler.sln -t:Restore -v:m
-      shell: pwsh
+    - name: Restore NuGet packages
+      run: msbuild Downscaler.sln -t:Restore -v:m
       
     - name: Build solution
       run: |
-        dotnet build Downscaler.sln `
-          -c ${{ env.CONFIGURATION }} `
+        msbuild Downscaler.sln `
+          -p:Configuration=${{ env.CONFIGURATION }} `
           -p:Platform=${{ env.PLATFORM }} `
           -p:BuildInParallel=true `
-          -m `
+          -maxcpucount `
           -nologo `
-          --no-restore `
-          -v:minimal
+          -verbosity:minimal
       shell: pwsh
       
     - name: Collect and deduplicate build outputs

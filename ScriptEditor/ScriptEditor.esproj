@@ -6,12 +6,16 @@
         <CleanCommand>yarn prepare</CleanCommand>
         <!--Command to run on project publish-->
         <PublishCommand>yarn publish:electron</PublishCommand>
-        <PreBuildEvent>yarn install</PreBuildEvent>
         <StartupCommand>yarn run start:electron</StartupCommand>
         <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
     </PropertyGroup>
     <Target Name="BeforeRestore">
         <Exec Command="yarn install"/>
+    </Target>
+    <!-- Install only when node_modules is absent (or add your own stamp/hash) -->
+    <Target Name="EnsureNodeModules" BeforeTargets="Build;Publish"
+            Condition="!Exists('$(MSBuildProjectDirectory)\node_modules')">
+        <Exec Command="yarn install --frozen-lockfile" />
     </Target>
     <ItemGroup>
         <!--        <Script Include="app.js"/>-->
