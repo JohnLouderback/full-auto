@@ -6,9 +6,9 @@
         <CleanCommand>yarn prepare</CleanCommand>
         <!--Command to run on project publish-->
         <PublishCommand>yarn publish:electron</PublishCommand>
+        <PreBuildEvent>yarn install</PreBuildEvent>
         <StartupCommand>yarn run start:electron</StartupCommand>
-        <!--<ShouldRunNpmInstall>false</ShouldRunNpmInstall>-->
-        <NpmCmd>yarn</NpmCmd>
+        <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
     </PropertyGroup>
     <Target Name="BeforeRestore">
         <Exec Command="yarn install"/>
