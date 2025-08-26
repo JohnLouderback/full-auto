@@ -62,17 +62,18 @@ jobs:
       shell: pwsh
       
     - name: Restore NuGet packages
-      run: nuget restore Downscaler.sln
+      run: dotnet restore Downscaler.sln
+      shell: pwsh
       
-    - name: Build solution (excluding test project)
+    - name: Build solution
       run: |
-        msbuild Downscaler.sln `
-          -p:Configuration=${{ env.CONFIGURATION }} `
+        dotnet build Downscaler.sln `
+          -c ${{ env.CONFIGURATION }} `
           -p:Platform=${{ env.PLATFORM }} `
           -p:BuildInParallel=true `
-          -maxcpucount `
+          -m `
           -nologo `
-          -verbosity:minimal
+          -v:minimal
       shell: pwsh
       
     - name: Collect and deduplicate build outputs
