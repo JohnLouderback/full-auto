@@ -312,7 +312,7 @@ public partial class Window {
     }
 #else
     // If not, check the directory it would be in, in a release build.
-    var downscalerDevPath = Path.GetFullPath(
+    var downscalerRelPath = Path.GetFullPath(
       Path.Combine(
         currentDirectory,
         "..",
