@@ -4,6 +4,8 @@
         <BuildCommand>yarn build:electron</BuildCommand>
         <!--Command to run on project clean-->
         <CleanCommand>yarn prepare</CleanCommand>
+        <!--Command to run on project publish-->
+        <PublishCommand>yarn publish:electron</PublishCommand>
         <StartupCommand>yarn run start:electron</StartupCommand>
         <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
     </PropertyGroup>

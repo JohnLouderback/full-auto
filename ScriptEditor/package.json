@@ -6,6 +6,7 @@
   },
   "scripts": {
     "build:electron": "yarn --cwd electron-app bundle",
+    "publish:electron": "yarn --cwd electron-app package",
     "prepare": "lerna run prepare",
     "postinstall": "./scripts/link-packages.bat && node scripts/replace-electron.js && node scripts/patch-app-manager-check.js && theia check:theia-version",
     "start:electron": "yarn --cwd electron-app start",

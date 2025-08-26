@@ -1,0 +1,22 @@
+{
+  "name": "downscaler-build-scripts",
+  "version": "1.0.0",
+  "description": "Build automation scripts for Downscaler multi-project repository",
+  "private": true,
+  "scripts": {
+    "setup": "node setup-theia-publish.js",
+    "collect": "node collect-outputs.js",
+    "distribute": "node create-distribution.js",
+    "validate": "node validate-build.js",
+    "build-all": "npm run setup && npm run collect && npm run distribute"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "glob": "^10.3.10"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Downscaler Build System",
+  "license": "MIT"
+}

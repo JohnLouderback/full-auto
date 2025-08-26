@@ -27,10 +27,12 @@
   },
   "devDependencies": {
     "@theia/cli": "1.59.0",
-    "electron": "^34.2.0"
+    "electron": "^34.2.0",
+    "electron-builder": "^24.0.0"
   },
   "scripts": {
     "bundle": "yarn rebuild && theia build --mode development",
+    "package": "electron-builder --win",
     "rebuild": "theia rebuild:electron --cacheRoot ..",
     "start": "theia start --plugins=local-dir:./plugins",
     "watch": "yarn rebuild && theia build --watch --mode development",
@@ -83,5 +85,30 @@
     "usernamehw.errorlens": "https://open-vsx.org/api/usernamehw/errorlens/3.24.0/file/usernamehw.errorlens-3.24.0.vsix",
     "esbenp.prettier-vscode": "https://open-vsx.org/api/esbenp/prettier-vscode/11.0.0/file/esbenp.prettier-vscode-11.0.0.vsix",
     "mattpocock.ts-error-translator": "https://open-vsx.org/api/mattpocock/ts-error-translator/0.10.1/file/mattpocock.ts-error-translator-0.10.1.vsix"
+  },
+  "build": {
+    "appId": "com.downscaler.scripteditor",
+    "productName": "Script Editor",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src-gen/**/*",
+      "lib/**/*",
+      "plugins/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }
