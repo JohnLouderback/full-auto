@@ -72,8 +72,7 @@ jobs:
           -p:BuildInParallel=true `
           -maxcpucount `
           -nologo `
-          -verbosity:minimal `
-          -p:ExcludeProject="DownscalerV3.Tests.MSTest"
+          -verbosity:minimal"
       shell: pwsh
       
     - name: Collect and deduplicate build outputs
