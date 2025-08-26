@@ -7,7 +7,8 @@
         <!--Command to run on project publish-->
         <PublishCommand>yarn publish:electron</PublishCommand>
         <StartupCommand>yarn run start:electron</StartupCommand>
-        <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
+        <!--<ShouldRunNpmInstall>false</ShouldRunNpmInstall>-->
+        <NpmCmd>yarn</NpmCmd>
     </PropertyGroup>
     <Target Name="BeforeRestore">
         <Exec Command="yarn install"/>
