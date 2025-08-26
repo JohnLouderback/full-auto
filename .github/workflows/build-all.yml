@@ -64,11 +64,11 @@ jobs:
       - name: Install esproj dependencies
         run: |
           cd YamlSchemaTypes
-          npm install
+          npm ci
           cd ../TypeScriptCompiler
-          npm install
+          npm ci
           cd ../ScriptEditor
-          yarn install
+          yarn install --frozen-lockfile
         shell: pwsh
 
       - name: Restore NuGet packages
