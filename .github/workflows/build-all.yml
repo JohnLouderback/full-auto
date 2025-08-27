@@ -32,6 +32,12 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Upgrade npm to v11
+        run: |
+          npm i -g npm@11
+          npm --version
+        shell: pwsh
+
       - name: Setup Yarn
         run: npm install -g yarn@1.22.19
 
