@@ -24,10 +24,9 @@ class BuildValidator {
     const expectedExecutables = [
       "Downscaler.exe",
       "GameLauncher.exe",
-      "DiagnosticWindow.exe",
       "IdentifyMonitorsUtil.exe",
       "MonitorFadeUtil.exe",
-      "GameLauncherTaskGenerator.exe"
+      "ScriptEditor.exe"
     ];
 
     for (const exeName of expectedExecutables) {

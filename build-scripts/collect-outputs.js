@@ -35,18 +35,6 @@ class BuildOutputCollector {
         ]
       },
       {
-        name: "GenericModLauncher",
-        type: "winforms",
-        binPath: "GenericModLauncher/bin/Release/net8.0-windows",
-        patterns: [
-          "**/*.exe",
-          "**/*.dll",
-          "**/*.pdb",
-          "**/*.config",
-          "**/Assets/**/*"
-        ]
-      },
-      {
         name: "IdentifyMonitorsUtil",
         type: "utility",
         binPath: "IdentifyMonitorsUtil/bin/Release/net8.0-windows",
@@ -56,12 +44,6 @@ class BuildOutputCollector {
         name: "MonitorFadeUtil",
         type: "utility",
         binPath: "MonitorFadeUtil/bin/Release/net8.0-windows",
-        patterns: ["**/*.exe", "**/*.dll", "**/*.pdb", "**/*.config"]
-      },
-      {
-        name: "GameLauncherTaskGenerator",
-        type: "build-tool",
-        binPath: "GameLauncherTaskGenerator/bin/Release/net8.0",
         patterns: ["**/*.exe", "**/*.dll", "**/*.pdb", "**/*.config"]
       },
       // WinUI Application
@@ -79,31 +61,6 @@ class BuildOutputCollector {
           "**/Assets/**/*"
         ]
       },
-      // C++ Applications
-      {
-        name: "DiagnosticWindow",
-        type: "native",
-        binPath: "DiagnosticWindow/x64/Release",
-        patterns: ["**/*.exe", "**/*.dll", "**/*.pdb"]
-      },
-      {
-        name: "Downscaler.Cpp.Core",
-        type: "native-lib",
-        binPath: "Downscaler.Cpp.Core/x64/Release",
-        patterns: ["**/*.dll", "**/*.lib", "**/*.pdb", "**/*.winmd"]
-      },
-      {
-        name: "Downscaler.Cpp.WinRT",
-        type: "native-lib",
-        binPath: "Downscaler.Cpp.WinRT/x64/Release",
-        patterns: ["**/*.dll", "**/*.lib", "**/*.pdb", "**/*.winmd"]
-      },
-      {
-        name: "Cpp.Core",
-        type: "native-lib",
-        binPath: "Cpp.Core/x64/Release",
-        patterns: ["**/*.dll", "**/*.lib", "**/*.pdb"]
-      },
       // JavaScript/TypeScript Projects
       {
         name: "ScriptEditor",
@@ -111,20 +68,6 @@ class BuildOutputCollector {
         binPath: "ScriptEditor/electron-app/dist",
         patterns: ["**/*"],
         fallbackPath: "ScriptEditor/lib"
-      },
-      {
-        name: "YamlSchemaTypes",
-        type: "types",
-        binPath: "YamlSchemaTypes/lib",
-        patterns: ["**/*.js", "**/*.d.ts", "**/*.json"],
-        fallbackPath: "YamlSchemaTypes/src"
-      },
-      {
-        name: "TypeScriptCompiler",
-        type: "compiler",
-        binPath: "TypeScriptCompiler/lib",
-        patterns: ["**/*"],
-        fallbackPath: "TypeScriptCompiler/node_modules"
       }
     ];
 
@@ -179,6 +122,7 @@ class BuildOutputCollector {
 
     console.log(`  ✅ Processed ${filesProcessed} files`);
   }
+
   async generateReport() {
     const reportPath = path.join(this.outputDir, "collection-report.json");
 
