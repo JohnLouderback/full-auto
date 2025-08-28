@@ -212,13 +212,9 @@ class BuildOutputCollector {
     try {
       const hash = this.calculateFileHash(sourcePath);
       const stats = await fs.stat(sourcePath);
-      // Create a unique key that preserves localization context
-      // For resource DLLs in localization folders, include the folder name
-      const isResourceDll = fileName.includes(".resources.dll");
-      const dllKey =
-        isResourceDll && path.dirname(fileName) !== "."
-          ? `${path.dirname(fileName)}/${path.basename(fileName)}` // Include directory for localized resources
-          : path.basename(fileName); // Use basename for regular DLLs
+      // Use the full relative path as the key to preserve directory structure
+      // This ensures files with the same name in different directories are treated as separate files
+      const dllKey = fileName; // Use full relative path including all directories
 
       // Diagnostic logging for DLL processing
       console.log(`    🔍 Processing DLL: ${fileName}`);
