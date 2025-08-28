@@ -2,9 +2,9 @@ name: Build All Projects
 
 on:
   push:
-    branches: [master, develop]
+    branches: [ master, develop ]
   pull_request:
-    branches: [master]
+    branches: [ master ]
   workflow_dispatch:
 
 env:
@@ -41,20 +41,45 @@ jobs:
       - name: Setup Yarn
         run: npm install -g yarn@1.22.19
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
+      - name: Restore npm download cache
+        id: npm-dl
+        uses: actions/cache/restore@v4
+        with:
+          path: ~\AppData\Local\npm-cache
+          key: npmcache-${{ runner.os }}-node20-npm11-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npmcache-${{ runner.os }}-node20-npm11-
+            npmcache-${{ runner.os }}-node20-
+
+      - name: Restore Yarn download cache
+        id: yarn-dl
+        uses: actions/cache/restore@v4
+        with:
+          path: ~\AppData\Local\Yarn\Cache\v6
+          key: yarncache-${{ runner.os }}-node20-yarn1-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarncache-${{ runner.os }}-node20-yarn1-
+            yarncache-${{ runner.os }}-node20-
+
+      - name: Restore NuGet packages cache
+        id: nuget-cache
+        uses: actions/cache/restore@v4
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.vcxproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Cache Node modules
-        uses: actions/cache@v4
+      - name: Restore Node modules cache
+        id: node-modules
+        uses: actions/cache/restore@v4
         with:
           path: |
             ScriptEditor/node_modules
             ScriptEditor/electron-app/node_modules
+            ScriptEditor/script-ed/node_modules
+            ScriptEditor/script-ed-ts-vfs/node_modules
+            ScriptEditor/script-ed-ts-vfs-plugin/node_modules
             TypeScriptCompiler/node_modules
             build-scripts/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', '**/package-lock.json', 'build-scripts/package.json') }}
@@ -62,12 +87,14 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install build script dependencies
+        if: steps.node-modules.outputs.cache-hit != 'true'
         run: |
           cd build-scripts
-          npm install
+          npm ci
         shell: pwsh
 
       - name: Install esproj dependencies
+        if: steps.node-modules.outputs.cache-hit != 'true'
         run: |
           cd YamlSchemaTypes
           npm ci
@@ -80,8 +107,43 @@ jobs:
           CL: /DNOMINMAX
           npm_config_msvs_version: 2022
 
+      - name: Save npm download cache
+        if: always() && steps.npm-dl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~\AppData\Local\npm-cache
+          key: ${{ steps.npm-dl.outputs.cache-primary-key }}
+
+      - name: Save Yarn download cache
+        if: always() && steps.yarn-dl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~\AppData\Local\Yarn\Cache\v6
+          key: ${{ steps.yarn-dl.outputs.cache-primary-key }}
+
+      - name: Save Node modules cache
+        if: always() && steps.node-modules.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ScriptEditor/node_modules
+            ScriptEditor/electron-app/node_modules
+            ScriptEditor/script-ed/node_modules
+            ScriptEditor/script-ed-ts-vfs/node_modules
+            ScriptEditor/script-ed-ts-vfs-plugin/node_modules
+            TypeScriptCompiler/node_modules
+            build-scripts/node_modules
+          key: ${{ steps.node-modules.outputs.cache-primary-key }}
+
       - name: Restore NuGet packages
         run: nuget restore Downscaler.sln -NonInteractive -Verbosity detailed
+
+      - name: Save NuGet packages cache
+        if: always() && steps.nuget-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ steps.nuget-cache.outputs.cache-primary-key }}
 
       - name: Build solution
         run: |
