@@ -1,15 +1,11 @@
 const fs = require("fs-extra");
 const path = require("path");
-const crypto = require("crypto");
 const { glob } = require("glob");
 
-console.log("Starting build output collection with DLL deduplication...");
+console.log("Starting build output collection...");
 
 class BuildOutputCollector {
   constructor() {
-    this.dllHashes = new Map(); // Map of DLL filename -> { hash, path, size }
-    this.duplicateCount = 0;
-    this.hashMismatches = [];
     this.outputDir = path.join(__dirname, "..", "build-outputs");
   }
 
@@ -18,11 +14,6 @@ class BuildOutputCollector {
     await fs.ensureDir(this.outputDir);
     await fs.emptyDir(this.outputDir);
     console.log(`Initialized output directory: ${this.outputDir}`);
-  }
-
-  calculateFileHash(filePath) {
-    const fileBuffer = fs.readFileSync(filePath);
-    return crypto.createHash("sha256").update(fileBuffer).digest("hex");
   }
 
   async collectProjectOutputs() {
@@ -165,7 +156,6 @@ class BuildOutputCollector {
     await fs.ensureDir(outputSubDir);
 
     let filesProcessed = 0;
-    let dllsSkipped = 0;
 
     for (const pattern of config.patterns) {
       const files = await glob(pattern, {
@@ -180,106 +170,28 @@ class BuildOutputCollector {
 
         await fs.ensureDir(path.dirname(destFile));
 
-        // Special handling for DLL files
-        if (path.extname(file).toLowerCase() === ".dll") {
-          const handled = await this.handleDllFile(sourceFile, destFile, file);
-          if (handled.skipped) {
-            dllsSkipped++;
-            continue;
-          }
-          if (handled.error) {
-            this.hashMismatches.push({
-              file: file,
-              project: config.name,
-              error: handled.error
-            });
-            process.exit(1);
-          }
-        } else {
-          await fs.copy(sourceFile, destFile);
-        }
+        // Copy all files directly (no deduplication at this stage)
+        await fs.copy(sourceFile, destFile);
 
         filesProcessed++;
       }
     }
 
-    console.log(
-      `  ✅ Processed ${filesProcessed} files (${dllsSkipped} DLLs deduplicated)`
-    );
+    console.log(`  ✅ Processed ${filesProcessed} files`);
   }
-
-  async handleDllFile(sourcePath, destPath, fileName) {
-    try {
-      const hash = this.calculateFileHash(sourcePath);
-      const stats = await fs.stat(sourcePath);
-      // Use the full relative path as the key to preserve directory structure
-      // This ensures files with the same name in different directories are treated as separate files
-      const dllKey = fileName; // Use full relative path including all directories
-
-      // Diagnostic logging for DLL processing
-      console.log(`    🔍 Processing DLL: ${fileName}`);
-      console.log(`    🔍 Full source path: ${sourcePath}`);
-      console.log(`    🔍 DLL key used: ${dllKey}`);
-      console.log(`    🔍 File hash: ${hash.substring(0, 16)}...`);
-
-      if (this.dllHashes.has(dllKey)) {
-        const existing = this.dllHashes.get(dllKey);
-
-        if (existing.hash === hash) {
-          // Same DLL, skip duplication
-          this.duplicateCount++;
-          console.log(`    🔄 Skipped duplicate DLL: ${dllKey} (hash match)`);
-          return { skipped: true };
-        } else {
-          // Hash mismatch - this is an error condition
-          const error =
-            `Hash mismatch for ${dllKey}!\n` +
-            `  Existing: ${existing.hash} (${existing.size} bytes) at ${existing.path}\n` +
-            `  New:      ${hash} (${stats.size} bytes) at ${sourcePath}`;
-          console.error(`    ❌ ${error}`);
-          return { error };
-        }
-      } else {
-        // First occurrence of this DLL
-        await fs.copy(sourcePath, destPath);
-        this.dllHashes.set(dllKey, {
-          hash: hash,
-          path: destPath,
-          size: stats.size
-        });
-        console.log(`    ✅ Added DLL: ${dllKey} (${hash.substring(0, 8)}...)`);
-        return { processed: true };
-      }
-    } catch (error) {
-      return { error: `Failed to process DLL ${fileName}: ${error.message}` };
-    }
-  }
-
   async generateReport() {
-    const reportPath = path.join(this.outputDir, "build-report.json");
-
-    const dllReport = Array.from(this.dllHashes.entries()).map(
-      ([name, info]) => ({
-        name: name,
-        hash: info.hash,
-        size: info.size,
-        path: path.relative(this.outputDir, info.path)
-      })
-    );
+    const reportPath = path.join(this.outputDir, "collection-report.json");
 
     const report = {
       timestamp: new Date().toISOString(),
       summary: {
-        totalDLLsProcessed: this.dllHashes.size,
-        duplicatesSkipped: this.duplicateCount,
-        hashMismatches: this.hashMismatches.length
-      },
-      dlls: dllReport,
-      errors: this.hashMismatches
+        message:
+          "Build outputs collected successfully - no deduplication performed at this stage"
+      }
     };
 
     await fs.writeJson(reportPath, report, { spaces: 2 });
-    console.log(`\n📊 Build report saved to: ${reportPath}`);
+    console.log(`\n📊 Collection report saved to: ${reportPath}`);
 
     return report;
   }
@@ -291,17 +203,10 @@ class BuildOutputCollector {
       const report = await this.generateReport();
 
       console.log("\n🎉 Build output collection completed successfully!");
-      console.log(`   📦 Total DLLs: ${report.summary.totalDLLsProcessed}`);
+      console.log("   📦 Files collected to build-outputs/ directory");
       console.log(
-        `   🔄 Duplicates skipped: ${report.summary.duplicatesSkipped}`
+        "   🔄 Deduplication will be performed by create-distribution.js"
       );
-
-      if (report.summary.hashMismatches > 0) {
-        console.error(
-          `   ❌ Hash mismatches: ${report.summary.hashMismatches}`
-        );
-        process.exit(1);
-      }
     } catch (error) {
       console.error("❌ Build output collection failed:", error);
       process.exit(1);

@@ -1,12 +1,12 @@
-const fs = require('fs-extra');
-const path = require('path');
+const fs = require("fs-extra");
+const path = require("path");
 
-console.log('Creating merged distribution directory...');
+console.log("Creating merged distribution directory...");
 
 class DistributionBuilder {
   constructor() {
-    this.buildOutputsDir = path.join(__dirname, '..', 'build-outputs');
-    this.distDir = path.join(__dirname, '..', 'dist');
+    this.buildOutputsDir = path.join(__dirname, "..", "build-outputs");
+    this.distDir = path.join(__dirname, "..", "dist");
     this.dllHashes = new Map(); // Track DLLs for deduplication
     this.duplicateCount = 0;
     this.hashMismatches = [];
@@ -20,42 +20,45 @@ class DistributionBuilder {
   }
 
   calculateFileHash(filePath) {
-    const crypto = require('crypto');
+    const crypto = require("crypto");
     const fileBuffer = fs.readFileSync(filePath);
-    return crypto.createHash('sha256').update(fileBuffer).digest('hex');
+    return crypto.createHash("sha256").update(fileBuffer).digest("hex");
   }
 
   async mergeAllProjects() {
-    console.log('\n📦 Merging all project outputs into single directory...');
+    console.log("\n📦 Merging all project outputs into single directory...");
 
     const projects = [
-      'Downscaler',
-      'GameLauncher', 
-      'GenericModLauncher',
-      'IdentifyMonitorsUtil',
-      'MonitorFadeUtil',
-      'DiagnosticWindow',
-      'Downscaler.Cpp.Core',
-      'Downscaler.Cpp.WinRT',
-      'Cpp.Core',
-      'GameLauncherTaskGenerator',
-      'ScriptEditor',
-      'YamlSchemaTypes',
-      'TypeScriptCompiler'
+      "Downscaler",
+      "GameLauncher",
+      "GenericModLauncher",
+      "IdentifyMonitorsUtil",
+      "MonitorFadeUtil",
+      "DiagnosticWindow",
+      "Downscaler.Cpp.Core",
+      "Downscaler.Cpp.WinRT",
+      "Cpp.Core",
+      "GameLauncherTaskGenerator",
+      "ScriptEditor",
+      "YamlSchemaTypes",
+      "TypeScriptCompiler"
     ];
 
     let totalFilesProcessed = 0;
 
     for (const projectName of projects) {
       const projectSourceDir = path.join(this.buildOutputsDir, projectName);
-      
-      if (!await fs.pathExists(projectSourceDir)) {
+
+      if (!(await fs.pathExists(projectSourceDir))) {
         console.warn(`  ⚠️  Project ${projectName} not found in build outputs`);
         continue;
       }
 
       console.log(`\nProcessing ${projectName}...`);
-      const filesProcessed = await this.mergeProjectFiles(projectSourceDir, projectName);
+      const filesProcessed = await this.mergeProjectFiles(
+        projectSourceDir,
+        projectName
+      );
       totalFilesProcessed += filesProcessed;
       console.log(`  ✅ ${projectName}: ${filesProcessed} files processed`);
     }
@@ -63,10 +66,12 @@ class DistributionBuilder {
     console.log(`\n🎉 Merged distribution completed!`);
     console.log(`📦 Total files: ${totalFilesProcessed}`);
     console.log(`🔄 DLLs deduplicated: ${this.duplicateCount}`);
-    
+
     if (this.hashMismatches.length > 0) {
-      console.error(`❌ Hash mismatches detected: ${this.hashMismatches.length}`);
-      this.hashMismatches.forEach(error => console.error(`  - ${error}`));
+      console.error(
+        `❌ Hash mismatches detected: ${this.hashMismatches.length}`
+      );
+      this.hashMismatches.forEach((error) => console.error(`  - ${error}`));
       process.exit(1);
     }
   }
@@ -74,7 +79,7 @@ class DistributionBuilder {
   async mergeProjectFiles(sourceDir, projectName) {
     let filesProcessed = 0;
 
-    const processDirectory = async (srcDir, relativePath = '') => {
+    const processDirectory = async (srcDir, relativePath = "") => {
       const entries = await fs.readdir(srcDir, { withFileTypes: true });
 
       for (const entry of entries) {
@@ -90,11 +95,18 @@ class DistributionBuilder {
           // Handle individual files
           const ext = path.extname(entry.name).toLowerCase();
 
-          if (ext === '.dll') {
+          if (ext === ".dll") {
             // Handle DLL with deduplication
-            const result = await this.handleDllFile(srcPath, destPath, entry.name, projectName);
+            const result = await this.handleDllFile(
+              srcPath,
+              destPath,
+              relativeFilePath,
+              projectName
+            );
             if (result.error) {
-              this.hashMismatches.push(`${entry.name} in ${projectName}: ${result.error}`);
+              this.hashMismatches.push(
+                `${entry.name} in ${projectName}: ${result.error}`
+              );
               return;
             }
             if (result.skipped) {
@@ -104,13 +116,18 @@ class DistributionBuilder {
             // Handle non-DLL files (EXEs, configs, etc.)
             if (await fs.pathExists(destPath)) {
               // If file already exists, check if it's identical or rename
-              if (ext === '.exe') {
+              if (ext === ".exe") {
                 // For executables, preserve both with project prefix if conflict
                 const baseName = path.basename(entry.name, ext);
                 const newName = `${projectName}_${entry.name}`;
-                const newDestPath = path.join(this.distDir, relativeFilePath.replace(entry.name, newName));
+                const newDestPath = path.join(
+                  this.distDir,
+                  relativeFilePath.replace(entry.name, newName)
+                );
                 await fs.copy(srcPath, newDestPath);
-                console.log(`    📝 Renamed EXE to avoid conflict: ${entry.name} → ${newName}`);
+                console.log(
+                  `    📝 Renamed EXE to avoid conflict: ${entry.name} → ${newName}`
+                );
               } else {
                 // For other files, skip if identical, otherwise overwrite
                 await fs.copy(srcPath, destPath);
@@ -120,7 +137,7 @@ class DistributionBuilder {
               await fs.copy(srcPath, destPath);
             }
           }
-          
+
           filesProcessed++;
         }
       }
@@ -130,35 +147,40 @@ class DistributionBuilder {
     return filesProcessed;
   }
 
-  async handleDllFile(sourcePath, destPath, fileName, projectName) {
+  async handleDllFile(sourcePath, destPath, relativeFilePath, projectName) {
     try {
       const hash = this.calculateFileHash(sourcePath);
       const stats = await fs.stat(sourcePath);
-      
-      if (this.dllHashes.has(fileName)) {
-        const existing = this.dllHashes.get(fileName);
-        
+
+      // Use the full relative path as the key to preserve directory structure
+      // This ensures files with the same name in different directories are treated as separate files
+      const dllKey = relativeFilePath;
+
+      if (this.dllHashes.has(dllKey)) {
+        const existing = this.dllHashes.get(dllKey);
+
         if (existing.hash === hash) {
           // Same DLL, skip duplication
-          console.log(`    🔄 Skipped duplicate DLL: ${fileName} (hash match)`);
+          console.log(`    🔄 Skipped duplicate DLL: ${dllKey} (hash match)`);
           return { skipped: true };
         } else {
           // Hash mismatch - this is an error condition
-          const error = `Hash mismatch for ${fileName}!\n` +
-                       `  Existing: ${existing.hash} (${existing.size} bytes) from ${existing.project}\n` +
-                       `  New:      ${hash} (${stats.size} bytes) from ${projectName}`;
+          const error =
+            `Hash mismatch for ${dllKey}!\n` +
+            `  Existing: ${existing.hash} (${existing.size} bytes) from ${existing.project}\n` +
+            `  New:      ${hash} (${stats.size} bytes) from ${projectName}`;
           console.error(`    ❌ ${error}`);
           return { error };
         }
       } else {
         // First occurrence of this DLL
         await fs.copy(sourcePath, destPath);
-        this.dllHashes.set(fileName, {
+        this.dllHashes.set(dllKey, {
           hash: hash,
           size: stats.size,
           project: projectName
         });
-        console.log(`    ✅ Added DLL: ${fileName} (${hash.substring(0, 8)}...)`);
+        console.log(`    ✅ Added DLL: ${dllKey} (${hash.substring(0, 8)}...)`);
         return { processed: true };
       }
     } catch (error) {
@@ -167,7 +189,7 @@ class DistributionBuilder {
   }
 
   async createReadmeFiles() {
-    console.log('\n📋 Creating documentation...');
+    console.log("\n📋 Creating documentation...");
 
     const mainReadme = `# Downscaler Merged Distribution
 
@@ -182,7 +204,7 @@ This is an automated build distribution containing all executables and libraries
 
 ### Utilities
 - **DiagnosticWindow.exe** - Native diagnostic utility
-- **IdentifyMonitorsUtil.exe** - Monitor identification utility  
+- **IdentifyMonitorsUtil.exe** - Monitor identification utility
 - **MonitorFadeUtil.exe** - Monitor fade control utility
 
 ### Build Tools
@@ -217,12 +239,12 @@ Configuration: Release
 3. For GameLauncher, see the ExampleScripts/ directory for usage examples
 `;
 
-    await fs.writeFile(path.join(this.distDir, 'README.md'), mainReadme);
-    console.log('  ✅ Documentation created');
+    await fs.writeFile(path.join(this.distDir, "README.md"), mainReadme);
+    console.log("  ✅ Documentation created");
   }
 
   async createLauncherScript() {
-    console.log('Creating launcher script...');
+    console.log("Creating launcher script...");
 
     const launcherScript = `@echo off
 echo Downscaler Merged Distribution
@@ -231,7 +253,7 @@ echo.
 echo Available Applications:
 echo 1. Downscaler (Main Application)
 echo 2. Game Launcher
-echo 3. Script Editor  
+echo 3. Script Editor
 echo 4. Diagnostic Window
 echo 5. Identify Monitors Utility
 echo 6. Monitor Fade Utility
@@ -267,23 +289,25 @@ if "%choice%"=="1" (
 pause
 `;
 
-    await fs.writeFile(path.join(this.distDir, 'launcher.bat'), launcherScript);
-    console.log('  ✅ Launcher script created');
+    await fs.writeFile(path.join(this.distDir, "launcher.bat"), launcherScript);
+    console.log("  ✅ Launcher script created");
   }
 
   async generateReport() {
-    const reportPath = path.join(this.distDir, 'build-report.json');
-    
-    const dllReport = Array.from(this.dllHashes.entries()).map(([name, info]) => ({
-      name: name,
-      hash: info.hash,
-      size: info.size,
-      sourceProject: info.project
-    }));
+    const reportPath = path.join(this.distDir, "build-report.json");
+
+    const dllReport = Array.from(this.dllHashes.entries()).map(
+      ([name, info]) => ({
+        name: name,
+        hash: info.hash,
+        size: info.size,
+        sourceProject: info.project
+      })
+    );
 
     const report = {
       timestamp: new Date().toISOString(),
-      distributionType: 'merged',
+      distributionType: "merged",
       summary: {
         totalDLLsProcessed: this.dllHashes.size,
         duplicatesSkipped: this.duplicateCount,
@@ -295,7 +319,7 @@ pause
 
     await fs.writeJson(reportPath, report, { spaces: 2 });
     console.log(`📊 Build report saved to: ${reportPath}`);
-    
+
     return report;
   }
 
@@ -306,12 +330,11 @@ pause
       await this.createReadmeFiles();
       await this.createLauncherScript();
       await this.generateReport();
-      
-      console.log('\n🎉 Merged distribution creation completed successfully!');
+
+      console.log("\n🎉 Merged distribution creation completed successfully!");
       console.log(`📁 All outputs merged into: ${this.distDir}`);
-      
     } catch (error) {
-      console.error('❌ Distribution creation failed:', error);
+      console.error("❌ Distribution creation failed:", error);
       process.exit(1);
     }
   }
