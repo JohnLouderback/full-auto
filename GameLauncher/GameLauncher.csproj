@@ -1,13 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0"/>
-        <PackageReference Include="MSBuildTasks" Version="1.5.0.235"/>
-        <PackageReference Include="securifybv.ShellLink" Version="0.1.0"/>
-        <PackageReference Include="Spectre.Console" Version="0.49.2-preview.0.73"/>
-        <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.73"/>
-        <PackageReference Include="StackTraceParser.Source" Version="1.3.1"/>
+        <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing"
+                          Version="6.0.0" />
+        <PackageReference Include="MSBuildTasks"
+                          Version="1.5.0.235" />
+        <PackageReference Include="securifybv.ShellLink"
+                          Version="0.1.0" />
+        <PackageReference Include="Spectre.Console"
+                          Version="0.49.2-preview.0.73" />
+        <PackageReference Include="Spectre.Console.Cli"
+                          Version="0.49.2-preview.0.73" />
+        <PackageReference Include="StackTraceParser.Source"
+                          Version="1.3.1" />
     </ItemGroup>
-
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0-windows</TargetFramework>
@@ -16,91 +21,92 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
-
     <ItemGroup>
-        <PackageReference Include="Microsoft.ClearScript.Complete" Version="7.4.5"/>
-        <PackageReference Include="MSBuildTasks" Version="1.5.0.235">
+        <PackageReference Include="Microsoft.ClearScript.Complete"
+                          Version="7.4.5" />
+        <PackageReference Include="MSBuildTasks"
+                          Version="1.5.0.235">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-
     <ItemGroup>
-        <!--        <ProjectReference Include="..\GameLaunchTaskSourceGenerator\GameLaunchTaskSourceGenerator.csproj" OutputItemType="Analyzer"/>-->
-        <ProjectReference Include="..\Core\Core.csproj"/>
-        <ProjectReference Include="..\GameLauncherTaskGenerator\GameLauncherTaskGenerator.csproj"/>
-        <ProjectReference Include="..\GenericModLauncher\GenericModLauncher.csproj"/>
-        <ProjectReference Include="..\TypeScriptCompiler\TypeScriptCompiler.esproj"/>
+        <!-- <ProjectReference Include="..\GameLaunchTaskSourceGenerator\GameLaunchTaskSourceGenerator.csproj" OutputItemType="Analyzer"/> -->
+        <ProjectReference Include="..\Core\Core.csproj" />
+        <ProjectReference Include="..\GameLauncherTaskGenerator\GameLauncherTaskGenerator.csproj" />
+        <ProjectReference Include="..\GenericModLauncher\GenericModLauncher.csproj" />
+        <ProjectReference Include="..\TypeScriptCompiler\TypeScriptCompiler.esproj" />
     </ItemGroup>
-
     <ItemGroup>
-        <Script Include="tsconfig.json"/>
+        <Script Include="tsconfig.json" />
     </ItemGroup>
-
     <ItemGroup>
-        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}"/>
+        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
     </ItemGroup>
-
     <ItemGroup>
-        <Compile Remove="build-files\**"/>
+        <Compile Remove="build-files\**" />
     </ItemGroup>
-
     <ItemGroup>
-        <EmbeddedResource Remove="build-files\**"/>
+        <EmbeddedResource Remove="build-files\**" />
     </ItemGroup>
-
     <ItemGroup>
-        <None Remove="build-files\**"/>
+        <None Remove="build-files\**" />
     </ItemGroup>
-
     <ItemGroup>
-        <Folder Include="Libs\"/>
+        <Folder Include="Libs\" />
     </ItemGroup>
-
-    <UsingTask AssemblyFile="build-files/dlls/GameLauncherTaskGenerator.dll" TaskName="GenerateTasksTs"/>
-
-    <Target Name="GenerateTypeScript" AfterTargets="Build">
+    <UsingTask AssemblyFile="build-files/dlls/GameLauncherTaskGenerator.dll"
+               TaskName="GenerateTasksTs" />
+    <Target Name="GenerateTypeScript"
+            AfterTargets="Build;Publish">
         <GenerateTasksTs SourceDirectory="$(ProjectDir)"
-                         OutputDir="$(ProjectDir)Libs"/>
+                         OutputDir="$(ProjectDir)Libs" />
     </Target>
-
-    <Target Name="CopyTypeScriptFiles" AfterTargets="Build">
+    <Target Name="CopyTypeScriptFiles"
+            AfterTargets="Build;Publish">
         <ItemGroup>
-            <TypeScriptFiles Include="..\TypeScriptCompiler\node_modules\typescript\lib\**\*"/>
+            <TypeScriptFiles Include="..\TypeScriptCompiler\node_modules\typescript\lib\**\*" />
         </ItemGroup>
-
-        <Copy SourceFiles="@(TypeScriptFiles)" DestinationFolder="$(OutputPath)\TypeScript\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(TypeScriptFiles)"
+              DestinationFolder="$(OutputPath)\TypeScript\%(RecursiveDir)"
+              SkipUnchangedFiles="true" />
     </Target>
-
-    <Target Name="CopyExampleScripts" AfterTargets="Build">
+    <Target Name="CopyExampleScripts"
+            AfterTargets="Build;Publish">
         <!-- Remove the ExampleScripts directory if it exists -->
-        <RemoveDir Directories="$(OutputPath)\ExampleScripts" Condition="Exists('$(OutputPath)\ExampleScripts')"/>
-
+        <RemoveDir Directories="$(OutputPath)\ExampleScripts"
+                   Condition="Exists('$(OutputPath)\ExampleScripts')" />
         <ItemGroup>
-            <ExampleScriptFiles Include=".\ExampleScripts\**\*"/>
+            <ExampleScriptFiles Include=".\ExampleScripts\**\*" />
         </ItemGroup>
-
-        <Copy SourceFiles="@(ExampleScriptFiles)" DestinationFolder="$(OutputPath)\ExampleScripts\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(ExampleScriptFiles)"
+              DestinationFolder="$(OutputPath)\ExampleScripts\%(RecursiveDir)"
+              SkipUnchangedFiles="true" />
     </Target>
-
-    <Target Name="CopyLibs" AfterTargets="Build">
+    <Target Name="CopyLibs"
+            AfterTargets="Build;Publish">
         <!-- Remove the ExampleScripts directory if it exists -->
-        <RemoveDir Directories="$(OutputPath)\Libs" Condition="Exists('$(OutputPath)\Libs')"/>
-        <Delete Files="$(OutputPath)\tsconfig.json" Condition="Exists('$(OutputPath)\tsconfig.json')"/>
-
+        <RemoveDir Directories="$(OutputPath)\Libs"
+                   Condition="Exists('$(OutputPath)\Libs')" />
+        <Delete Files="$(OutputPath)\tsconfig.json"
+                Condition="Exists('$(OutputPath)\tsconfig.json')" />
         <ItemGroup>
-            <LibFiles Include=".\Libs\**\*"/>
+            <LibFiles Include=".\Libs\**\*" />
         </ItemGroup>
-
-        <Copy SourceFiles="@(LibFiles)" DestinationFolder="$(OutputPath)\Libs\%(RecursiveDir)" SkipUnchangedFiles="true"/>
-        <Copy SourceFiles=".\tsconfig.json" DestinationFolder="$(OutputPath)\" SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(LibFiles)"
+              DestinationFolder="$(OutputPath)\Libs\%(RecursiveDir)"
+              SkipUnchangedFiles="true" />
+        <Copy SourceFiles=".\tsconfig.json"
+              DestinationFolder="$(OutputPath)\"
+              SkipUnchangedFiles="true" />
     </Target>
-
-    <Target Name="CopyAssets" AfterTargets="Build">
+    <Target Name="CopyAssets"
+            AfterTargets="Build;Publish">
         <ItemGroup>
-            <AssetFiles Include="..\GenericModLauncher\Assets\**\*"/>
+            <AssetFiles Include="..\GenericModLauncher\Assets\**\*" />
         </ItemGroup>
-
-        <Copy SourceFiles="@(AssetFiles)" DestinationFolder="$(OutputPath)\Assets\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="@(AssetFiles)"
+              DestinationFolder="$(OutputPath)\Assets\%(RecursiveDir)"
+              SkipUnchangedFiles="true" />
     </Target>
 </Project>

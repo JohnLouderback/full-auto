@@ -1,9 +1,17 @@
 <Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.5.89-alpha">
     <PropertyGroup>
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
         <!--Command to run on project build-->
         <!--        <BuildCommand>npm run build</BuildCommand>-->
         <!--Command to run on project clean-->
         <!--        <CleanCommand>npm run clean</CleanCommand>-->
+        <BuildOutputFolder>$(ProjectDir)node_modules\typescript\lib\</BuildOutputFolder>
+        <SkipCopyBuildProduct>true</SkipCopyBuildProduct>
+        <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+        <OutputType>None</OutputType>
+        <IsPublishable>false</IsPublishable>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
         <!--        <Script Include="IDownscalerYamlSchema.ts" />-->

@@ -8,6 +8,12 @@
         <PublishCommand>yarn publish:electron</PublishCommand>
         <StartupCommand>yarn run start:electron</StartupCommand>
         <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
+        <BuildOutputFolder>$(ProjectDir)electron-app\</BuildOutputFolder>
+        <SkipCopyBuildProduct>true</SkipCopyBuildProduct>
+        <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+        <OutputType>None</OutputType>
+        <IsPublishable>false</IsPublishable>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
     <Target Name="BeforeRestore">
         <Exec Command="yarn install"/>

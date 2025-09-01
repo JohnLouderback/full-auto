@@ -66,7 +66,7 @@ public partial class Window {
   public async Task<Window> Downscale(int width, int height) {
     return await Downscale(
              new DownscaleOptions {
-               ScaleWidth  = width,
+               ScaleWidth = width,
                ScaleHeight = height
              }
            );
@@ -98,9 +98,9 @@ public partial class Window {
   public async Task<Window> Downscale(BoundingBox box) {
     return await Downscale(
              new DownscaleOptions {
-               X           = box.X,
-               Y           = box.Y,
-               ScaleWidth  = box.Width,
+               X = box.X,
+               Y = box.Y,
+               ScaleWidth = box.Width,
                ScaleHeight = box.Height
              }
            );
@@ -113,21 +113,21 @@ public partial class Window {
       throw new ArgumentNullException(nameof(obj));
     }
 
-    var width  = obj.GetProperty<int?>("width");
+    var width = obj.GetProperty<int?>("width");
     var height = obj.GetProperty<int?>("height");
-    var x      = obj.GetProperty<int?>("x");
-    var y      = obj.GetProperty<int?>("y");
+    var x = obj.GetProperty<int?>("x");
+    var y = obj.GetProperty<int?>("y");
 
     // If width, height, x, and y are set, we were passed a bounding box.
-    if (width is {} iwidth &&
-        height is {} iheight &&
-        x is {} ix &&
-        y is {} iy) {
+    if (width is { } iwidth &&
+        height is { } iheight &&
+        x is { } ix &&
+        y is { } iy) {
       return await Downscale(
                new BoundingBox {
-                 X      = ix,
-                 Y      = iy,
-                 Width  = iwidth,
+                 X = ix,
+                 Y = iy,
+                 Width = iwidth,
                  Height = iheight
                }
              );
@@ -135,9 +135,9 @@ public partial class Window {
 
     var downscaleDebugOptions = obj.GetProperty<double?>("debug") is not null
                                   ? new DownscaleDebugOptions {
-                                    Enabled   = obj.GetProperty<bool?>("debugEnabled"),
+                                    Enabled = obj.GetProperty<bool?>("debugEnabled"),
                                     FontScale = obj.GetProperty<int?>("debugFontScale"),
-                                    ShowFps   = obj.GetProperty<bool?>("debugShowFps"),
+                                    ShowFps = obj.GetProperty<bool?>("debugShowFps"),
                                     ShowMouseCoordinates =
                                       obj.GetProperty<bool?>("debugShowMouseCoordinates"),
                                     FontFamily = obj.GetProperty<string>("debugFontFamily")
@@ -145,12 +145,12 @@ public partial class Window {
                                   : null;
 
     var downscaleOptions = new DownscaleOptions {
-      X               = x,
-      Y               = y,
+      X = x,
+      Y = y,
       DownscaleFactor = obj.GetProperty<double?>("downscaleFactor"),
-      ScaleWidth      = obj.GetProperty<int?>("scaleWidth"),
-      ScaleHeight     = obj.GetProperty<int?>("scaleHeight"),
-      Debug           = downscaleDebugOptions
+      ScaleWidth = obj.GetProperty<int?>("scaleWidth"),
+      ScaleHeight = obj.GetProperty<int?>("scaleHeight"),
+      Debug = downscaleDebugOptions
     };
 
     return await Downscale(downscaleOptions);
@@ -217,62 +217,36 @@ public partial class Window {
   private string DownscaleOptionsToYaml(DownscaleOptions options) {
     var debugOptionsYaml = options.Debug?.Enabled is true
                              ? $$"""
-                               debug: 
-                                 {{
-                                   (options.Debug.Enabled is true ? "enabled: true" : string.Empty)
-                                 }}
-                                 {{
-                                   (options.Debug.FontScale is not null
+                               debug:
+                                 {{(options.Debug.Enabled is true ? "enabled: true" : string.Empty)}}
+                                 {{(options.Debug.FontScale is not null
                                       ? $"font-scale: {options.Debug.FontScale}"
-                                      : string.Empty)
-                                 }}
-                                 {{
-                                   (options.Debug.ShowFps is not null
+                                      : string.Empty)}}
+                                 {{(options.Debug.ShowFps is not null
                                       ? $"show-fps: {options.Debug.ShowFps}"
-                                      : string.Empty)
-                                 }}
-                                 {{
-                                   (options.Debug.ShowMouseCoordinates is not null
-                                      ? $"show-mouse-coordinates: {
-                                        options.Debug.ShowMouseCoordinates
-                                      }"
-                                      : string.Empty)
-                                 }}
-                                 {{
-                                   (!string.IsNullOrEmpty(options.Debug.FontFamily)
+                                      : string.Empty)}}
+                                 {{(options.Debug.ShowMouseCoordinates is not null
+                                      ? $"show-mouse-coordinates: {options.Debug.ShowMouseCoordinates}"
+                                      : string.Empty)}}
+                                 {{(!string.IsNullOrEmpty(options.Debug.FontFamily)
                                       ? $"font-family: {options.Debug.FontFamily}"
-                                      : string.Empty)
-                                 }}
+                                      : string.Empty)}}
                              """
                              : string.Empty;
 
     var optionsYaml = CollapseConsecutiveNewlines(
       $$"""
-      hwnd: {{
-        hwnd
-      }}
-      {{
-        (options.X is not null ? $"x: {options.X}" : string.Empty)
-      }}
-      {{
-        (options.Y is not null ? $"y: {options.Y}" : string.Empty)
-      }}
-      {{
-        (options.DownscaleFactor is not null
+      hwnd: {{hwnd}}
+      {{(options.X is not null ? $"x: {options.X}" : string.Empty)}}
+      {{(options.Y is not null ? $"y: {options.Y}" : string.Empty)}}
+      {{(options.DownscaleFactor is not null
            ? $"downscale-factor: {options.DownscaleFactor}"
-           : string.Empty)
-      }}
-      {{
-        (options.ScaleWidth is not null ? $"scale-width: {options.ScaleWidth}" : string.Empty)
-      }}
-      {{
-        (options.ScaleHeight is not null
+           : string.Empty)}}
+      {{(options.ScaleWidth is not null ? $"scale-width: {options.ScaleWidth}" : string.Empty)}}
+      {{(options.ScaleHeight is not null
            ? $"scale-height: {options.ScaleHeight}"
-           : string.Empty)
-      }}
-      {{
-        (!string.IsNullOrEmpty(debugOptionsYaml) ? debugOptionsYaml : string.Empty)
-      }}
+           : string.Empty)}}
+      {{(!string.IsNullOrEmpty(debugOptionsYaml) ? debugOptionsYaml : string.Empty)}}
       """,
       includeWhitespaceBetweenNewlines: true
     );
@@ -284,7 +258,7 @@ public partial class Window {
     // First, check if the `Downscaler.exe` exists in the same directory as the current
     // executable. In a published build, this will be the same directory as the executable.
     var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-    var downscalerPath   = Path.Combine(currentDirectory, "Downscaler.exe");
+    var downscalerPath = Path.Combine(currentDirectory, "Downscaler.exe");
     if (System.IO.File.Exists(downscalerPath)) {
       return downscalerPath;
     }
@@ -316,14 +290,15 @@ public partial class Window {
     var downscalerRelPath = Path.GetFullPath(
       Path.Combine(
         currentDirectory,
+        "Downscaler",
         "Downscaler.exe"
       )
     );
-    
+
     if (System.IO.File.Exists(downscalerRelPath)) {
       return downscalerRelPath;
     }
-    
+
     // If not, check the directory it would be in, in a release build where it has not yet been
     // published to the output directory.
     downscalerRelPath = Path.GetFullPath(
@@ -342,7 +317,7 @@ public partial class Window {
         "Downscaler.exe"
       )
     );
-    
+
     if (System.IO.File.Exists(downscalerRelPath)) {
       return downscalerRelPath;
     }

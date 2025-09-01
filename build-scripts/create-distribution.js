@@ -26,27 +26,24 @@ class DistributionBuilder {
   }
 
   async mergeAllProjects() {
-    console.log("\n📦 Merging all project outputs into single directory...");
+    console.log(
+      "\n📦 Creating distribution with isolated project structure..."
+    );
 
-    const projects = [
-      "Downscaler",
+    // Separate Downscaler (WinUI/Windows 10+) from utilities
+    const utilityProjects = [
       "GameLauncher",
-      "GenericModLauncher",
       "IdentifyMonitorsUtil",
       "MonitorFadeUtil",
       "DiagnosticWindow",
-      "Downscaler.Cpp.Core",
-      "Downscaler.Cpp.WinRT",
-      "Cpp.Core",
-      "GameLauncherTaskGenerator",
-      "ScriptEditor",
-      "YamlSchemaTypes",
-      "TypeScriptCompiler"
+      "ScriptEditor"
     ];
 
     let totalFilesProcessed = 0;
 
-    for (const projectName of projects) {
+    // Process utility projects into main directory (these are compatible)
+    console.log("\n🔧 Processing utility projects (shared compatibility)...");
+    for (const projectName of utilityProjects) {
       const projectSourceDir = path.join(this.buildOutputsDir, projectName);
 
       if (!(await fs.pathExists(projectSourceDir))) {
@@ -63,15 +60,49 @@ class DistributionBuilder {
       console.log(`  ✅ ${projectName}: ${filesProcessed} files processed`);
     }
 
-    console.log(`\n🎉 Merged distribution completed!`);
+    // Process Downscaler into its own subdirectory (WinUI/Windows 10+ isolation)
+    console.log(
+      "\n🏠 Processing Downscaler (isolated due to WinUI dependencies)..."
+    );
+    const downscalerSourceDir = path.join(this.buildOutputsDir, "Downscaler");
+    if (await fs.pathExists(downscalerSourceDir)) {
+      const downscalerDestDir = path.join(this.distDir, "Downscaler");
+      await fs.ensureDir(downscalerDestDir);
+
+      // Reset DLL tracking for Downscaler's isolated space
+      const originalHashes = new Map(this.dllHashes);
+      this.dllHashes.clear();
+
+      console.log(`\nProcessing Downscaler (isolated)...`);
+      const downscalerFiles = await this.mergeProjectFilesToPath(
+        downscalerSourceDir,
+        downscalerDestDir,
+        "Downscaler"
+      );
+      totalFilesProcessed += downscalerFiles;
+      console.log(
+        `  ✅ Downscaler: ${downscalerFiles} files processed (isolated)`
+      );
+
+      // Restore original hashes for final reporting
+      this.dllHashes = originalHashes;
+    } else {
+      console.warn(`  ⚠️  Downscaler not found in build outputs`);
+    }
+
+    console.log(`\n🎉 Distribution completed with project isolation!`);
     console.log(`📦 Total files: ${totalFilesProcessed}`);
-    console.log(`🔄 DLLs deduplicated: ${this.duplicateCount}`);
+    console.log(`🔄 Utility DLLs deduplicated: ${this.duplicateCount}`);
+    console.log(`🏠 Downscaler isolated to prevent dependency conflicts`);
 
     if (this.hashMismatches.length > 0) {
       console.error(
-        `❌ Hash mismatches detected: ${this.hashMismatches.length}`
+        `❌ Hash mismatches detected in utilities: ${this.hashMismatches.length}`
       );
       this.hashMismatches.forEach((error) => console.error(`  - ${error}`));
+      console.log(
+        `\n💡 Note: Downscaler is isolated in its own directory to avoid conflicts`
+      );
       process.exit(1);
     }
   }
@@ -147,10 +178,90 @@ class DistributionBuilder {
     return filesProcessed;
   }
 
+  async mergeProjectFilesToPath(sourceDir, destDir, projectName) {
+    let filesProcessed = 0;
+
+    const processDirectory = async (srcDir, relativePath = "") => {
+      const entries = await fs.readdir(srcDir, { withFileTypes: true });
+
+      for (const entry of entries) {
+        const srcPath = path.join(srcDir, entry.name);
+        const relativeFilePath = path.join(relativePath, entry.name);
+        const destPath = path.join(destDir, relativeFilePath);
+
+        if (entry.isDirectory()) {
+          // Preserve subdirectory structure
+          await fs.ensureDir(destPath);
+          await processDirectory(srcPath, relativeFilePath);
+        } else {
+          // Handle individual files - copy directly without DLL conflict checking
+          await fs.copy(srcPath, destPath);
+          filesProcessed++;
+        }
+      }
+    };
+
+    await processDirectory(sourceDir);
+    return filesProcessed;
+  }
+
   async handleDllFile(sourcePath, destPath, relativeFilePath, projectName) {
     try {
       const hash = this.calculateFileHash(sourcePath);
       const stats = await fs.stat(sourcePath);
+
+      // Enhanced diagnostics for Core.dll specifically
+      const isDllCore =
+        path.basename(relativeFilePath).toLowerCase() === "core.dll";
+
+      if (isDllCore) {
+        console.log(`\n🔍 DIAGNOSTIC: Core.dll from ${projectName}`);
+        console.log(`  📂 Source Path: ${sourcePath}`);
+        console.log(`  📏 Size: ${stats.size} bytes`);
+        console.log(`  🔑 Hash: ${hash}`);
+        console.log(`  📅 Modified: ${stats.mtime}`);
+
+        // Try to get assembly metadata if possible
+        try {
+          const { execSync } = require("child_process");
+          const powershellCmd = `"Add-Type -AssemblyName System.Reflection; [System.Reflection.Assembly]::LoadFile('${sourcePath.replace(
+            /\\/g,
+            "\\\\"
+          )}').FullName"`;
+          const assemblyInfo = execSync(
+            `powershell -Command ${powershellCmd}`,
+            { encoding: "utf8", timeout: 5000 }
+          ).trim();
+          console.log(`  🏷️  Assembly: ${assemblyInfo}`);
+        } catch (metaError) {
+          console.log(
+            `  🏷️  Assembly: Could not read metadata - ${
+              metaError.message.split("\n")[0]
+            }`
+          );
+        }
+
+        // Check for native dependencies
+        try {
+          const { execSync } = require("child_process");
+          const dependenciesCmd = `dumpbin /dependents "${sourcePath}" 2>nul | findstr /i ".dll"`;
+          const deps = execSync(dependenciesCmd, {
+            encoding: "utf8",
+            timeout: 3000
+          }).trim();
+          if (deps) {
+            console.log(
+              `  🔗 Dependencies: ${deps.split("\n").slice(0, 3).join(", ")}...`
+            );
+          }
+        } catch (depError) {
+          console.log(
+            `  🔗 Dependencies: Could not analyze (${
+              depError.code || "unknown error"
+            })`
+          );
+        }
+      }
 
       // Use the full relative path as the key to preserve directory structure
       // This ensures files with the same name in different directories are treated as separate files
@@ -170,6 +281,25 @@ class DistributionBuilder {
             `  Existing: ${existing.hash} (${existing.size} bytes) from ${existing.project}\n` +
             `  New:      ${hash} (${stats.size} bytes) from ${projectName}`;
           console.error(`    ❌ ${error}`);
+
+          // Enhanced diagnostics for Core.dll hash mismatches
+          if (isDllCore) {
+            console.error(`\n🚨 DETAILED CORE.DLL MISMATCH ANALYSIS:`);
+            console.error(
+              `  📊 Size Difference: ${stats.size - existing.size} bytes`
+            );
+            console.error(`  📁 Paths being compared:`);
+            console.error(
+              `    - Existing (${existing.project}): ${
+                existing.sourcePath || "unknown"
+              }`
+            );
+            console.error(`    - New (${projectName}): ${sourcePath}`);
+
+            // Store source path for existing for future comparisons
+            existing.sourcePath = existing.sourcePath || "unknown";
+          }
+
           return { error };
         }
       } else {
@@ -178,13 +308,16 @@ class DistributionBuilder {
         this.dllHashes.set(dllKey, {
           hash: hash,
           size: stats.size,
-          project: projectName
+          project: projectName,
+          sourcePath: sourcePath // Store source path for diagnostics
         });
         console.log(`    ✅ Added DLL: ${dllKey} (${hash.substring(0, 8)}...)`);
         return { processed: true };
       }
     } catch (error) {
-      return { error: `Failed to process DLL ${fileName}: ${error.message}` };
+      return {
+        error: `Failed to process DLL ${relativeFilePath}: ${error.message}`
+      };
     }
   }
 

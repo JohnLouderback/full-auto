@@ -1,0 +1,35 @@
+<Project>
+    <!-- Where native publish outputs go -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.vcxproj'">
+        <NativePublishDir>$(SolutionDir)publish\$(MSBuildProjectName)\$(Configuration)\$(Platform)\</NativePublishDir>
+    </PropertyGroup>
+    <!-- Publish for native GUI/console apps: build, then copy -->
+    <Target Name="Publish"
+            Condition="'$(MSBuildProjectExtension)'=='.vcxproj' and '$(ConfigurationType)'=='Application'"
+            DependsOnTargets="Build">
+        <ItemGroup>
+            <_Primary Include="$(TargetPath)" />
+            <_Symbols Include="$(TargetDir)$(TargetName).pdb"
+                      Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+            <_RuntimeDll Include="$(TargetDir)*.dll" />
+            <_Content Include="@(Content->'%(FullPath)')" />
+        </ItemGroup>
+        <MakeDir Directories="$(NativePublishDir)" />
+        <Copy SourceFiles="@(_Primary)"
+              DestinationFolder="$(NativePublishDir)"
+              SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(_Symbols)"
+              DestinationFolder="$(NativePublishDir)"
+              SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(_RuntimeDll)"
+              DestinationFolder="$(NativePublishDir)"
+              SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(_Content)"
+              DestinationFolder="$(NativePublishDir)"
+              SkipUnchangedFiles="true" />
+    </Target>
+    <!-- Native libraries aren't publishable artifacts -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.vcxproj' and '$(ConfigurationType)'=='DynamicLibrary'">
+        <IsPublishable>false</IsPublishable>
+    </PropertyGroup>
+</Project>

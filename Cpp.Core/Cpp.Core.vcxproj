@@ -1,165 +1,180 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="window-utils.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="WindowUtils.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-  </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <VCProjectVersion>17.0</VCProjectVersion>
-    <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{7ba57957-3a46-4a9b-b600-ba5088e4f441}</ProjectGuid>
-    <RootNamespace>CppCore</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <TargetFramework>net8.0-windows10.0.22624.0</TargetFramework>
-    <WindowsTargetPlatformMinVersion>7.0</WindowsTargetPlatformMinVersion>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-    <CLRSupport>NetCore</CLRSupport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-    <CLRSupport>NetCore</CLRSupport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-    <CLRSupport>NetCore</CLRSupport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-    <CLRSupport>NetCore</CLRSupport>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;CPPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;CPPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;CPPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;CPPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-    </Link>
-  </ItemDefinitionGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+<Project DefaultTargets="Build"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemGroup Label="ProjectConfigurations">
+        <ProjectConfiguration Include="Debug|Win32">
+            <Configuration>Debug</Configuration>
+            <Platform>Win32</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|Win32">
+            <Configuration>Release</Configuration>
+            <Platform>Win32</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Debug|x64">
+            <Configuration>Debug</Configuration>
+            <Platform>x64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|x64">
+            <Configuration>Release</Configuration>
+            <Platform>x64</Platform>
+        </ProjectConfiguration>
+    </ItemGroup>
+    <ItemGroup>
+        <ClInclude Include="window-utils.h" />
+    </ItemGroup>
+    <ItemGroup>
+        <ClCompile Include="WindowUtils.cpp">
+            <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+            <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+            <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+            <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+        </ClCompile>
+    </ItemGroup>
+    <PropertyGroup Label="Globals">
+        <IsPublishable>false</IsPublishable>
+        <VCProjectVersion>17.0</VCProjectVersion>
+        <Keyword>Win32Proj</Keyword>
+        <ProjectGuid>{7ba57957-3a46-4a9b-b600-ba5088e4f441}</ProjectGuid>
+        <RootNamespace>CppCore</RootNamespace>
+        <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+        <TargetFramework>net8.0-windows10.0.22624.0</TargetFramework>
+        <WindowsTargetPlatformMinVersion>7.0</WindowsTargetPlatformMinVersion>
+    </PropertyGroup>
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"
+                   Label="Configuration">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <UseDebugLibraries>true</UseDebugLibraries>
+        <PlatformToolset>v143</PlatformToolset>
+        <CharacterSet>Unicode</CharacterSet>
+        <CLRSupport>NetCore</CLRSupport>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"
+                   Label="Configuration">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <UseDebugLibraries>false</UseDebugLibraries>
+        <PlatformToolset>v143</PlatformToolset>
+        <WholeProgramOptimization>true</WholeProgramOptimization>
+        <CharacterSet>Unicode</CharacterSet>
+        <CLRSupport>NetCore</CLRSupport>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"
+                   Label="Configuration">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <UseDebugLibraries>true</UseDebugLibraries>
+        <PlatformToolset>v143</PlatformToolset>
+        <CharacterSet>Unicode</CharacterSet>
+        <CLRSupport>NetCore</CLRSupport>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'"
+                   Label="Configuration">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <UseDebugLibraries>false</UseDebugLibraries>
+        <PlatformToolset>v143</PlatformToolset>
+        <WholeProgramOptimization>true</WholeProgramOptimization>
+        <CharacterSet>Unicode</CharacterSet>
+        <CLRSupport>NetCore</CLRSupport>
+    </PropertyGroup>
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+    <ImportGroup Label="ExtensionSettings" />
+    <ImportGroup Label="Shared" />
+    <ImportGroup Label="PropertySheets"
+                 Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+        <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+                Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+                Label="LocalAppDataPlatform" />
+    </ImportGroup>
+    <ImportGroup Label="PropertySheets"
+                 Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+        <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+                Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+                Label="LocalAppDataPlatform" />
+    </ImportGroup>
+    <ImportGroup Label="PropertySheets"
+                 Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+        <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+                Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+                Label="LocalAppDataPlatform" />
+    </ImportGroup>
+    <ImportGroup Label="PropertySheets"
+                 Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+                Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+                Label="LocalAppDataPlatform" />
+    </ImportGroup>
+    <PropertyGroup Label="UserMacros" />
+    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+        <ClCompile>
+            <WarningLevel>Level3</WarningLevel>
+            <SDLCheck>true</SDLCheck>
+            <PreprocessorDefinitions>WIN32;_DEBUG;CPPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <ConformanceMode>true</ConformanceMode>
+            <PrecompiledHeader>NotUsing</PrecompiledHeader>
+            <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <LanguageStandard>stdcpp17</LanguageStandard>
+        </ClCompile>
+        <Link>
+            <SubSystem>Windows</SubSystem>
+            <GenerateDebugInformation>true</GenerateDebugInformation>
+            <EnableUAC>false</EnableUAC>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+        <ClCompile>
+            <WarningLevel>Level3</WarningLevel>
+            <FunctionLevelLinking>true</FunctionLevelLinking>
+            <IntrinsicFunctions>true</IntrinsicFunctions>
+            <SDLCheck>true</SDLCheck>
+            <PreprocessorDefinitions>WIN32;NDEBUG;CPPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <ConformanceMode>true</ConformanceMode>
+            <PrecompiledHeader>NotUsing</PrecompiledHeader>
+            <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <LanguageStandard>stdcpp17</LanguageStandard>
+        </ClCompile>
+        <Link>
+            <SubSystem>Windows</SubSystem>
+            <EnableCOMDATFolding>true</EnableCOMDATFolding>
+            <OptimizeReferences>true</OptimizeReferences>
+            <GenerateDebugInformation>true</GenerateDebugInformation>
+            <EnableUAC>false</EnableUAC>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+        <ClCompile>
+            <WarningLevel>Level3</WarningLevel>
+            <SDLCheck>true</SDLCheck>
+            <PreprocessorDefinitions>_DEBUG;CPPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <ConformanceMode>true</ConformanceMode>
+            <PrecompiledHeader>NotUsing</PrecompiledHeader>
+            <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <LanguageStandard>stdcpp17</LanguageStandard>
+        </ClCompile>
+        <Link>
+            <SubSystem>Windows</SubSystem>
+            <GenerateDebugInformation>true</GenerateDebugInformation>
+            <EnableUAC>false</EnableUAC>
+        </Link>
+    </ItemDefinitionGroup>
+    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        <ClCompile>
+            <WarningLevel>Level3</WarningLevel>
+            <FunctionLevelLinking>true</FunctionLevelLinking>
+            <IntrinsicFunctions>true</IntrinsicFunctions>
+            <SDLCheck>true</SDLCheck>
+            <PreprocessorDefinitions>NDEBUG;CPPCORE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <ConformanceMode>true</ConformanceMode>
+            <PrecompiledHeader>NotUsing</PrecompiledHeader>
+            <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <LanguageStandard>stdcpp17</LanguageStandard>
+        </ClCompile>
+        <Link>
+            <SubSystem>Windows</SubSystem>
+            <EnableCOMDATFolding>true</EnableCOMDATFolding>
+            <OptimizeReferences>true</OptimizeReferences>
+            <GenerateDebugInformation>true</GenerateDebugInformation>
+            <EnableUAC>false</EnableUAC>
+        </Link>
+    </ItemDefinitionGroup>
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+    <ImportGroup Label="ExtensionTargets" />
 </Project>

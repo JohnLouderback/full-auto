@@ -1,6 +1,6 @@
 .windows {
   --theia-ui-font-family: Tahoma, sans-serif;
-  --theia-ui-font-size0: 10px;
+  --theia-ui-font-size0: 11px;
   --theia-ui-font-size1: 12px;
   --theia-statusBar-background: #7380f9;
   --theia-statusBar-noFolderBackground: #7380f9;
@@ -31,6 +31,13 @@
   -moz-backface-visibility: hidden !important;
   -ms-backface-visibility: hidden !important;
 }
+
+/* Special override for 1:1 pixel ratio */
+/*@media (resolution: 1dppx) {
+  .windows {
+    --theia-ui-font-family: "MS UI Gothic", sans-serif;
+  }
+}*/
 
 .theia-hover {
   z-index: 10000;
@@ -111,7 +118,7 @@
 
 /****** HACKS BELOW ******/
 
-/*** The following effect Pretty TS Hover and the removal of original TS messages. ***/
+/*** The following affect Pretty TS Hover and the removal of original TS messages. ***/
 
 /* Allow copying */
 .codicon-none {

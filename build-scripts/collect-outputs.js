@@ -22,7 +22,7 @@ class BuildOutputCollector {
       {
         name: "GameLauncher",
         type: "console",
-        binPath: "GameLauncher/bin/Release/net8.0-windows",
+        binPath: "GameLauncher/bin/Release/net8.0-windows/publish",
         patterns: [
           "**/*.exe",
           "**/*.dll",
@@ -37,21 +37,33 @@ class BuildOutputCollector {
       {
         name: "IdentifyMonitorsUtil",
         type: "utility",
-        binPath: "IdentifyMonitorsUtil/bin/Release/net8.0-windows",
-        patterns: ["**/*.exe", "**/*.dll", "**/*.pdb", "**/*.config"]
+        binPath: "IdentifyMonitorsUtil/bin/Release/net8.0-windows/publish",
+        patterns: [
+          "**/*.exe",
+          "**/*.dll",
+          "**/*.pdb",
+          "**/*.config",
+          "**/*.runtimeconfig.json"
+        ]
       },
       {
         name: "MonitorFadeUtil",
         type: "utility",
-        binPath: "MonitorFadeUtil/bin/Release/net8.0-windows",
-        patterns: ["**/*.exe", "**/*.dll", "**/*.pdb", "**/*.config"]
+        binPath: "MonitorFadeUtil/bin/Release/net8.0-windows/publish",
+        patterns: [
+          "**/*.exe",
+          "**/*.dll",
+          "**/*.pdb",
+          "**/*.config",
+          "**/*.runtimeconfig.json"
+        ]
       },
       // WinUI Application
       {
         name: "Downscaler",
         type: "winui",
         binPath:
-          "Downscaler/bin/x64/Release/net8.0-windows10.0.22621.0/win10-x64",
+          "Downscaler/bin/x64/Release/net8.0-windows10.0.22621.0/win-x64/publish",
         patterns: [
           "**/*.exe",
           "**/*.dll",
@@ -61,13 +73,20 @@ class BuildOutputCollector {
           "**/Assets/**/*"
         ]
       },
+      // C++ Applications (Built)
+      {
+        name: "DiagnosticWindow",
+        type: "native",
+        binPath: "publish/DiagnosticWindow/Release/x64",
+        patterns: ["**/*.exe", "**/*.dll", "**/*.pdb"]
+      },
       // JavaScript/TypeScript Projects
       {
         name: "ScriptEditor",
         type: "electron",
-        binPath: "ScriptEditor/electron-app/dist",
+        binPath: "ScriptEditor/electron-app/dist/win-unpacked",
         patterns: ["**/*"],
-        fallbackPath: "ScriptEditor/lib"
+        fallbackPath: "ScriptEditor/electron-app"
       }
     ];
 
@@ -148,9 +167,7 @@ class BuildOutputCollector {
 
       console.log("\n🎉 Build output collection completed successfully!");
       console.log("   📦 Files collected to build-outputs/ directory");
-      console.log(
-        "   🔄 Deduplication will be performed by create-distribution.js"
-      );
+      console.log();
     } catch (error) {
       console.error("❌ Build output collection failed:", error);
       process.exit(1);

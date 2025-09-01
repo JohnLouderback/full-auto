@@ -8,6 +8,7 @@ dist
 
 # Allow only electron-app/plugins/electric-mirror, but keep other plugins ignored
 !electron-app/webpack.config.js
+!electron-app/script-ed-electron-main.js
 !electron-app/plugins/
 electron-app/plugins/*
 !electron-app/plugins/electric-mirror/

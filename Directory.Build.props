@@ -1,0 +1,14 @@
+<Project>
+    <!-- Turn off the managed ClickOnce pipeline for native C++ projects -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.vcxproj'">
+        <GenerateClickOnceManifests>false</GenerateClickOnceManifests>
+        <GenerateManifests>false</GenerateManifests>
+        <!-- belt-and-suspenders -->
+        <IsWebBootstrapper>false</IsWebBootstrapper>
+        <!-- ensures no bootstrapper work -->
+        <!-- Make Publish a no-ClickOnce operation by default -->
+        <PublishDependsOn>Build</PublishDependsOn>
+        <OutDir>$(SolutionDir)$(MSBuildProjectName)\bin\$(Configuration)\$(Platform)\</OutDir>
+        <IntDir>$(SolutionDir)$(MSBuildProjectName)\obj\$(Configuration)\$(Platform)\</IntDir>
+    </PropertyGroup>
+</Project>

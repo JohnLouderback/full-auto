@@ -1,4 +1,4 @@
-﻿# yaml-language-server: $schema=../../YamlSchemaTypes/downscaler.schema.json
+﻿# yaml-language-server: $schema=../../YamlSchemaTypes/dist/downscaler.schema.json
 process-name: HROT.exe
 class-name: TForm1
 scale-width: 497

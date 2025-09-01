@@ -2,9 +2,9 @@ name: Build All Projects
 
 on:
   push:
-    branches: [ master, develop ]
+    branches: [master, develop]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 
 env:
@@ -145,15 +145,27 @@ jobs:
           path: ~/.nuget/packages
           key: ${{ steps.nuget-cache.outputs.cache-primary-key }}
 
-      - name: Build solution
+      - name: Build solution (prerequisite for publishing)
         run: |
           msbuild Downscaler.sln `
             -p:Configuration=${{ env.CONFIGURATION }} `
             -p:Platform=${{ env.PLATFORM }} `
             -p:BuildInParallel=true `
+            -t:Restore,Build,Publish `
             -maxcpucount `
             -nologo `
             -verbosity:minimal
+        shell: pwsh
+
+      - name: Publish ScriptEditor Electron application
+        run: |
+          cd script-ed
+          yarn build
+          cd ..
+          cd ScriptEditor
+          yarn build:electron
+          yarn publish:electron
+          cd ..
         shell: pwsh
 
       - name: Collect and deduplicate build outputs

@@ -344,3 +344,6 @@ healthchecksdb!
 /ScriptEditor.WebView/dist/
 /ScriptEditor.WebView/vite-cache/
 /ScriptEditor.WebView/vsix/*.vsix
+
+build-outputs/
+dist/

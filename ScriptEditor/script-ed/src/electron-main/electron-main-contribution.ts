@@ -1,9 +1,9 @@
-import { injectable } from 'inversify';
+import { injectable } from "inversify";
 
 import {
   ElectronMainApplication,
-  ElectronMainApplicationContribution,
-} from '@theia/core/lib/electron-main/electron-main-application';
+  ElectronMainApplicationContribution
+} from "@theia/core/lib/electron-main/electron-main-application";
 
 //import * as electron from '@theia/electron/shared/electron';
 
@@ -20,6 +20,10 @@ export class CustomElectronMainContribution
   }
 
   onStart(application: ElectronMainApplication): void {
+    // dialog.showMessageBox({
+    //   message: __dirname
+    // });
+
     console.log("CustomElectronMainContribution started");
     //electron.app.commandLine.appendSwitch("disable-lcd-text");
     // electron.app.commandLine.appendSwitch("disable-lcd-text");
