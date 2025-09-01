@@ -132,6 +132,7 @@ jobs:
             ScriptEditor/script-ed-ts-vfs/node_modules
             ScriptEditor/script-ed-ts-vfs-plugin/node_modules
             TypeScriptCompiler/node_modules
+            YamlSchemaTypes/node_modules
             build-scripts/node_modules
           key: ${{ steps.node-modules.outputs.cache-primary-key }}
 
@@ -159,10 +160,16 @@ jobs:
 
       - name: Publish ScriptEditor Electron application
         run: |
-          cd ./ScriptEditor/script-ed
-          yarn build
-          cd ../../
           cd ScriptEditor
+          cd ./script-ed
+          yarn build
+          cd ../
+          cd ./script-ed-ts-vfs
+          yarn package
+          cd ../
+          cd ./script-ed-ts-vfs-plugin
+          yarn build
+          cd ../
           yarn build:electron
           yarn publish:electron
           cd ..
