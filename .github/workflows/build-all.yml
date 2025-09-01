@@ -159,9 +159,9 @@ jobs:
 
       - name: Publish ScriptEditor Electron application
         run: |
-          cd script-ed
+          cd ./ScriptEditor/script-ed
           yarn build
-          cd ..
+          cd ../../
           cd ScriptEditor
           yarn build:electron
           yarn publish:electron
